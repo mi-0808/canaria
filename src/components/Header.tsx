@@ -25,10 +25,10 @@ export default function Header() {
           <Logo /> Canaria
           <span className="rounded-md bg-yellow-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-yellow-800">beta</span>
         </Link>
-        <nav className="flex gap-1 rounded-xl bg-zinc-100/80 p-1 text-sm">
+        <nav className="flex gap-6 text-sm">
           {nav.map(([href, label]) => (
             <Link key={href} href={href}
-              className={`rounded-lg px-3 py-1.5 transition ${path.startsWith(href) ? "bg-white font-medium shadow-sm" : "text-zinc-500 hover:text-black"}`}>
+              className={`transition ${path.startsWith(href) ? "font-bold text-black" : "text-zinc-500 hover:text-black"}`}>
               {label}
             </Link>
           ))}
