@@ -18,7 +18,7 @@ const profileFields: [keyof Profile, string][] = [
   ["tagline", "ひとこと *"],
 ];
 
-const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", progress: 0, status: "開発中", techs: "", summary: "", url: "" });
+const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
 const blankGear = (): Gear => ({ id: newId(), category: "machine", name: "", comment: "", url: "" });
 
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
@@ -97,10 +97,6 @@ export default function MyPage() {
                 <input className="input font-mono" placeholder="Next.js, TypeScript, Supabase" value={work.techs ?? ""} onChange={(e) => setWork({ ...work, techs: e.target.value })} />
               </Field>
             </div>
-            <Field label="進捗率" hint={`${work.progress}%`}>
-              <input type="range" min={0} max={100} step={5} className="w-full accent-yellow-400" value={work.progress}
-                onChange={(e) => setWork({ ...work, progress: Number(e.target.value) })} />
-            </Field>
           </div>
           <div className="space-y-4 md:col-span-2">
             <Field label="概要" hint={`${work.summary.length}/200`}>

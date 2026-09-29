@@ -7,16 +7,15 @@ const features = [
     tag: "portfolio",
     title: "簡単に、作品を並べる",
     desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
-    points: ["トップ画像・期間・役割・進捗率・概要・成果物URL", "制作中の作品も、進捗率つきで公開できる", "公開ページのURLが、そのまま名刺がわりに"],
+    points: ["トップ画像・ステータス・期間・役割・使用技術・成果物URL", "開発中の作品も、ステータスつきで公開できる", "公開ページのURLが、そのまま名刺がわりに"],
     visual: (
       <div className="grid grid-cols-3 gap-3">
-        {[["Todoアプリ", 100], ["家計簿SaaS", 80], ["個人ブログ", 45]].map(([t, p]) => (
+        {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
           <div key={t} className="overflow-hidden rounded-xl bg-white shadow-md">
             <div className="aspect-video bg-gradient-to-br from-yellow-200 to-amber-300" />
             <div className="space-y-1.5 p-2.5">
               <p className="truncate text-xs font-bold">{t}</p>
-              <div className="h-1 rounded-full bg-zinc-100"><div className="h-1 rounded-full bg-amber-400" style={{ width: `${p}%` }} /></div>
-              <p className="font-mono text-[10px] text-zinc-400">{p}%</p>
+              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${st === "運用中" ? "bg-yellow-300" : "bg-zinc-100 text-zinc-600"}`}>{st}</span>
             </div>
           </div>
         ))}

@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 const blocks = [
   { id: "image", label: "トップ画像", mini: "🖼", span: "col-span-3", color: "border-yellow-300 bg-gradient-to-br from-yellow-200 to-amber-300", value: <div className="flex h-20 items-center justify-center text-3xl">🖼</div> },
   { id: "title", label: "タイトル", mini: "家計簿アプリ", span: "col-span-2", color: "border-zinc-300 bg-white", value: <p className="text-sm font-bold">家計簿アプリ</p> },
-  { id: "progress", label: "進捗率", mini: "80%", span: "", color: "border-amber-300 bg-amber-50", value: <p className="font-mono text-sm font-bold">80%</p> },
+  { id: "status", label: "ステータス", mini: "● 運用中", span: "", color: "border-amber-300 bg-amber-50", value: <p className="text-xs font-bold">● 運用中</p> },
   { id: "period", label: "期間", mini: "2026/04–09", span: "", color: "border-zinc-300 bg-white", value: <p className="text-xs font-medium">2026/04–09</p> },
   { id: "role", label: "役割", mini: "フロント", span: "", color: "border-zinc-300 bg-white", value: <p className="text-xs font-medium">フロント</p> },
   { id: "url", label: "成果物URL", mini: "↗ demo", span: "", color: "border-yellow-300 bg-yellow-50", value: <p className="font-mono text-xs font-medium">↗ demo</p> },
 ];
-const trayOrder = ["role", "image", "url", "title", "period", "progress"];
+const trayOrder = ["role", "image", "url", "title", "period", "status"];
 
 type Drag = { id: string; sx: number; sy: number; x: number; y: number; moved: boolean };
 const slotAt = (x: number, y: number) => (document.elementFromPoint(x, y)?.closest("[data-slot]") as HTMLElement | null)?.dataset.slot;
