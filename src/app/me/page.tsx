@@ -5,7 +5,7 @@ import FilePicker from "@/components/FilePicker";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
-import { gearCategories, missingProfile, newId, useData, type Gear, type Post, type Profile, type Work } from "@/lib/store";
+import { workStatuses, gearCategories, missingProfile, newId, useData, type Gear, type Post, type Profile, type Work } from "@/lib/store";
 
 const profileFields: [keyof Profile, string][] = [
   ["name", "名前 *"],
@@ -18,7 +18,7 @@ const profileFields: [keyof Profile, string][] = [
   ["tagline", "ひとこと *"],
 ];
 
-const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", progress: 0, summary: "", url: "" });
+const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", progress: 0, status: "開発中", techs: "", summary: "", url: "" });
 const blankGear = (): Gear => ({ id: newId(), category: "machine", name: "", comment: "", url: "" });
 
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
@@ -87,6 +87,16 @@ export default function MyPage() {
                 <input className="input" placeholder="フロントエンド" value={work.role} onChange={(e) => setWork({ ...work, role: e.target.value })} />
               </Field>
             </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="ステータス">
+                <select className="input" value={work.status ?? "開発中"} onChange={(e) => setWork({ ...work, status: e.target.value as Work["status"] })}>
+                  {workStatuses.map((st) => <option key={st}>{st}</option>)}
+                </select>
+              </Field>
+              <Field label="使用技術" hint="カンマ区切り">
+                <input className="input font-mono" placeholder="Next.js, TypeScript, Supabase" value={work.techs ?? ""} onChange={(e) => setWork({ ...work, techs: e.target.value })} />
+              </Field>
+            </div>
             <Field label="進捗率" hint={`${work.progress}%`}>
               <input type="range" min={0} max={100} step={5} className="w-full accent-yellow-400" value={work.progress}
                 onChange={(e) => setWork({ ...work, progress: Number(e.target.value) })} />
@@ -107,11 +117,11 @@ export default function MyPage() {
         </div>
       )}
       {data.works.length === 0 && !work && <Empty text="最初の作品を追加してみよう" />}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {data.works.map((w) => (
           <WorkCard key={w.id} w={w}>
             {!editing && (
-              <div className="flex gap-2 pt-1">
+              <div className="ml-auto flex gap-2">
                 <button className="btn px-3 py-1.5 text-xs" onClick={() => setWork(w)}>編集</button>
                 <button className="btn px-3 py-1.5 text-xs" onClick={() => removeWork(w.id)}>削除</button>
               </div>

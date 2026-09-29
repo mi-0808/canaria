@@ -35,29 +35,45 @@ export function ProfileView({ p }: { p: Profile }) {
 }
 
 export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode }) {
+  const status = w.status ?? "開発中"; // 旧データ互換
+  const live = status === "リリース・運用中";
+  const techs = (w.techs ?? "").split(",").map((t) => t.trim()).filter(Boolean);
   return (
-    <article className="card group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-yellow-100 to-amber-200">
-        {w.image && <img src={w.image} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
-        <span className="absolute top-3 right-3 rounded-full bg-white/90 px-2.5 py-1 font-mono text-xs font-medium backdrop-blur">
-          {w.progress === 100 ? "✓ done" : `${w.progress}%`}
-        </span>
+    <article className="card group flex flex-col overflow-hidden transition hover:shadow-xl">
+      <div className="relative aspect-[16/9] overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-yellow-100 to-amber-200">
+        {w.image && <img src={w.image} alt="" className="h-full w-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />}
       </div>
-      <div className="space-y-3 p-5">
-        <div>
-          <h3 className="text-lg font-bold tracking-tight">{w.title}</h3>
-          <p className="font-mono text-xs text-zinc-500">{[w.period, w.role].filter(Boolean).join(" · ")}</p>
+      <div className="flex flex-1 flex-col gap-5 p-6 sm:p-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-yellow-300 text-black" : "bg-zinc-100 text-zinc-700"}`}>
+            {live ? "● " : ""}{status}
+          </span>
+          {w.period && <span className="font-mono text-xs text-zinc-500">{w.period}</span>}
+          {!live && (
+            <span className="ml-auto flex items-center gap-2 font-mono text-xs text-zinc-500">
+              <span className="h-1.5 w-16 rounded-full bg-zinc-100"><span className="block h-1.5 rounded-full bg-gradient-to-r from-yellow-300 to-amber-400" style={{ width: `${w.progress}%` }} /></span>
+              {w.progress}%
+            </span>
+          )}
         </div>
-        <div className="h-1.5 rounded-full bg-zinc-100">
-          <div className="h-1.5 rounded-full bg-gradient-to-r from-yellow-300 to-amber-400" style={{ width: `${w.progress}%` }} />
-        </div>
-        {w.summary && <p className="text-sm leading-relaxed whitespace-pre-wrap text-zinc-600">{w.summary}</p>}
-        {w.url && (
-          <a href={w.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-mono text-xs font-medium text-amber-600 hover:underline">
-            ↗ 成果物を見る
-          </a>
+        <h3 className="text-2xl leading-snug font-bold tracking-tight">{w.title}</h3>
+        {w.summary && <p className="leading-relaxed whitespace-pre-wrap text-zinc-600">{w.summary}</p>}
+        {w.role && <p className="text-sm font-bold">役割：{w.role}</p>}
+        {techs.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {techs.map((t) => <span key={t} className="rounded-full border border-zinc-200 px-3 py-1 font-mono text-xs text-zinc-600">{t}</span>)}
+          </div>
         )}
-        {children}
+        <div className="mt-auto flex flex-wrap items-center gap-4 pt-2">
+          {/* 色付きボタンは1画面1つのルールのため、黒の枠線ボタン */}
+          {w.url && (
+            <a href={w.url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-black px-5 py-2.5 text-sm font-bold transition hover:bg-black hover:text-yellow-300">
+              実際に触ってみる ↗
+            </a>
+          )}
+          {children}
+        </div>
       </div>
     </article>
   );

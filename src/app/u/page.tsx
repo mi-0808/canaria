@@ -18,7 +18,7 @@ export default function PublicPage() {
             label: "ポートフォリオ",
             count: data.works.length,
             content: data.works.length ? (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{data.works.map((w) => <WorkCard key={w.id} w={w} />)}</div>
+              <div className="grid gap-6 md:grid-cols-2">{data.works.map((w) => <WorkCard key={w.id} w={w} />)}</div>
             ) : <Empty text="まだ作品がありません" />,
           },
           {
