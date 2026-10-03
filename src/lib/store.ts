@@ -97,8 +97,14 @@ const authErrors: Record<string, string> = {
   weak_password: "パスワードが弱すぎます。もっと長くしてください",
   same_password: "今と同じパスワードです。別のパスワードにしてください",
   over_email_send_rate_limit: "メールの送信回数が上限に達しました。しばらくしてからお試しください",
+  over_request_rate_limit: "試行回数が多すぎます。しばらくしてからお試しください",
 };
-const authError = (e: AuthError) => authErrors[e.code ?? ""] ?? "うまくいきませんでした。もう一度お試しください";
+// 未知のエラーも原因が分かるようにコードを添える（status 0 は通信失敗）
+function authError(e: AuthError) {
+  console.error(e);
+  if (e.status === 0) return "通信に失敗しました。ネット接続を確認してもう一度お試しください";
+  return authErrors[e.code ?? ""] ?? `うまくいきませんでした。もう一度お試しください（${e.code ?? e.message}）`;
+}
 
 /** 確認メールを送った場合は confirm: true（リンクを開くと /me に戻ってログイン済みになる） */
 export async function signUp(email: string, password: string): Promise<{ error?: string; confirm?: boolean }> {
