@@ -11,27 +11,19 @@ const worries = [
 ];
 
 // 機能ごとに色の役割を分ける: 作品=カナリア（主役）、発信=藍（つながり）、仕事場=グレー
-const tones = {
-  primary: { panel: "bg-primary-container", num: "text-primary/50", dot: "bg-primary-container text-on-primary-container" },
-  tertiary: { panel: "bg-tertiary-container", num: "text-tertiary/15", dot: "bg-tertiary-container text-on-tertiary-container" },
-  secondary: { panel: "bg-secondary-container", num: "text-secondary/10", dot: "bg-secondary-container text-on-secondary-container" },
-};
-
 const features = [
   {
-    n: "01",
-    tone: tones.primary,
+    panel: "bg-primary-container",
     title: "簡単に、作品を並べる",
     desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
-    points: ["トップ画像・ステータス・期間・役割・使用技術・成果物URL", "開発中の作品も、ステータスつきで公開できる", "公開ページのURLが、そのまま名刺がわりに"],
     visual: (
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
-          <div key={t} className="overflow-hidden rounded-xl bg-surface shadow-md">
+          <div key={t} className="overflow-hidden rounded-xl border border-line bg-surface">
             <div className="aspect-video bg-primary-container" />
-            <div className="space-y-1.5 p-2.5">
+            <div className="space-y-2 p-2 sm:p-3">
               <p className="truncate text-xs font-bold">{t}</p>
-              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${st === "運用中" ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>{st}</span>
+              <span className={`inline-block rounded-full px-1.5 py-0.5 text-xs font-bold sm:px-2 ${st === "運用中" ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>{st}</span>
             </div>
           </div>
         ))}
@@ -39,43 +31,38 @@ const features = [
     ),
   },
   {
-    n: "02",
-    tone: tones.tertiary,
+    panel: "bg-tertiary-container",
     title: "つくりながら発信して、プロに教わる",
     desc: "まだ世に出ていない作品の裏側を、テキスト・音声・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
-    points: ["テキスト・音声・動画から選んで投稿", "リアクション・返信で、プロとつながる", "投稿は作品と紐づけて、ポートフォリオの厚みに"],
     visual: (
       <div className="space-y-3 text-sm">
-        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-3.5 shadow-md">
-          <span className="font-mono text-[11px] text-fg-3">@you · 2時間前</span>
-          <br />認証まわりで詰まってます…どこでガードするのが正解？
+        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">
+          <p className="text-xs text-fg-3">@you · 2時間前</p>
+          <p className="mt-1 leading-relaxed">認証まわりで詰まってます…どこでガードするのが正解？</p>
         </div>
-        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-secondary p-3.5 text-on-secondary shadow-md">
-          <span className="font-mono text-[11px] text-primary">@senior_dev · 1時間前</span>
-          <br />middlewareでまとめて守るのがおすすめ！
+        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-secondary p-4 text-on-secondary">
+          <p className="text-xs text-primary">@senior_dev · 1時間前</p>
+          <p className="mt-1 leading-relaxed">middlewareでまとめて守るのがおすすめ！</p>
         </div>
         <p className="text-right text-xs text-on-tertiary-container">★ リアクション 12</p>
       </div>
     ),
   },
   {
-    n: "03",
-    tone: tones.secondary,
+    panel: "bg-secondary-container",
     title: "できる人の仕事場から、次の相棒を見つける",
     desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
-    points: ["上級エンジニアの環境を、おすすめコメントつきでのぞける", "「これいいよ」の一言が、あなたの次の一台を決める", "気になったアイテムは、そのまま商品ページへ"],
     soon: true,
     visual: (
-      <div className="space-y-2 font-mono text-sm">
-        <p className="text-[11px] text-fg-3">@senior_dev の仕事場</p>
-        {[["🖥", "27inch 4K Monitor", "作業領域が倍。もう戻れない"], ["⌨️", "HHKB Studio", "手首がラクになった"], ["💻", "MacBook Pro M4", "ビルドが一瞬"]].map(([i, t, c]) => (
-          <div key={t} className="flex items-center gap-3 rounded-xl bg-surface px-3.5 py-2.5 shadow-md">
-            <span>{i}</span>
+      <div className="space-y-2">
+        <p className="text-xs text-on-secondary-container">@senior_dev の仕事場</p>
+        {[["27インチ 4Kモニター", "作業領域が倍。もう戻れない"], ["HHKB Studio", "手首がラクになった"], ["MacBook Pro M4", "ビルドが一瞬"]].map(([t, c]) => (
+          <div key={t} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
             <div className="min-w-0">
-              <p className="font-medium">{t}</p>
-              <p className="font-sans text-[11px] text-fg-3">“{c}”</p>
+              <p className="text-sm font-medium">{t}</p>
+              <p className="text-xs text-fg-2">{c}</p>
             </div>
-            <span className="ml-auto text-tertiary">↗</span>
+            <span className="ml-auto text-tertiary" aria-hidden>↗</span>
           </div>
         ))}
       </div>
@@ -87,8 +74,7 @@ export default function Home() {
   return (
     <div className="space-y-24">
       {/* Hero */}
-      <section className="relative -mx-4 -mt-10 overflow-hidden px-4 pt-16 pb-8">
-        <div className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" />
+      <section className="relative -mx-4 -mt-10 overflow-hidden px-4 pt-16 pb-8 md:pt-24">
         <div className="relative grid items-center gap-12 md:grid-cols-[1fr_auto]">
           <div className="space-y-7">
             <h1 className="text-3xl leading-[1.15] font-bold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
@@ -119,32 +105,18 @@ export default function Home() {
       <DeviceShowcase />
 
       {/* Features */}
-      <section id="features" className="scroll-mt-20 space-y-10">
-        <div className="space-y-2 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
-        </div>
-        <div className="space-y-20">
+      <section id="features" className="scroll-mt-20 space-y-14 md:space-y-20">
+        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
+        <div className="space-y-20 md:space-y-28">
           {features.map((f, i) => (
-            <div key={f.n} className="grid items-center gap-10 md:grid-cols-2">
-              <div className={`relative overflow-hidden rounded-3xl ${f.tone.panel} p-8 sm:p-10 ${i % 2 ? "md:order-2" : ""}`}>
-                <div className="bg-grid absolute inset-0 opacity-50" />
-                <span className={`absolute -top-6 -right-2 font-mono text-[10rem] leading-none font-bold ${f.tone.num}`}>{f.n}</span>
-                <div className="relative">{f.visual}</div>
-              </div>
-              <div className="space-y-5">
+            <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-16">
+              <div className={`rounded-3xl ${f.panel} p-6 sm:p-12 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
+              <div className="max-w-md space-y-4">
                 <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">
                   {f.title}
                   {f.soon && <span className="ml-2 inline-block rounded-md bg-surface-2 px-2 py-0.5 align-middle text-xs font-medium text-fg-2">近日公開</span>}
                 </h3>
-                <p className="leading-relaxed text-fg-2">{f.desc}</p>
-                <ul className="space-y-2.5">
-                  {f.points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-3 text-sm">
-                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${f.tone.dot} text-[11px] font-bold`}>✓</span>
-                      {pt}
-                    </li>
-                  ))}
-                </ul>
+                <p className="leading-loose text-fg-2">{f.desc}</p>
               </div>
             </div>
           ))}

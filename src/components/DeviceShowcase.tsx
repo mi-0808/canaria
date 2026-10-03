@@ -43,7 +43,7 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
 
 export default function DeviceShowcase() {
   return (
-    <section className="relative -mx-4 overflow-hidden px-4 py-16">
+    <section className="relative -mx-4 overflow-hidden px-4">
       <div className="relative space-y-12">
         <div className="space-y-3 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">PCでもスマホでも、そのまま名刺に。</h2>

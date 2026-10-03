@@ -26,7 +26,7 @@ export default function Header() {
     location.assign("/");
   };
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-surface/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-line bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-1.5">
         {/* ロゴはトップへ。ログイン中ならホーム、未ログインなら LP が出る */}
         <Link href="/" className={`${item} -ml-2 gap-2 text-lg font-bold tracking-tight`}>
