@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">{children}</main>
         <footer className="border-t border-line py-6 text-center font-mono text-xs text-fg-3">
-          © Canaria — build in public.
+          © Canaria
         </footer>
       </body>
     </html>

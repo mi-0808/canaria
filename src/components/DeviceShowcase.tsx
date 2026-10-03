@@ -16,7 +16,7 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
       <div className="-mt-4 space-y-1 px-3">
         <div className="h-8 w-8 rounded-full bg-primary ring-2 ring-surface" />
         <p className="text-[10px] font-bold">山田 カナ</p>
-        <p className="text-fg-3">フロントエンド · INTJ · Tokyo</p>
+        <p className="text-fg-3">フロントエンド · INTJ · 東京</p>
       </div>
       <div className="mt-2 flex gap-3 border-b border-line px-3">
         <span className="border-b-2 border-primary pb-1 font-bold">ポートフォリオ</span>
