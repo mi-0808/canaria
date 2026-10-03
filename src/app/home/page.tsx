@@ -71,9 +71,9 @@ export default function Home() {
         </div>
       </div>
 
-      <div role="radiogroup" aria-label="表示する投稿" className="segmented">
+      <div role="radiogroup" aria-label="表示する投稿" className="tabs">
         {([[false, "すべて"], [true, "保存した投稿"]] as const).map(([saved, label]) => (
-          <label key={label} className="segment">
+          <label key={label} className="tab">
             <input type="radio" name="filter" className="sr-only" checked={savedOnly === saved} onChange={() => setSavedOnly(saved)} />
             {label}
           </label>

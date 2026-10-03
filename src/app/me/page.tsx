@@ -203,9 +203,9 @@ export default function MyPage() {
 
       <Tabs
         tabs={[
-          { label: "作品", count: data.works.length, content: worksTab },
-          { label: "開発環境", count: data.gear.length, content: gearTab },
-          { label: "投稿", count: data.posts.length, content: postsTab },
+          { label: "作品", content: worksTab },
+          { label: "開発環境", content: gearTab },
+          { label: "投稿", content: postsTab },
         ]}
       />
 
