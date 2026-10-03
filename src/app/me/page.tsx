@@ -6,7 +6,7 @@ import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
 import {
-  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork, signOut,
+  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
   useAuthedUser, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
@@ -55,13 +55,6 @@ export default function MyPage() {
   const editing = profile || work || gear;
 
   const usernameInvalid = profile && !usernamePattern.test(profile.username);
-  // `/` の中身（LP かホームか）はログイン状態で変わる。画面ごと読み直して proxy に判定し直させる。
-  // router.push だと、Next のクライアントキャッシュに残ったホームが出ることがある（router.refresh は今のページ分しか消さない）
-  const logout = async () => {
-    await signOut();
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 上の理由で意図的に再読み込みする
-    location.assign("/");
-  };
   const saveProfile = async () => {
     const err = await putProfile(user.id, profile!);
     if (err) return setUsernameError(err);
@@ -271,10 +264,6 @@ export default function MyPage() {
           { label: "タイムライン", count: data.posts.length, content: postsTab },
         ]}
       />
-
-      <div className="flex justify-center border-t border-line pt-8">
-        <button className="btn" onClick={logout}>ログアウト</button>
-      </div>
     </div>
   );
 }
