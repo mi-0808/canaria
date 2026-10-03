@@ -12,16 +12,15 @@ const worries = [
 
 // 機能ごとに色の役割を分ける: 作品=カナリア（主役）、発信=藍（つながり）、仕事場=グレー
 const tones = {
-  primary: { panel: "bg-primary-container", num: "text-primary/50", text: "text-on-primary-container", dot: "bg-primary-container text-on-primary-container" },
-  tertiary: { panel: "bg-tertiary-container", num: "text-tertiary/15", text: "text-on-tertiary-container", dot: "bg-tertiary-container text-on-tertiary-container" },
-  secondary: { panel: "bg-secondary-container", num: "text-secondary/10", text: "text-on-secondary-container", dot: "bg-secondary-container text-on-secondary-container" },
+  primary: { panel: "bg-primary-container", num: "text-primary/50", dot: "bg-primary-container text-on-primary-container" },
+  tertiary: { panel: "bg-tertiary-container", num: "text-tertiary/15", dot: "bg-tertiary-container text-on-tertiary-container" },
+  secondary: { panel: "bg-secondary-container", num: "text-secondary/10", dot: "bg-secondary-container text-on-secondary-container" },
 };
 
 const features = [
   {
     n: "01",
     tone: tones.primary,
-    tag: "portfolio",
     title: "簡単に、作品を並べる",
     desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
     points: ["トップ画像・ステータス・期間・役割・使用技術・成果物URL", "開発中の作品も、ステータスつきで公開できる", "公開ページのURLが、そのまま名刺がわりに"],
@@ -42,7 +41,6 @@ const features = [
   {
     n: "02",
     tone: tones.tertiary,
-    tag: "timeline",
     title: "つくりながら発信して、プロに教わる",
     desc: "まだ世に出ていない作品の裏側を、テキスト・音声・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
     points: ["テキスト・音声・動画から選んで投稿", "リアクション・返信で、プロとつながる", "投稿は作品と紐づけて、ポートフォリオの厚みに"],
@@ -63,7 +61,6 @@ const features = [
   {
     n: "03",
     tone: tones.secondary,
-    tag: "workspace",
     title: "できる人の仕事場から、次の相棒を見つける",
     desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
     points: ["上級エンジニアの環境を、おすすめコメントつきでのぞける", "「これいいよ」の一言が、あなたの次の一台を決める", "気になったアイテムは、そのまま商品ページへ"],
@@ -135,11 +132,10 @@ export default function Home() {
                 <div className="relative">{f.visual}</div>
               </div>
               <div className="space-y-5">
-                <p className={`flex items-center gap-2 font-mono text-sm ${f.tone.text}`}>
-                  {f.n} / {f.tag}
-                  {f.soon && <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] text-fg-3">coming soon</span>}
-                </p>
-                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">{f.title}</h3>
+                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">
+                  {f.title}
+                  {f.soon && <span className="ml-2 inline-block rounded-md bg-surface-2 px-2 py-0.5 align-middle text-xs font-medium text-fg-2">近日公開</span>}
+                </h3>
                 <p className="leading-relaxed text-fg-2">{f.desc}</p>
                 <ul className="space-y-2.5">
                   {f.points.map((pt) => (
@@ -197,8 +193,7 @@ export default function Home() {
 
       {/* Closing */}
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
-        <p className="font-mono text-xs">$ canaria init --free</p>
-        <h2 className="mt-3 text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
+        <h2 className="text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
         <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">マイページをつくる →</Link>
       </section>
