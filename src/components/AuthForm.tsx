@@ -88,7 +88,7 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
               <label className="block space-y-1.5">
                 <span className="flex justify-between">
                   <span className="label">パスワード</span>
-                  {mode === "signup" && <span className="font-mono text-[11px] text-fg-3">8文字以上</span>}
+                  {mode === "signup" && <span className="text-sm text-fg-3">8文字以上</span>}
                 </span>
                 <input type="password" required minLength={mode === "signup" ? 8 : undefined} className="input"
                   autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} />

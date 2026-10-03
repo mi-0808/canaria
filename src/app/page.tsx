@@ -81,7 +81,7 @@ export default function Home() {
             <h1 className="text-3xl leading-[1.15] font-bold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
               つくった作品で、
               <br />
-              <span className="bg-[linear-gradient(transparent_62%,var(--color-primary)_62%)] whitespace-nowrap">次の仕事をとりにいく</span>
+              <span className="bg-[linear-gradient(transparent_62%,var(--color-marker)_62%)] whitespace-nowrap">次の仕事をとりにいく</span>
               <br />
               ポートフォリオ
             </h1>
