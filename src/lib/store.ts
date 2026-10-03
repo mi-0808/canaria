@@ -18,6 +18,7 @@ export type Profile = {
   tagline: string;
   bio: string;
   links: string[]; // SNS・ブログなどの https の URL（src/lib/links.mjs の normalizeLink を通したもの）
+  contact_email: string; // 仕事の相談を受けるメールアドレス。公開ページに出る。ログイン用とは別。空なら出さない
 };
 
 export type Work = {

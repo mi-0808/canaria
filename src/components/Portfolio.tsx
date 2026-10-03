@@ -1,5 +1,5 @@
 import Icon, { type IconName } from "@/components/Icon";
-import { linkName } from "@/lib/links.mjs";
+import { contactEmailPattern, linkName } from "@/lib/links.mjs";
 import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
 
 export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
@@ -25,6 +25,13 @@ export function ProfileView({ p }: { p: Profile }) {
           <h1 className="text-2xl font-bold tracking-tight">{p.name || "名前未設定"}</h1>
           {p.tagline && <p className="text-fg-2">{p.tagline}</p>}
         </div>
+        {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、主役の黄色のボタン。
+            DB でも形を絞っているが、mailto: に入れる直前にも確かめる */}
+        {contactEmailPattern.test(p.contact_email) && (
+          <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
+            <Icon name="mail" />メールで連絡
+          </a>
+        )}
         {/* SNS・リンク。DB で https だけに絞っているが、描画する直前にも確かめる（href に危ない URL を入れない） */}
         {p.links.length > 0 && (
           <ul className="flex flex-wrap gap-2">
