@@ -4,6 +4,8 @@
 
 本番: https://canaria-seven.vercel.app
 
+main にマージすると Vercel が本番に自動でデプロイする。PR を出すとプレビュー URL が PR に付く。
+
 ## 画面
 | パス | 内容 |
 |---|---|
