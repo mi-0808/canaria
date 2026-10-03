@@ -20,7 +20,8 @@ const features = [
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
           <div key={t} className="overflow-hidden rounded-xl bg-surface">
-            <div className="aspect-video bg-primary-container" />
+            {/* パネルと同じ黄色だと溶け込むので、画像の場所は中立のグレー */}
+            <div className="aspect-video bg-surface-2" />
             <div className="space-y-2 p-2 sm:p-3">
               <p className="truncate text-xs font-bold">{t}</p>
               <span className={`inline-block rounded-full px-1.5 py-0.5 text-xs font-bold sm:px-2 ${st === "運用中" ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>{st}</span>
@@ -106,7 +107,11 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="scroll-mt-20 space-y-12">
-        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
+        {/* 倒置で言い切る。読み方が分かるよう Canaria にルビ。スマホでは文の切れ目で改行する */}
+        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+          <span className="inline-block">3つのことができます。</span>
+          <span className="inline-block"><ruby>Canaria<rt className="text-sm font-normal tracking-normal text-fg-3">カナリア</rt></ruby>なら。</span>
+        </h2>
         <div className="space-y-16">
           {features.map((f, i) => (
             <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
