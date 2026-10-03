@@ -1,6 +1,9 @@
 "use client";
-// ponytail: localStorage only (single user, ~5MB incl. images). Swap this file for Supabase later.
-import { useEffect, useState } from "react";
+// ponytail: 全部クライアントから Supabase を直接叩く（守りは RLS）。公開ページの SEO/OGP が要るときにサーバー取得へ
+import type { AuthError, User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type DependencyList, type Dispatch, type SetStateAction } from "react";
+import { createClient as db } from "./supabase";
 
 export type Profile = {
   name: string;
@@ -30,14 +33,16 @@ export type Work = {
 export const workStatuses = ["企画中", "開発中", "ベータ公開", "リリース・運用中"] as const;
 export type WorkStatus = (typeof workStatuses)[number];
 
-export type Reply = { id: string; body: string; createdAt: number };
+type Author = Profile & { id: string };
+export type Reply = { id: string; body: string; created_at: string; author: Pick<Profile, "name" | "icon"> };
 export type Post = {
   id: string;
   body: string;
   media?: { kind: "audio" | "video"; src: string };
-  createdAt: number;
-  reacted: boolean;
-  saved: boolean;
+  created_at: string;
+  author: Author;
+  reacted: boolean; // 閲覧中のユーザーが
+  saved: boolean; // 閲覧中のユーザーが
   replies: Reply[];
 };
 
@@ -46,50 +51,165 @@ export const gearCategories = { machine: "💻", keyboard: "⌨️", display: "�
 // comment は「これいいよ」のひとこと。購入のきっかけになる部分
 export type Gear = { id: string; category: keyof typeof gearCategories; name: string; comment: string; url: string };
 
-export type Data = { profile: Profile; works: Work[]; gear: Gear[]; posts: Post[] };
+export type Portfolio = { profile: Profile; works: Work[]; gear: Gear[]; posts: Post[] };
 
 // タイムラインを見るのに必要なプロフィール項目
 export const requiredProfile: [keyof Profile, string][] = [["name", "名前"], ["icon", "アイコン"], ["tagline", "ひとこと"]];
 export const missingProfile = (p: Profile) => requiredProfile.filter(([k]) => !p[k]).map(([, label]) => label);
 
-const KEY = "canaria";
-const empty: Data = {
-  profile: { name: "", icon: "", gender: "", age: "", location: "", company: "", years: "", mbti: "", tagline: "", bio: "" },
-  works: [],
-  gear: [],
-  posts: [],
-};
-
 export const newId = () => crypto.randomUUID();
 
-export function useData() {
-  const [data, setData] = useState<Data>(empty);
-  const [ready, setReady] = useState(false);
-
-  // localStorageはクライアントでしか読めないため、マウント後に読み込む
-  useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
-    const raw = localStorage.getItem(KEY);
-    if (raw) setData({ ...empty, ...JSON.parse(raw) });
-    setReady(true);
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, []);
-
-  const save = (next: Data) => {
-    setData(next);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {
-      alert("保存容量の上限に達しました。画像を小さくしてください。");
-    }
-  };
-
-  return { data, save, ready };
+// 失敗を黙って捨てない（入力が消えたように見えるのを防ぐ）
+function must<T>({ data, error }: { data: T; error: unknown }) {
+  if (error) {
+    alert("保存・読み込みに失敗しました。通信状況を確認してもう一度お試しください。");
+    throw error;
+  }
+  return data;
 }
 
-export const readFile = (file: File) =>
-  new Promise<string>((resolve) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.readAsDataURL(file);
-  });
+// --- auth ---
+
+/** undefined: 確認中 / null: 未ログイン */
+export function useUser() {
+  const [user, setUser] = useState<User | null>();
+  useEffect(() => {
+    const { data } = db().auth.onAuthStateChange((_, session) => setUser(session?.user ?? null));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  return user;
+}
+
+/** 未ログインなら /login へ */
+export function useAuthedUser() {
+  const user = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (user === null) router.replace("/login");
+  }, [user, router]);
+  return user ?? undefined;
+}
+
+const authErrors: Record<string, string> = {
+  invalid_credentials: "メールアドレスかパスワードが違います",
+  email_not_confirmed: "メールアドレスの確認がまだ済んでいません。届いたメールのリンクを開いてください",
+  user_already_exists: "このメールアドレスは登録済みです。ログインしてください",
+  weak_password: "パスワードが弱すぎます。もっと長くしてください",
+  same_password: "今と同じパスワードです。別のパスワードにしてください",
+  over_email_send_rate_limit: "メールの送信回数が上限に達しました。しばらくしてからお試しください",
+};
+const authError = (e: AuthError) => authErrors[e.code ?? ""] ?? "うまくいきませんでした。もう一度お試しください";
+
+/** 確認メールを送った場合は confirm: true（リンクを開くと /me に戻ってログイン済みになる） */
+export async function signUp(email: string, password: string): Promise<{ error?: string; confirm?: boolean }> {
+  const { data, error } = await db().auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/me` } });
+  if (error) return { error: authError(error) };
+  // 確認メールが有効だと、登録済みアドレスでもエラーにならず identities が空で返る
+  if (data.user?.identities?.length === 0) return { error: authErrors.user_already_exists };
+  return { confirm: !data.session };
+}
+
+export async function signIn(email: string, password: string) {
+  const { error } = await db().auth.signInWithPassword({ email, password });
+  return error ? authError(error) : undefined;
+}
+
+/** 未登録のアドレスでも成功扱いになる（登録の有無を外に漏らさない） */
+export async function sendPasswordReset(email: string) {
+  const { error } = await db().auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset` });
+  return error ? authError(error) : undefined;
+}
+
+export async function updatePassword(password: string) {
+  const { error } = await db().auth.updateUser({ password });
+  return error ? authError(error) : undefined;
+}
+export const signOut = () => db().auth.signOut();
+
+// --- read ---
+
+/** fn が undefined を返す間（ログイン確認中など）は読み込まない */
+export function useLoad<T>(fn: () => Promise<T> | undefined, deps: DependencyList): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
+  const [data, setData] = useState<T>();
+  useEffect(() => {
+    let alive = true;
+    fn()?.then((d) => alive && setData(d));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+  return [data, setData];
+}
+
+const postSelect = "*, author:profiles!posts_user_id_fkey(*), replies(*, author:profiles!replies_user_id_fkey(name, icon)), reactions(user_id), saves(user_id)";
+
+type PostRow = {
+  id: string; body: string; media_kind: "audio" | "video" | null; media_src: string | null; created_at: string;
+  author: Author; replies: Reply[]; reactions: { user_id: string }[]; saves: { user_id: string }[];
+};
+const toPost = (r: PostRow, viewer?: string): Post => ({
+  id: r.id,
+  body: r.body,
+  media: r.media_kind && r.media_src ? { kind: r.media_kind, src: r.media_src } : undefined,
+  created_at: r.created_at,
+  author: r.author,
+  reacted: r.reactions.some((x) => x.user_id === viewer),
+  saved: r.saves.some((x) => x.user_id === viewer), // RLS で自分の分しか返らない
+  replies: r.replies.toSorted((a, b) => a.created_at.localeCompare(b.created_at)),
+});
+
+const posts = () => db().from("posts").select(postSelect).order("created_at", { ascending: false });
+
+export const loadProfile = async (uid: string) =>
+  must(await db().from("profiles").select("*").eq("id", uid).maybeSingle()) as Profile | null;
+
+/** 公開ページ・マイページ用。プロフィールが無ければ null */
+export async function loadPortfolio(uid: string, viewer?: string): Promise<Portfolio | null> {
+  const [profile, works, gear, ps] = await Promise.all([
+    loadProfile(uid),
+    db().from("works").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
+    db().from("gear").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
+    posts().eq("user_id", uid).then(must),
+  ]);
+  if (!profile) return null;
+  return { profile, works: works as Work[], gear: gear as Gear[], posts: (ps as unknown as PostRow[]).map((r) => toPost(r, viewer)) };
+}
+
+// ponytail: 全件取得。投稿が増えたら range() でページング
+export const loadTimeline = async (viewer: string) => (must(await posts()) as unknown as PostRow[]).map((r) => toPost(r, viewer));
+
+export async function loadPost(id: string, viewer?: string) {
+  const r = must(await db().from("posts").select(postSelect).eq("id", id).maybeSingle()) as unknown as PostRow | null;
+  return r && toPost(r, viewer);
+}
+
+// --- write ---
+
+/** マイページ初回表示時にプロフィール行を用意する（作品などの外部キー先） */
+export const ensureProfile = async (uid: string) =>
+  must(await db().from("profiles").upsert({ id: uid }, { onConflict: "id", ignoreDuplicates: true }));
+
+export const saveProfile = async (uid: string, p: Profile) => must(await db().from("profiles").update(p).eq("id", uid));
+export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
+export const saveGear = async (g: Gear) => must(await db().from("gear").upsert(g));
+export const remove = async (table: "works" | "gear", id: string) => must(await db().from(table).delete().eq("id", id));
+
+export const createPost = async (body: string, media?: Post["media"]) =>
+  must(await db().from("posts").insert({ body, media_kind: media?.kind ?? null, media_src: media?.src ?? null }));
+export const addReply = async (postId: string, body: string) => must(await db().from("replies").insert({ post_id: postId, body }));
+
+export async function toggle(table: "reactions" | "saves", post: Post, on: boolean) {
+  const q = db().from(table);
+  // 削除は RLS で自分の行だけに絞られる
+  must(await (on ? q.insert({ post_id: post.id }) : q.delete().eq("post_id", post.id)));
+}
+
+/** media バケットの自分のフォルダに上げて公開URLを返す */
+export async function upload(file: File) {
+  const s = db();
+  const { data } = await s.auth.getSession();
+  const path = `${data.session!.user.id}/${newId()}.${file.name.split(".").pop()}`;
+  must(await s.storage.from("media").upload(path, file, { contentType: file.type }));
+  return s.storage.from("media").getPublicUrl(path).data.publicUrl;
+}

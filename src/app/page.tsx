@@ -96,7 +96,7 @@ export default function Home() {
               作品はある。でも、まだ仕事にはつながっていない。そんなエンジニアのための、打ち込むだけで完成するポートフォリオ＋α。
             </p>
             <div className="flex items-center gap-4">
-              <Link href="/me" className="btn-primary px-6 py-3 text-base">無料ではじめる →</Link>
+              <Link href="/signup" className="btn-primary px-6 py-3 text-base">無料ではじめる →</Link>
               <span className="font-mono text-xs text-zinc-400">初期費用 ¥0</span>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function Home() {
         <div className="bg-grid absolute inset-0 opacity-40" />
         <p className="relative font-mono text-xs text-black/60">$ canaria init --free</p>
         <h2 className="relative mt-3 text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
-        <Link href="/me" className="relative mt-6 inline-block font-semibold underline decoration-2 underline-offset-4 hover:no-underline">
+        <Link href="/signup" className="relative mt-6 inline-block font-semibold underline decoration-2 underline-offset-4 hover:no-underline">
           マイページをつくる →
         </Link>
       </section>
