@@ -34,9 +34,12 @@ export function ProfileHero({ p }: { p: Profile }) {
         <Avatar src={p.icon} className={`h-24 w-24 sm:h-36 sm:w-36 ${p.cover ? "relative -mt-17 ml-4 ring-4 ring-surface sm:-mt-23 sm:ml-6" : ""}`} />
         <div className="min-w-0 space-y-4">
           <div className="space-y-1">
-            <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
+            {/* ユーザー名は名前の右に（X のプロフィールと同じ）。名前が長くて入らなければ次の行に回る */}
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
+              <p className="text-sm text-fg-3">@{p.username}</p>
+            </div>
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
-            <p className="text-sm text-fg-3">@{p.username}</p>
           </div>
           {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
               SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
