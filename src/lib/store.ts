@@ -9,6 +9,7 @@ export type Profile = {
   username: string; // 公開ページの URL（/@username）
   name: string;
   icon: string;
+  cover: string; // 公開ページの頭に出す横長（3:1）の画像。空なら出さない
   gender: string;
   age: string;
   location: string;

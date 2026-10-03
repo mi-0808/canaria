@@ -15,6 +15,7 @@ create table public.profiles (
   username text not null unique default ('user_' || substr(md5(random()::text), 1, 8)) check (username ~ '^[a-z0-9_]{3,20}$'),
   name text not null default '',
   icon text not null default '',
+  cover text not null default '', -- 公開ページの頭に出す横長（3:1）の画像。任意
   gender text not null default '',
   age text not null default '',
   location text not null default '',
@@ -183,3 +184,5 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- create policy "careers: own delete" on public.careers for delete to authenticated using ((select auth.uid()) = user_id);
 -- ② マージして本番が新しいコードになってから流す（古いコードはまだ company / years を保存しようとするため）
 -- alter table public.profiles drop column company, drop column years;
+-- 2026-10-03 カバー画像（マージ前に流す）
+-- alter table public.profiles add column cover text not null default '';
