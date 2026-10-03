@@ -31,6 +31,7 @@ const pairs = [
   ["fg-2", "surface-3", TEXT],
   ["fg", "surface-raised", TEXT], // セグメントの選択中の文字と件数
   ["fg-3", "surface-raised", TEXT],
+  ["tertiary", "surface-raised", TEXT], // タブバーの選択中
   ...["primary", "secondary", "tertiary", "success", "warning", "error"].flatMap((r) => [
     [`on-${r}`, r, TEXT],
     [`on-${r}-container`, `${r}-container`, TEXT],

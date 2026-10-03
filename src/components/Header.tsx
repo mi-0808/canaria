@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { signOut, useUser } from "@/lib/store";
+import Icon, { type IconName } from "@/components/Icon";
+import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   return (
@@ -13,33 +13,21 @@ export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
+// ログイン中の行き先。PC はヘッダーに文字で、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
+const nav: [href: string, label: string, icon: IconName][] = [
+  ["/", "トップ", "home"],
+  ["/me", "ポートフォリオ", "briefcase"],
+  ["/settings", "設定", "settings"],
+];
+// `/` は前方一致だと全部に当たるので完全一致
+const isCurrent = (path: string, href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+
 // 押せる高さを 44px 確保する（design.css のアクセシビリティ規約）
 const item = "inline-flex min-h-11 items-center px-2 transition";
-// スマホのメニューの1行。指で押しやすいよう 48px・16px にする
-const row = "flex min-h-12 w-full items-center text-base text-fg";
 
 export default function Header() {
   const path = usePathname();
   const user = useUser();
-  // スマホのメニューを開いたページ。ページを移れば open は自動で false になる
-  const [openAt, setOpenAt] = useState<string | null>(null);
-  const open = openAt === path;
-  const close = () => setOpenAt(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenAt(null);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  // `/` の中身（LP かホームか）はログイン状態で変わる。画面ごと読み直して proxy に判定し直させる。
-  // router.push だと、Next のクライアントキャッシュに残ったホームが出ることがある（router.refresh は今のページ分しか消さない）
-  const logout = async () => {
-    await signOut();
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 上の理由で意図的に再読み込みする
-    location.assign("/");
-  };
 
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-surface">
@@ -50,51 +38,47 @@ export default function Header() {
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
 
-        {/* PC: 横に並べる */}
-        <nav className="-mr-2 hidden gap-4 text-sm whitespace-nowrap sm:flex">
-          {user && (
-            <>
-              <Link href="/me" className={`${item} ${path.startsWith("/me") ? "font-bold text-fg" : "text-fg-3 hover:text-fg"}`}>ポートフォリオを作る</Link>
-              <button className={`${item} text-fg-3 hover:text-fg`} onClick={logout}>ログアウト</button>
-            </>
-          )}
-          {user === null && (
-            <>
-              <Link href="/login" className={`${item} text-fg-3 hover:text-fg`}>ログイン</Link>
-              <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規会員登録</Link>
-            </>
-          )}
-        </nav>
-
-        {/* スマホ: 三本線のボタンから開く。ログイン状態が分かるまでは出さない */}
-        {user !== undefined && (
-          <button type="button" className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-xl text-fg sm:hidden"
-            aria-label={open ? "メニューを閉じる" : "メニューを開く"} aria-expanded={open} aria-controls="mobile-menu"
-            onClick={() => setOpenAt(open ? null : path)}>
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
-          </button>
+        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる */}
+        {user && (
+          <nav aria-label="メインメニュー" className="-mr-2 hidden gap-4 text-sm whitespace-nowrap sm:flex">
+            {nav.map(([href, label]) => (
+              <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
+                className={`${item} text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-fg`}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
+        {user === null && (
+          <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
+            <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
+            <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規会員登録</Link>
+          </nav>
         )}
       </div>
-
-      {open && (
-        <nav id="mobile-menu" className="absolute inset-x-0 top-full border-b border-line bg-surface sm:hidden">
-          <div className="mx-auto flex max-w-5xl flex-col divide-y divide-line px-4">
-            {user ? (
-              <>
-                <Link href="/me" className={`${row} ${path.startsWith("/me") ? "font-bold" : ""}`} onClick={close}>ポートフォリオを作る</Link>
-                <button className={row} onClick={logout}>ログアウト</button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className={row} onClick={close}>ログイン</Link>
-                <Link href="/signup" className={`${row} font-semibold`} onClick={close}>新規会員登録</Link>
-              </>
-            )}
-          </div>
-        </nav>
-      )}
     </header>
+  );
+}
+
+/** スマホの画面下に浮かぶタブバー（HIG の Tab bars）。ログイン中だけ出す */
+export function TabBar() {
+  const path = usePathname();
+  const user = useUser();
+  if (!user) return null;
+  return (
+    <>
+      {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
+      <div aria-hidden className="h-24 sm:hidden" />
+      <nav aria-label="メインメニュー"
+        className="fixed inset-x-4 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex rounded-full border border-line bg-surface-1 p-1.5 shadow-lg sm:hidden">
+        {nav.map(([href, label, icon]) => (
+          <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
+            className="flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-xs text-fg-2 transition aria-[current=page]:bg-surface-raised aria-[current=page]:font-bold aria-[current=page]:text-tertiary aria-[current=page]:shadow-sm">
+            <Icon name={icon} className="h-6 w-6" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+    </>
   );
 }

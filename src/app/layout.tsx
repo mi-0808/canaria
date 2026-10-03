@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from "@/components/Header";
+import Header, { TabBar } from "@/components/Header";
 import "./design.css";
 
 const sans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -11,15 +11,24 @@ export const metadata: Metadata = {
   description: "駆け出しエンジニアのための、無料で使えるポートフォリオ",
 };
 
+// 設定画面で選んだテーマ（ライト／ダーク）を、最初の描画より前に html に付ける。React を待つと一瞬だけ逆の色が見える。
+// Next のガイド「Preventing Flash」の方法。中身は固定の文字列で、利用者の入力は入らない
+const themeScript = `try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ja" className={`${sans.variable} ${mono.variable} h-full antialiased`}>
+    // data-theme を上のスクリプトが書き換えるので、サーバーの HTML と食い違っても React に警告させない
+    <html lang="ja" className={`${sans.variable} ${mono.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">{children}</main>
         <footer className="border-t border-line py-6 text-center font-mono text-xs text-fg-3">
           © Canaria
         </footer>
+        <TabBar />
       </body>
     </html>
   );
