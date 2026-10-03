@@ -84,8 +84,8 @@ export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
 /** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
 export function NowNext({ p }: { p: Profile }) {
   const cards: [label: string, text: string, icon: IconName, tone: string][] = [
-    ["いまやっていること", p.doing_now, "clock", "bg-primary-container text-on-primary-container"],
-    ["これからやりたいこと", p.want_next, "arrow", "bg-tertiary-container text-on-tertiary-container"],
+    ["いまやっていること", p.doing_now, "tool", "bg-primary-container text-on-primary-container"],
+    ["これからやりたいこと", p.want_next, "seedling", "bg-tertiary-container text-on-tertiary-container"],
   ];
   const filled = cards.filter(([, text]) => text.trim());
   if (!filled.length) return null;
