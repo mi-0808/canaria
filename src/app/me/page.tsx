@@ -189,7 +189,7 @@ export default function MyPage() {
 
   const postsTab = (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex justify-end"><Link href="/timeline" className="btn">タイムラインで投稿する →</Link></div>
+      <div className="flex justify-end"><Link href="/" className="btn">ホームで投稿する →</Link></div>
       {data.posts.length === 0 && <Empty text="制作の過程を発信してみよう" />}
       {data.posts.map((p) => <PostItem key={p.id} post={p} uid={user.id} onChange={updatePost} />)}
     </div>

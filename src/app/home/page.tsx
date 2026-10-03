@@ -9,7 +9,7 @@ import { createPost, loadProfile, loadTimeline, missingProfile, requiredProfile,
 const MAX_MB = 50; // media バケットの file_size_limit と揃える
 const kinds = [["text", "✎ テキスト"], ["audio", "♪ 音声"], ["video", "▶ 動画"]] as const;
 
-export default function Timeline() {
+export default function Home() {
   const user = useAuthedUser();
   const [profile] = useLoad(() => user && loadProfile(user.id), [user]);
   const [posts, setPosts] = useLoad(() => user && loadTimeline(user.id), [user]);
