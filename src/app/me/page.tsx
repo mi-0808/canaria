@@ -14,16 +14,14 @@ import Tabs from "@/components/Tabs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
-  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
+  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, profileChoices, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
   saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
 // ポートフォリオを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
 // 一覧の位置がずれず、キャンセル・保存がいつも同じ場所にある
 
-const profileFields: [keyof Profile, string][] = [
-  ["name", "名前 *"],
-  ["tagline", "ひとこと *"],
+const profileSelects: [keyof typeof profileChoices, string][] = [
   ["gender", "性別"],
   ["age", "年齢"],
   ["location", "居住地"],
@@ -233,12 +231,27 @@ export default function MyPage() {
                 <span className="block text-sm text-fg-3">公開ページの URL になります。英小文字・数字・_ の3〜20文字</span>
               )}
             </Field>
+            {/* 名前とひとことを横に並べると「姓・名」に見えるので縦に積み、幅も変える */}
+            <Field label="名前 *">
+              <input className="input max-w-60" autoComplete="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
+            </Field>
+            <Field label="ひとこと *">
+              <input className="input" value={profile.tagline} onChange={(e) => setProfile({ ...profile, tagline: e.target.value })} />
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              {profileFields.map(([k, label]) => (
-                <Field key={k} label={label}>
-                  <input className="input" value={profile[k]} onChange={(e) => setProfile({ ...profile, [k]: e.target.value })} />
-                </Field>
-              ))}
+              {profileSelects.map(([k, label]) => {
+                const choices: readonly string[] = profileChoices[k];
+                return (
+                  <Field key={k} label={label}>
+                    <select className="input" value={profile[k]} onChange={(e) => setProfile({ ...profile, [k]: e.target.value })}>
+                      <option value="">未選択</option>
+                      {/* 自由入力だった頃の値は消さずに残す */}
+                      {profile[k] && !choices.includes(profile[k]) && <option>{profile[k]}</option>}
+                      {choices.map((c) => <option key={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                );
+              })}
             </div>
             {/* MyHood の一言のような短い近況。公開ページで2枚のカードになる */}
             <Field label="いまやっていること" hint={`${profile.doing_now.length}/100`}>

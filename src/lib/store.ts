@@ -36,6 +36,22 @@ export type Work = {
 export const workStatuses = ["企画中", "開発中", "ベータ公開", "リリース・運用中"] as const;
 export type WorkStatus = (typeof workStatuses)[number];
 
+// プロフィールの選択肢。DB は text のまま（自由入力だった頃の値も残るので、画面側で選択肢に足して見せる）。
+// 年齢は年代にする: 細かい年齢を出さずに済み、毎年直さなくていい
+export const profileChoices = {
+  gender: ["男性", "女性", "その他"],
+  age: ["10代", "20代前半", "20代後半", "30代前半", "30代後半", "40代", "50代", "60代以上"],
+  location: [
+    "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+    "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+    "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+    "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県", "海外",
+  ],
+  mbti: [
+    "INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP",
+  ],
+} as const;
+
 type Author = Profile & { id: string };
 export type Reply = { id: string; body: string; created_at: string; author: Pick<Profile, "name" | "icon"> };
 export type Post = {
