@@ -53,7 +53,6 @@ const features = [
     panel: "bg-secondary-container",
     title: "できる人の仕事場から、次の相棒を見つける",
     desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
-    soon: true,
     visual: (
       <div className="space-y-2">
         <p className="text-xs text-on-secondary-container">@senior_dev の仕事場</p>
@@ -117,10 +116,7 @@ export default function Home() {
             <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
               <div className={`rounded-3xl ${f.panel} p-6 sm:p-8 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
               <div className="max-w-md space-y-4">
-                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">
-                  {f.title}
-                  {f.soon && <span className="ml-2 inline-block rounded-md bg-surface-2 px-2 py-0.5 align-middle text-xs font-medium text-fg-2">近日公開</span>}
-                </h3>
+                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">{f.title}</h3>
                 <p className="leading-relaxed text-fg-2">{f.desc}</p>
               </div>
             </div>
