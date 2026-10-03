@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import PostItem from "@/components/PostItem";
+import { FeedSkeleton } from "@/components/Skeleton";
 import { loadPost, useLoad } from "@/lib/store";
 
 // 共有された投稿（閲覧のみ）
 export default function SharedPost() {
   const { id } = useParams<{ id: string }>();
   const [post] = useLoad(() => loadPost(id), [id]);
-  if (post === undefined) return null;
+  if (post === undefined) return <FeedSkeleton count={1} />;
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       {post ? <PostItem post={post} /> : <p className="text-sm text-fg-3">投稿が見つかりません。</p>}

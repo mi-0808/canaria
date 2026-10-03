@@ -1,4 +1,7 @@
+import Icon, { type IconName } from "@/components/Icon";
 import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
+
+const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -24,7 +27,7 @@ export function ProfileView({ p }: { p: Profile }) {
         {chips.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {chips.map((c) => (
-              <span key={c} className="rounded-lg bg-surface-2 px-2.5 py-1 font-mono text-xs text-fg-2">{c}</span>
+              <span key={c} className="rounded-lg bg-surface-2 px-2.5 py-1 text-sm text-fg-2">{c}</span>
             ))}
           </div>
         )}
@@ -48,7 +51,7 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
           <span className={`rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>
             {live ? "● " : ""}{status}
           </span>
-          {w.period && <span className="font-mono text-xs text-fg-3">{w.period}</span>}
+          {w.period && <span className="text-sm text-fg-3">{w.period}</span>}
         </div>
         <h3 className="text-2xl leading-snug font-bold tracking-tight">{w.title}</h3>
         {w.summary && <p className="leading-relaxed whitespace-pre-wrap text-fg-2">{w.summary}</p>}
@@ -62,7 +65,7 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
           {/* 濃い黄色は1画面1つなので、作品のリンクは2番目のボタン（薄い藍） */}
           {w.url && (
             <a href={w.url} target="_blank" rel="noopener noreferrer" className="btn-tonal">
-              実際に触ってみる ↗
+              実際に触ってみる <Icon name="external" className="h-4 w-4" />
             </a>
           )}
           {children}
@@ -75,10 +78,10 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
 export function GearRow({ g, children }: { g: Gear; children?: React.ReactNode }) {
   const body = (
     <>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-lg">{gearCategories[g.category]}</span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container"><Icon name={gearIcons[g.category]} /></span>
       <div className="min-w-0">
         <p className="truncate font-medium">{g.name}</p>
-        {g.comment ? <p className="text-xs text-fg-2">“{g.comment}”</p> : <p className="font-mono text-[11px] text-fg-3">{g.category}</p>}
+        {g.comment ? <p className="text-sm text-fg-2">“{g.comment}”</p> : <p className="text-sm text-fg-3">{gearCategories[g.category]}</p>}
       </div>
     </>
   );
@@ -87,7 +90,7 @@ export function GearRow({ g, children }: { g: Gear; children?: React.ReactNode }
       {g.url ? (
         <a href={g.url} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
           {body}
-          <span className="ml-auto text-tertiary">↗</span>
+          <Icon name="external" className="ml-auto h-4 w-4 text-tertiary" />
         </a>
       ) : (
         <div className="flex min-w-0 flex-1 items-center gap-3">{body}</div>
