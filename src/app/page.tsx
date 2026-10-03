@@ -85,7 +85,7 @@ export default function Home() {
         <div className="absolute -top-32 left-1/2 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-300 to-amber-200 opacity-60 blur-3xl" />
         <div className="relative grid items-center gap-12 md:grid-cols-[1fr_auto]">
           <div className="space-y-7">
-            <h1 className="text-4xl leading-[1.15] font-bold tracking-tight sm:text-5xl xl:text-6xl">
+            <h1 className="text-3xl leading-[1.15] font-bold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
               つくった作品で、
               <br />
               <span className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-400 whitespace-nowrap bg-clip-text text-transparent">次の仕事をとりにいく</span>
@@ -103,7 +103,7 @@ export default function Home() {
 
           {/* ブロックを積むと作品ページになる、というモック */}
           <div className="relative mx-auto w-full max-w-sm md:w-80 lg:w-[26rem] lg:max-w-none">
-            <div className="absolute -inset-4 rotate-2 rounded-3xl bg-gradient-to-br from-yellow-200 to-amber-100" />
+            <div className="absolute -inset-3 rotate-1 rounded-3xl bg-gradient-to-br from-yellow-200 to-amber-100" />
             <BlockPuzzle />
           </div>
         </div>
