@@ -86,6 +86,21 @@ export const toMonth = (date) => date.slice(0, 7);
 export const fromMonth = (month) => `${month}-01`;
 
 /**
+ * 編集中の経歴の問題（started / ended は入力欄の値 "2024-04"、ended が null なら「いまも続けている」）。問題が無ければ null。
+ * invalid は形や前後がおかしいもの（赤字で知らせる）、missing はまだ書いている途中かもしれない未入力（控えめに知らせる）
+ * @param {{ company: string, started: string, ended: string | null }} c
+ * @returns {{ level: "missing" | "invalid", text: string } | null}
+ */
+export function careerProblem(c) {
+  if (c.started && !isMonth(c.started)) return { level: "invalid", text: "はじめは「2024-04」の形で入力してください" };
+  if (c.ended && !isMonth(c.ended)) return { level: "invalid", text: "おわりは「2024-04」の形で入力してください" };
+  if (c.ended && c.started && c.ended < c.started) return { level: "invalid", text: "おわりは、はじめより後にしてください" };
+  if (!c.company.trim() || !c.started) return { level: "missing", text: "勤務先・所属と、はじめの年月を入れると保存できます" };
+  if (c.ended === "") return { level: "missing", text: "おわりの年月を入れるか、「いまも続けている」にチェックしてください" };
+  return null;
+}
+
+/**
  * 公開ページに出す期間（"2024年4月 – 現在"）
  * @param {string} started DB の date
  * @param {string | null} ended DB の date。null なら現在

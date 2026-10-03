@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import CareersEditor from "@/components/CareersEditor";
+import Field from "@/components/Field";
 import FilePicker from "@/components/FilePicker";
 import Icon from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
@@ -10,7 +12,7 @@ import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
-import { careerPeriod, fromMonth, isMonth, toMonth } from "@/lib/stats.mjs";
+import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
   ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
   saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
@@ -30,21 +32,7 @@ const profileFields: [keyof Profile, string][] = [
 
 const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
 const blankGear = (): Gear => ({ id: newId(), category: "machine", name: "", comment: "", url: "" });
-// 編集中の経歴は、started / ended を入力欄の値（"2024-04"）で持つ。保存するときに DB の date（"2024-04-01"）に直す
-const blankCareer = (): Career => ({ id: newId(), company: "", role: "", started: "", ended: null, summary: "" });
 const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
-
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="flex justify-between">
-        <span className="label">{label}</span>
-        {hint && <span className="text-sm text-fg-3">{hint}</span>}
-      </span>
-      {children}
-    </label>
-  );
-}
 
 /** シートの下に固定する「キャンセル・保存」 */
 function SaveBar({ onCancel, onSave, disabled, saving }: { onCancel: () => void; onSave: () => void; disabled?: boolean; saving: boolean }) {
@@ -70,9 +58,10 @@ export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [work, setWork] = useState<Work | null>(null);
   const [gear, setGear] = useState<Gear | null>(null);
-  const [career, setCareer] = useState<Career | null>(null);
+  // 経歴はプロフィールの編集の中で一緒に直す。編集中は started / ended を入力欄の値（"2024-04"）で持ち、保存するときに DB の date に直す
+  const [careerDrafts, setCareerDrafts] = useState<Career[]>([]);
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
-  const [deleting, setDeleting] = useState<{ table: "works" | "gear" | "careers"; id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState<{ table: "works" | "gear"; id: string; name: string } | null>(null);
   const [saving, run] = useBusy();
 
   if (!user || !data) return <ProfileSkeleton />;
@@ -81,26 +70,28 @@ export default function MyPage() {
   const missing = missingProfile(p);
   const isNewWork = !!work && !data.works.some((w) => w.id === work.id);
   const isNewGear = !!gear && !data.gear.some((g) => g.id === gear.id);
-  const isNewCareer = !!career && !data.careers.some((c) => c.id === career.id);
-  // 月の入力欄に対応していないブラウザでは手で打つので、形と前後を確かめる
-  const startedError = !!career?.started && !isMonth(career.started);
-  const endedError = !!career?.ended && (!isMonth(career.ended) || (isMonth(career.started) && career.ended < career.started));
-  const careerInvalid = !career?.company.trim() || !isMonth(career.started) || startedError || endedError || career.ended === "";
 
   const editProfile = () => {
     setUsernameError("");
+    setCareerDrafts(data.careers.map((c) => ({ ...c, started: toMonth(c.started), ended: c.ended && toMonth(c.ended) })));
     setProfile(p);
   };
   const usernameInvalid = !!profile && !usernamePattern.test(profile.username);
   const linksInvalid = !!profile?.links.some((l) => l.trim() && !normalizeLink(l));
   const emailInvalid = !!profile?.contact_email.trim() && !contactEmailPattern.test(profile.contact_email.trim());
+  const careersInvalid = careerDrafts.some((c) => careerProblem(c));
   const saveProfile = () =>
     run(async () => {
       // 空の行は捨て、https にそろえた形で保存する（DB の valid_links と同じ条件）
       const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l), contact_email: profile!.contact_email.trim() };
+      // ユーザー名が他の人と重なったら、経歴には触らずにそこで止める
       const err = await putProfile(user.id, saved);
       if (err) return setUsernameError(err);
-      setData({ ...data, profile: saved });
+      // 経歴: 残っているものは書き直し（足したもの・直したもの）、編集の中で消したものは DB からも消す。どちらも並べて送る
+      const careers = careerDrafts.map((c) => ({ ...c, company: c.company.trim(), role: c.role.trim(), started: fromMonth(c.started), ended: c.ended && fromMonth(c.ended) }));
+      const removed = data.careers.filter((c) => !careers.some((d) => d.id === c.id));
+      await Promise.all([...careers.map(putCareer), ...removed.map((c) => remove("careers", c.id))]);
+      setData({ ...data, profile: saved, careers: careers.toSorted(byStartedDesc) });
       setProfile(null);
     });
   const saveWork = () =>
@@ -115,27 +106,16 @@ export default function MyPage() {
       setData({ ...data, gear: upsert(data.gear, gear!) });
       setGear(null);
     });
-  const editCareer = (c: Career) => setCareer({ ...c, started: toMonth(c.started), ended: c.ended && toMonth(c.ended) });
-  const saveCareer = () =>
-    run(async () => {
-      const c = career!;
-      const saved = { ...c, company: c.company.trim(), role: c.role.trim(), started: fromMonth(c.started), ended: c.ended && fromMonth(c.ended) };
-      await putCareer(saved);
-      setData({ ...data, careers: upsert(data.careers, saved).toSorted(byStartedDesc) });
-      setCareer(null);
-    });
   // 削除は編集シートの一番下から。消す前に必ず確かめる（取り消せないので）
   const confirmRemove = () =>
     run(async () => {
       const { table, id } = deleting!;
       await remove(table, id);
       if (table === "works") setData({ ...data, works: data.works.filter((w) => w.id !== id) });
-      else if (table === "gear") setData({ ...data, gear: data.gear.filter((g) => g.id !== id) });
-      else setData({ ...data, careers: data.careers.filter((c) => c.id !== id) });
+      else setData({ ...data, gear: data.gear.filter((g) => g.id !== id) });
       setDeleting(null);
       setWork(null);
       setGear(null);
-      setCareer(null);
     });
   const updatePost = (post: Post) => setData({ ...data, posts: data.posts.map((x) => (x.id === post.id ? post : x)) });
 
@@ -153,28 +133,6 @@ export default function MyPage() {
                 <span className="min-w-0 flex-1 space-y-1">
                   <span className="block truncate font-bold">{w.title}</span>
                   <StatusBadge status={w.status} />
-                </span>
-                <span className="sr-only">を編集</span>
-                <Icon name="chevron" className="h-5 w-5 text-fg-3" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-
-  const careersTab = (
-    <div className="space-y-4">
-      <button className="btn-primary w-full sm:w-auto" onClick={() => setCareer(blankCareer())}><Icon name="plus" />経歴を追加</button>
-      {data.careers.length === 0 ? <Empty text="勤務先や学校など、これまでの経歴を追加しよう" /> : (
-        <ul className={rows}>
-          {data.careers.map((c) => (
-            <li key={c.id}>
-              <button className={row} onClick={() => editCareer(c)}>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">{c.company}</span>
-                  <span className="block truncate text-sm text-fg-2">{[c.role, careerPeriod(c.started, c.ended)].filter(Boolean).join(" · ")}</span>
                 </span>
                 <span className="sr-only">を編集</span>
                 <Icon name="chevron" className="h-5 w-5 text-fg-3" />
@@ -248,14 +206,13 @@ export default function MyPage() {
       <Tabs
         tabs={[
           { label: "作品", count: data.works.length, content: worksTab },
-          { label: "経歴", count: data.careers.length, content: careersTab },
           { label: "開発環境", count: data.gear.length, content: gearTab },
           { label: "投稿", count: data.posts.length, content: postsTab },
         ]}
       />
 
       <Sheet open={!!profile} onClose={() => setProfile(null)} dismissible={false} title="プロフィールを編集"
-        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid} saving={saving} />}>
+        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid || careersInvalid} saving={saving} />}>
         {profile && (
           <>
             <div className="space-y-1.5">
@@ -295,6 +252,7 @@ export default function MyPage() {
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
+            <CareersEditor careers={careerDrafts} onChange={setCareerDrafts} />
             <Field label="連絡用メールアドレス">
               <input type="email" inputMode="email" autoComplete="email" className="input" placeholder="you@example.com" value={profile.contact_email}
                 aria-invalid={emailInvalid} onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })} />
@@ -372,48 +330,6 @@ export default function MyPage() {
             {!isNewGear && (
               <button className="btn w-full text-error" onClick={() => setDeleting({ table: "gear", id: gear.id, name: gear.name })}>
                 <Icon name="trash" />このアイテムを削除
-              </button>
-            )}
-          </>
-        )}
-      </Sheet>
-
-      <Sheet open={!!career} onClose={() => setCareer(null)} dismissible={false} title={isNewCareer ? "経歴を追加" : "経歴を編集"}
-        footer={<SaveBar onCancel={() => setCareer(null)} onSave={saveCareer} disabled={careerInvalid} saving={saving} />}>
-        {career && (
-          <>
-            <Field label="勤務先・所属 *">
-              <input className="input" maxLength={100} placeholder="株式会社カナリア、〇〇大学 など" value={career.company} onChange={(e) => setCareer({ ...career, company: e.target.value })} />
-            </Field>
-            <Field label="役職・ポジション">
-              <input className="input" maxLength={100} placeholder="フロントエンドエンジニア" value={career.role} onChange={(e) => setCareer({ ...career, role: e.target.value })} />
-            </Field>
-            <div className="grid grid-cols-2 gap-4">
-              {/* type="month" に対応していないブラウザでは文字の入力欄になるので、placeholder で形を示す */}
-              <Field label="はじめ *">
-                <input type="month" className="input" placeholder="2024-04" value={career.started} aria-invalid={startedError}
-                  onChange={(e) => setCareer({ ...career, started: e.target.value })} />
-              </Field>
-              <Field label="おわり">
-                <input type="month" className="input" placeholder="2025-03" value={career.ended ?? ""} disabled={career.ended === null} aria-invalid={endedError}
-                  onChange={(e) => setCareer({ ...career, ended: e.target.value })} />
-              </Field>
-            </div>
-            {(startedError || endedError) && (
-              <p role="alert" className="text-sm text-error">{startedError || (career.ended && !isMonth(career.ended)) ? "「2024-04」の形で入力してください" : "おわりは、はじめより後にしてください"}</p>
-            )}
-            <label className="flex min-h-11 items-center gap-3">
-              <input type="checkbox" className="h-5 w-5 accent-tertiary" checked={career.ended === null}
-                onChange={(e) => setCareer({ ...career, ended: e.target.checked ? null : "" })} />
-              いまも続けている
-            </label>
-            <Field label="実績・やったこと" hint={`${career.summary.length}/300`}>
-              <textarea className="input" rows={4} maxLength={300} placeholder="予約システムの画面を React で作り直し、表示を2倍速くした"
-                value={career.summary} onChange={(e) => setCareer({ ...career, summary: e.target.value })} />
-            </Field>
-            {!isNewCareer && (
-              <button className="btn w-full text-error" onClick={() => setDeleting({ table: "careers", id: career.id, name: career.company })}>
-                <Icon name="trash" />この経歴を削除
               </button>
             )}
           </>
