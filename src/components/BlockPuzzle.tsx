@@ -145,7 +145,7 @@ export default function BlockPuzzle() {
                     setDrag({ id, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, moved: false });
                   }}
                   style={active ? { transform: `translate(${drag.x - drag.sx}px, ${drag.y - drag.sy}px) rotate(-6deg) scale(1.1)` } : undefined}
-                  className={`flex cursor-grab touch-none items-center gap-1.5 rounded-xl border-2 border-fg px-3 py-2 text-xs font-bold shadow-[0_4px_0_0_var(--color-fg)] active:cursor-grabbing ${b.piece} ${active ? "pointer-events-none relative z-50 shadow-[0_12px_0_0_var(--color-fg)]" : "transition hover:-translate-y-1 hover:shadow-[0_6px_0_0_var(--color-fg)]"} ${miss === id ? "animate-shake" : ""}`}>
+                  className={`flex cursor-grab touch-none items-center gap-1.5 rounded-xl border-2 border-edge px-3 py-2 text-xs font-bold shadow-[0_4px_0_0_var(--color-edge)] active:cursor-grabbing ${b.piece} ${active ? "pointer-events-none relative z-50 shadow-[0_12px_0_0_var(--color-edge)]" : "transition hover:-translate-y-1 hover:shadow-[0_6px_0_0_var(--color-edge)]"} ${miss === id ? "animate-shake" : ""}`}>
                   <span className="font-mono">{b.icon}</span>
                   {b.label}
                 </div>

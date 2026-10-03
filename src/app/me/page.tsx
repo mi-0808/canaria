@@ -29,7 +29,7 @@ function Field({ label, children, hint }: { label: string; children: React.React
     <label className="block space-y-1.5">
       <span className="flex justify-between">
         <span className="label">{label}</span>
-        {hint && <span className="font-mono text-[11px] text-fg-3">{hint}</span>}
+        {hint && <span className="text-sm text-fg-3">{hint}</span>}
       </span>
       {children}
     </label>
@@ -135,8 +135,8 @@ export default function MyPage() {
           <WorkCard key={w.id} w={w}>
             {!editing && (
               <div className="ml-auto flex gap-2">
-                <button className="btn px-3 py-1.5 text-xs" onClick={() => setWork(w)}>編集</button>
-                <button className="btn px-3 py-1.5 text-xs" onClick={() => removeWork(w.id)}>削除</button>
+                <button className="btn-sm" onClick={() => setWork(w)}>編集</button>
+                <button className="btn-sm text-error" onClick={() => removeWork(w.id)}>削除</button>
               </div>
             )}
           </WorkCard>
@@ -179,9 +179,9 @@ export default function MyPage() {
         {data.gear.map((g) => (
           <GearRow key={g.id} g={g}>
             {!editing && (
-              <div className="flex gap-1">
-                <button className="btn px-2.5 py-1 text-xs" onClick={() => setGear(g)}>編集</button>
-                <button className="btn px-2.5 py-1 text-xs" onClick={() => removeGear(g.id)}>削除</button>
+              <div className="flex gap-2">
+                <button className="btn-sm" onClick={() => setGear(g)}>編集</button>
+                <button className="btn-sm text-error" onClick={() => removeGear(g.id)}>削除</button>
               </div>
             )}
           </GearRow>

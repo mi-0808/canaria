@@ -1,6 +1,6 @@
 /*
  * Canaria デザイン方針（見た目のルール・色・共通部品はすべてこのファイルで定義する）
- * 参考: Material Design 3（色の役割）／Apple HIG（意味の固定・文字の段階）／MyHood の UI 規約
+ * 参考: Material Design 3（色の役割）／Apple HIG（意味の固定・文字の段階・ダークモード・押せる大きさ）／MyHood の UI 規約
  *
  * ■ トークン
  * - このファイルが唯一の真実。コンポーネントに色や任意の値（text-[13px] など）を直接書かない
@@ -21,8 +21,17 @@
  * 7. 文字色は fg / fg-2 / fg-3・藍・状態色だけ。text-fg-3/60 のように薄めない（コントラストが崩れる）。
  *    優先度は色の薄さではなく、サイズ・配置・余白で表す
  * 8. 情報を色だけで伝えない。状態やエラーには文言かアイコンを添える
+ * 9. ダークモードはトークンの light-dark() で切り替わる。コンポーネントで dark: は書かない。
+ *    トークンを使っていれば何もしなくても切り替わる。色を決め打ちすると、そこだけダークで浮く
  *
  * ■ 文字（新しく作る・触った画面から寄せる。既存への一括適用は求めない）
+ * - 役割ごとにサイズを決めてある（HIG の text styles にあたる。新しいトークンは作らず Tailwind のサイズを使う）
+ *     大見出し  text-3xl sm:text-4xl font-bold … ページ・LP セクションの見出し
+ *     見出し    text-2xl font-bold             … 画面の中の見出し（プロフィール名・作品名）
+ *     小見出し  text-lg font-bold              … 一覧の項目名・カードの題
+ *     本文      text-base                      … 本文・入力値
+ *     補足      text-sm                        … ラベル（label）・ボタン・メタ情報
+ *     注記      text-xs                        … バッジ・時刻だけ
  * - 本文・入力値は text-base（16px）以上。補助・ラベル・メタ情報は text-sm（14px）以上
  * - text-xs（12px）はバッジ内の短い語・タイムスタンプ・注記だけ。文章には使わない
  * - 10px 以下は禁止。入力欄が 16px 未満だと iOS でフォーカス時に拡大される
@@ -34,8 +43,10 @@
  *   （固有名詞・技術名・URL・ユーザー名はそのまま）
  *
  * ■ アクセシビリティ（WCAG 2.1 AA。後付けしない）
- * - コントラスト比: 文字 4.5 以上、大きい文字・枠線・アイコン 3 以上（下の組み合わせは確認済み）
- * - 押せる要素は 44×44px 以上。見た目を小さくしたいときは padding で当たり判定を広げる
+ * - コントラスト比: 文字 4.5 以上、大きい文字・入力欄の枠・アイコン 3 以上。
+ *   ライト・ダーク両方を scripts/check-contrast.mjs が npm run check で検査する。新しい組み合わせを使ったらそこに足す
+ * - 押せる要素は 44×44px 以上。btn / btn-primary / btn-tonal / input は高さ 44px を確保済み。
+ *   見た目を小さくしたいボタンは btn-sm（見た目 32px、当たり判定は 44px）
  * - focus-visible の表示を消さない。outline-none を書くなら代わりのリングを同時に付ける
  * - 押せるものは <button> / <a>。<div onClick> は使わない。アイコンだけのボタンには aria-label
  * - 動きは prefers-reduced-motion を尊重する（このファイルの末尾で一括対応済み）
@@ -61,57 +72,55 @@
 
 @theme {
   --color-*: initial;
+  /* 色はすべて light-dark(ライト, ダーク)。どちらが効くかは html の color-scheme で決まる（下の html の指定）。
+     名前はライト・ダーク共通なので、コンポーネント側は何も書き分けない。値を変えたら npm run check がコントラストを検査する
+     - secondary（グレー）のダークは M3 の値（明るいグレー）にしない。Canaria では「濃い面」の役割なので、
+       ダークでも暗い面のまま一段持ち上げる。明るくすると LP の帯や吹き出しが白く反転し、上のカナリア文字が読めなくなる */
 
   /* ブランド: カナリア（M3 primary）= 主役 */
-  --color-primary: #ffc72c;
-  --color-on-primary: #2b2100;
-  --color-primary-container: #fff4cc;
-  --color-on-primary-container: #5c4300;
+  --color-primary: light-dark(#ffc72c, #ffd54a);
+  --color-on-primary: light-dark(#2b2100, #2b2100);
+  --color-primary-container: light-dark(#fff4cc, #3b300f);
+  --color-on-primary-container: light-dark(#5c4300, #ffe08a);
+  /* 見出しのマーカー（文字の下半分に引く線）。ダークでは上の文字が明るくなるので、暗い黄に替えて文字を読めるようにする */
+  --color-marker: light-dark(#ffc72c, #7a5d00);
+  /* LP のパズルのピースの縁と段差。ライトは文字色で積み木らしく。ダークで文字色（明るい色）にすると段差が光って見えるので中間のグレー */
+  --color-edge: light-dark(#1d1b17, #7a756d);
   /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
-  --color-secondary: #2a2e35;
-  --color-on-secondary: #f2f3f5;
-  --color-secondary-container: #eceef1;
-  --color-on-secondary-container: #2e333b;
+  --color-secondary: light-dark(#2a2e35, #3a3f47);
+  --color-on-secondary: light-dark(#f2f3f5, #f2f3f5);
+  --color-secondary-container: light-dark(#eceef1, #2e333b);
+  --color-on-secondary-container: light-dark(#2e333b, #dde1e7);
   /* ブランド: 藍（M3 tertiary）= 押せるもの・つながり。リンク・情報もこの色 */
-  --color-tertiary: #2f4fc8;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #e3e8fb;
-  --color-on-tertiary-container: #1c2e7a;
+  --color-tertiary: light-dark(#2f4fc8, #9fb2ff);
+  --color-on-tertiary: light-dark(#ffffff, #0f1b4d);
+  --color-tertiary-container: light-dark(#e3e8fb, #1b2758);
+  --color-on-tertiary-container: light-dark(#1c2e7a, #d3dcff);
 
   /* 状態色（HIG system colors のように意味を固定） */
-  --color-success: #17804a;
-  --color-on-success: #ffffff;
-  --color-success-container: #dbf4e3;
-  --color-on-success-container: #0e5a2e;
-  --color-warning: #b95300;
-  --color-on-warning: #ffffff;
-  --color-warning-container: #ffe7d1;
-  --color-on-warning-container: #7a3600;
-  --color-error: #c9302a;
-  --color-on-error: #ffffff;
-  --color-error-container: #fde4e2;
-  --color-on-error-container: #8c1d16;
+  --color-success: light-dark(#17804a, #6fd49a);
+  --color-on-success: light-dark(#ffffff, #05301a);
+  --color-success-container: light-dark(#dbf4e3, #133a22);
+  --color-on-success-container: light-dark(#0e5a2e, #b6efc9);
+  --color-warning: light-dark(#b95300, #ffa766);
+  --color-on-warning: light-dark(#ffffff, #3a1a00);
+  --color-warning-container: light-dark(#ffe7d1, #4a2600);
+  --color-on-warning-container: light-dark(#7a3600, #ffd7b0);
+  --color-error: light-dark(#c9302a, #ff8a7e);
+  --color-on-error: light-dark(#ffffff, #4a0e09);
+  --color-error-container: light-dark(#fde4e2, #5a1a15);
+  --color-on-error-container: light-dark(#8c1d16, #ffdad5);
 
   /* ニュートラル: 面（M3 surface container）→ 線 → 文字（HIG label） */
-  --color-surface: #ffffff;
-  --color-surface-1: #faf9f6;
-  --color-surface-2: #f4f2ee;
-  --color-surface-3: #ece9e3;
-  --color-line: #e2ded6;
-  --color-outline: #8f8a80;
-  --color-fg: #1d1b17;
-  --color-fg-2: #5e5a51;
-  --color-fg-3: #77726a;
-
-  /* ダーク（未実装。入れるときは上と同じ名前でこの値に差し替える）
-     primary #ffd54a / on #2b2100 / container #3b300f / on-container #ffe08a
-     secondary #c9ced6 / on #1e2228 / container #2e333b / on-container #dde1e7
-     tertiary #9fb2ff / on #0f1b4d / container #1b2758 / on-container #d3dcff
-     success #6fd49a / on #05301a / container #133a22 / on-container #b6efc9
-     warning #ffa766 / on #3a1a00 / container #4a2600 / on-container #ffd7b0
-     error #ff8a7e / on #4a0e09 / container #5a1a15 / on-container #ffdad5
-     surface #121110 / 1 #1a1916 / 2 #211f1c / 3 #2b2925 / line #3a3732 / outline #6e6a62
-     fg #edeae3 / fg-2 #c4bfb4 / fg-3 #9a958b */
+  --color-surface: light-dark(#ffffff, #121110);
+  --color-surface-1: light-dark(#faf9f6, #1a1916);
+  --color-surface-2: light-dark(#f4f2ee, #211f1c);
+  --color-surface-3: light-dark(#ece9e3, #2b2925);
+  --color-line: light-dark(#e2ded6, #3a3732);
+  --color-outline: light-dark(#8f8a80, #6e6a62);
+  --color-fg: light-dark(#1d1b17, #edeae3);
+  --color-fg-2: light-dark(#5e5a51, #c4bfb4);
+  --color-fg-3: light-dark(#736e66, #9a958b); /* surface-2 の上でも 4.5 を超える下限 */
 
   --font-sans: var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -138,6 +147,15 @@ body {
 /* 日本語を文節で折り返す（lang="ja" のとき。未対応のブラウザでは普通の折り返しになる） */
 html {
   word-break: auto-phrase;
+  /* 普段は OS の設定に合わせる。設定画面で選ばれたら data-theme で固定する（HIG の「自動／ライト／ダーク」）。
+     color-scheme は上の light-dark() と、入力欄・スクロールバー・音声プレーヤーなどブラウザが描く部品の両方を切り替える */
+  color-scheme: light dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 /* 見出しは行の長さをそろえ、最後の行に1〜2文字だけ残らないようにする */
 h1, h2, h3 {
@@ -145,31 +163,40 @@ h1, h2, h3 {
 }
 
 /* ---- 共通部品 ---- */
-/* hover は M3 の state layer（面に文字色を 8% 重ねる） */
+/* hover は M3 の state layer（面に文字色を 8% 重ねる）。min-h-11 で押せる高さ 44px を確保する */
 @utility btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-[color-mix(in_srgb,var(--color-primary),var(--color-on-primary)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-[color-mix(in_srgb,var(--color-primary),var(--color-on-primary)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
 }
 /* 2番目に大事な行動。薄い藍の面（M3 の filled tonal button）。主役は btn-primary に任せる */
 @utility btn-tonal {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-tertiary-container px-5 py-2.5 text-sm font-semibold text-on-tertiary-container transition hover:bg-[color-mix(in_srgb,var(--color-tertiary-container),var(--color-on-tertiary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-tertiary-container px-5 py-2.5 text-sm font-semibold text-on-tertiary-container transition hover:bg-[color-mix(in_srgb,var(--color-tertiary-container),var(--color-on-tertiary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-fg-2 transition hover:border-outline hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-fg-2 transition hover:border-outline hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
 }
+/* 一覧の行に並べる「編集」のような小さいボタン。見た目は 32px のまま、::before で当たり判定を上下 6px ずつ広げて 44px にする。
+   左右は 4px だけ広げる。並べるときは gap-2（8px）以上空ければ、隣の当たり判定と重ならない */
+@utility btn-sm {
+  @apply relative inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-fg-2 transition before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-[''] hover:border-outline hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
+}
+/* 枠は outline 色（白地で 3.4:1）。line だと 1.3:1 で、どこが入力欄か分からない。
+   16px 未満だと iOS がフォーカス時に拡大するので text-base。フォーカスは「押せるもの」の藍で示す */
 @utility input {
-  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm transition outline-none placeholder:text-fg-3 focus:border-primary focus:ring-4 focus:ring-primary-container;
+  @apply min-h-11 w-full rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-base transition outline-none placeholder:text-fg-3 focus:border-tertiary focus:ring-4 focus:ring-tertiary-container;
 }
 @utility card {
   @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)];
 }
+/* 入力欄の上のラベル。日本語に大文字の区別は無く、等幅の和文は読みにくいので普通の書体にする */
 @utility label {
-  @apply font-mono text-[11px] tracking-wider text-fg-3 uppercase;
+  @apply text-sm font-medium text-fg-2;
 }
-/* 方眼の背景 */
+/* 方眼の背景。線は文字色を薄く混ぜて作る（黒の決め打ちだとダークで線が消える） */
 @utility bg-grid {
+  --grid: color-mix(in srgb, var(--color-fg) 5%, transparent);
   background-image:
-    linear-gradient(to right, rgb(0 0 0 / 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(0 0 0 / 0.05) 1px, transparent 1px);
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 

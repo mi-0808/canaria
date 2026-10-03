@@ -24,7 +24,7 @@
 ```bash
 npm install
 npm run dev
-npm run check   # 型チェック + ESLint + デザイントークン検査
+npm run check   # 型チェック + ESLint + デザイントークン検査 + コントラスト比検査（ライト・ダーク）
 ```
 
 ## 技術
