@@ -1,0 +1,24 @@
+<!-- Supabase > Authentication > Emails > Confirm sign up
+     件名: 【Canaria】メールアドレスの確認をお願いします -->
+<div style="background:#fafafa;padding:32px 16px;font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;color:#18181b;">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:16px;padding:32px;">
+    <p style="margin:0 0 24px;font-size:18px;font-weight:bold;">🐤 Canaria</p>
+    <h1 style="margin:0 0 16px;font-size:20px;">メールアドレスの確認</h1>
+    <p style="margin:0 0 24px;font-size:14px;line-height:1.8;">
+      Canariaにご登録いただき、ありがとうございます。<br>
+      下のボタンを押して、メールアドレスの確認を完了してください。
+    </p>
+    <p style="margin:0 0 24px;text-align:center;">
+      <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#facc15;color:#0a0a0a;font-weight:bold;font-size:14px;text-decoration:none;padding:12px 28px;border-radius:12px;">メールアドレスを確認する</a>
+    </p>
+    <p style="margin:0 0 16px;font-size:13px;line-height:1.8;color:#52525b;">
+      登録したときと同じブラウザで開くと、そのままログインした状態になります。別の端末で開いた場合は、確認のあとにログインページからログインしてください。
+    </p>
+    <p style="margin:0 0 8px;font-size:12px;color:#71717a;">ボタンが押せない場合は、次のURLをブラウザに貼り付けてください。</p>
+    <p style="margin:0 0 24px;font-size:12px;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#a16207;">{{ .ConfirmationURL }}</a></p>
+    <p style="margin:0;padding-top:16px;border-top:1px solid #f4f4f5;font-size:12px;line-height:1.8;color:#a1a1aa;">
+      このメールに心当たりがない場合は、お手数ですが破棄してください。<br>
+      このメールは送信専用のため、返信いただいてもお答えできません。
+    </p>
+  </div>
+</div>
