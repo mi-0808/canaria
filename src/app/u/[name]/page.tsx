@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
+import Icon from "@/components/Icon";
 import PostItem from "@/components/PostItem";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
@@ -59,7 +60,7 @@ export default function PublicPage() {
       {user === null && (
         <div className="rounded-2xl bg-primary-container p-8 text-center">
           <p className="text-sm text-fg-2">あなたもポートフォリオを持とう</p>
-          <Link href="/signup" className="btn-primary mt-3">Canariaに登録する →</Link>
+          <Link href="/signup" className="btn-primary mt-3">無料ではじめる<Icon name="arrow" className="h-4 w-4" /></Link>
         </div>
       )}
     </div>

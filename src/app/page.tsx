@@ -1,6 +1,7 @@
 import DeviceShowcase from "@/components/DeviceShowcase";
 import BlockPuzzle from "@/components/BlockPuzzle";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import Phrases from "@/components/Phrases";
 
 // 初心者の「まだいいや」をつぶす: よくある不安 → 答え
@@ -46,7 +47,7 @@ const features = [
           <p className="text-xs text-primary">@senior_dev · 1時間前</p>
           <p className="mt-1 leading-relaxed">middlewareでまとめて守るのがおすすめ！</p>
         </div>
-        <p className="text-right text-xs text-on-tertiary-container">★ リアクション 12</p>
+        <p className="flex items-center justify-end gap-1 text-xs text-on-tertiary-container"><Icon name="star" filled className="h-3.5 w-3.5" />リアクション 12</p>
       </div>
     ),
   },
@@ -63,7 +64,7 @@ const features = [
               <p className="text-sm font-medium">{t}</p>
               <p className="text-xs text-fg-2">{c}</p>
             </div>
-            <span className="ml-auto text-tertiary" aria-hidden>↗</span>
+            <Icon name="external" className="ml-auto h-4 w-4 text-tertiary" />
           </div>
         ))}
       </div>
@@ -89,7 +90,7 @@ export default function Home() {
               作品はある。でも、まだ仕事にはつながっていない。そんなエンジニアのための、打ち込むだけで完成するポートフォリオ＋α。
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/signup" className="btn-primary px-6 py-3 text-base">無料ではじめる →</Link>
+              <Link href="/signup" className="btn-primary px-6 py-3 text-base">無料ではじめる<Icon name="arrow" className="h-4 w-4" /></Link>
               <Link href="#features" className="btn-tonal px-6 py-3 text-base">できることを見る</Link>
               <span className="font-mono text-xs text-fg-3">初期費用 ¥0</span>
             </div>
@@ -115,7 +116,8 @@ export default function Home() {
         <div className="space-y-16">
           {features.map((f, i) => (
             <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
-              <div className={`rounded-3xl ${f.panel} p-6 sm:p-8 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
+              {/* 見本は絵。伝えたいことは横の見出しと説明文にあるので、読み上げでは飛ばす */}
+              <div aria-hidden className={`rounded-3xl ${f.panel} p-6 sm:p-8 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
               <div className="max-w-md space-y-4">
                 <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl"><Phrases text={f.title} /></h3>
                 <p className="leading-relaxed text-fg-2">{f.desc}</p>
@@ -179,7 +181,7 @@ export default function Home() {
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
         <h2 className="text-3xl font-bold tracking-tight"><Phrases text="まだ結果が|出ていない|今こそ、|見せよう。" /></h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
-        <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">ポートフォリオを作る →</Link>
+        <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">無料ではじめる<Icon name="arrow" className="h-4 w-4" /></Link>
       </section>
     </div>
   );
