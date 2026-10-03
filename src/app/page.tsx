@@ -123,8 +123,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 不安をつぶす */}
-      <section className="space-y-10">
+      {/* 不安をつぶす。直前の機能紹介（ブロック間 64px）と切れ目が分かるよう、PC では上を広めに空ける */}
+      <section className="space-y-10 md:pt-8">
         <div className="space-y-3 text-center">
           {/* 言葉の途中で折り返さないよう、意味の切れ目ごとに inline-block でまとめる */}
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
