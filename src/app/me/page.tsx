@@ -217,6 +217,12 @@ export default function MyPage() {
               <span className="label">アイコン *</span>
               <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile({ ...profile, icon })} />
             </div>
+            <div className="space-y-1.5">
+              <span className="label">カバー画像</span>
+              <FilePicker shape="cover" value={profile.cover} onChange={(cover) => setProfile({ ...profile, cover })} />
+              {/* 任意の項目なので、入れたあとで外せるようにする */}
+              {profile.cover && <button className="btn" onClick={() => setProfile({ ...profile, cover: "" })}>カバー画像を外す</button>}
+            </div>
             <Field label="ユーザー名 *">
               <span className="flex items-center gap-2">
                 <span className="font-mono text-fg-3">/@</span>

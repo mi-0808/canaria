@@ -22,39 +22,49 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
 export function ProfileHero({ p }: { p: Profile }) {
   return (
-    <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
-      <Avatar src={p.icon} className="h-24 w-24 sm:h-36 sm:w-36" />
-      <div className="min-w-0 space-y-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
-          {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
-          <p className="text-sm text-fg-3">@{p.username}</p>
+    <section className="space-y-5">
+      {p.cover && <img src={p.cover} alt="" className="aspect-3/1 w-full rounded-2xl object-cover" />}
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+        {/* カバーがあるときは、アイコンをカバーの下端に重ねる（X・LinkedIn と同じ形）。縁取りで背景から切り離す */}
+        <Avatar src={p.icon} className={`h-24 w-24 sm:h-36 sm:w-36 ${p.cover ? "relative -mt-17 ml-4 ring-4 ring-surface sm:-mt-23 sm:ml-6" : ""}`} />
+        <div className="min-w-0 space-y-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
+            {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
+            <p className="text-sm text-fg-3">@{p.username}</p>
+          </div>
+          {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、主役の黄色のボタン。
+              DB でも形を絞っているが、mailto: に入れる直前にも確かめる */}
+          {contactEmailPattern.test(p.contact_email) && (
+            <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
+              <Icon name="mail" />メールで連絡
+            </a>
+          )}
         </div>
-        {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、主役の黄色のボタン。
-            DB でも形を絞っているが、mailto: に入れる直前にも確かめる */}
-        {contactEmailPattern.test(p.contact_email) && (
-          <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
-            <Icon name="mail" />メールで連絡
-          </a>
-        )}
       </div>
     </section>
   );
 }
 
-/** 数字の行（App Store の評価・ランキングの行にあたる）。入りきらないスマホでは横にスクロールする */
+/** 数字の行（App Store の評価・ランキングの行にあたる）。
+ *  スマホで横スクロールにすると端の項目が見切れて気付かれないので、2行に折り返して1画面に収める（5件なら 3+2、4件なら 2+2）。
+ *  区切り線は各項目の左に引き、行頭の線だけ -ml-px と overflow-hidden で隠す（折り返し位置が変わっても崩れない） */
 export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
+  const items = statItems(p, works);
+  const basis = items.length === 4 ? "basis-1/2" : "basis-1/3";
   return (
-    <dl className="-mx-4 flex snap-x overflow-x-auto border-y border-line py-4 sm:mx-0">
-      {statItems(p, works).map((it) => (
-        <div key={it.label} className="flex min-w-32 flex-1 snap-start flex-col items-center gap-1 border-l border-line px-4 text-center first:border-l-0">
-          <dt className="text-sm text-fg-3">{it.label}</dt>
-          {/* 数字は大きく、文字（技術名・会社名など）は2行までに収まる大きさで */}
-          <dd className={`line-clamp-2 font-bold text-fg-2 ${/^\d/.test(it.value) ? "text-2xl" : "text-lg leading-snug"}`}>{it.value}</dd>
-          <dd className="min-h-5 text-sm text-fg-3">{it.sub}</dd>
-        </div>
-      ))}
-    </dl>
+    <div className="-mx-4 overflow-hidden border-y border-line py-4 sm:mx-0">
+      <dl className="-ml-px flex flex-wrap gap-y-5">
+        {items.map((it) => (
+          <div key={it.label} className={`flex ${basis} grow flex-col items-center gap-1 border-l border-line px-2 text-center sm:basis-0 sm:px-4`}>
+            <dt className="text-sm text-fg-3">{it.label}</dt>
+            {/* 数字は大きく、文字（技術名・会社名など）は2行までに収まる大きさで */}
+            <dd className={`line-clamp-2 font-bold wrap-anywhere text-fg-2 ${/^\d/.test(it.value) ? "text-2xl" : "text-lg leading-snug"}`}>{it.value}</dd>
+            <dd className="min-h-5 text-sm text-fg-3">{it.sub}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
