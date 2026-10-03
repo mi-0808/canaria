@@ -221,6 +221,15 @@ h1, h2, h3 {
 }
 /* 枠は outline 色（白地で 3.4:1）。line だと 1.3:1 で、どこが入力欄か分からない。
    16px 未満だと iOS がフォーカス時に拡大するので text-base。フォーカスは「押せるもの」の藍で示す */
+/* ページの中身を切り替えるタブ（Tabs.tsx）。灰色の箱に入れると「値を選ぶ入力欄」に見えて重いので、下線で示す。
+   設定の値を選ぶ場所はセグメント（上）のまま。下線は見出しのマーカーと同じカナリア。白地では 1.6:1 で線だけでは
+   選択中と分からないので、太字＋濃い文字でも示す（色だけで伝えない）。細いと黄色が飛ぶので 3px */
+@utility tabs {
+  @apply flex gap-8 border-b border-line;
+}
+@utility tab {
+  @apply -mb-px inline-flex min-h-12 cursor-pointer items-center border-b-3 border-transparent px-1 text-lg whitespace-nowrap text-fg-2 transition hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg aria-selected:border-primary aria-selected:font-bold aria-selected:text-fg;
+}
 @utility input {
   @apply min-h-11 w-full rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-base transition outline-none placeholder:text-fg-3 focus:border-tertiary focus:ring-4 focus:ring-tertiary-container;
   /* ブラウザ標準の ▾ は右端に張り付くので、自前の ▼ を右から 16px に描く。currentColor なのでダークでも追従する */
