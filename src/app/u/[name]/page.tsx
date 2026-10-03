@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import Icon from "@/components/Icon";
-import { CareerTimeline, Empty, GearRow, LinkList, NowNext, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
+import { CareerTimeline, Empty, GearRow, NowNext, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { isPreview } from "@/lib/nav.mjs";
@@ -44,8 +44,6 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
 
   const { profile: p, works, gear, careers, posts } = data;
-  // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
-  const links = p.links.filter((u) => u.startsWith("https://"));
   const section = "text-2xl font-bold tracking-tight";
 
   return (
@@ -72,20 +70,10 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
         </section>
       )}
 
-      {(p.bio || links.length > 0) && (
-        <section className="grid gap-12 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-8">
-          {p.bio && (
-            <div className="space-y-4">
-              <h2 className={section}>自己紹介</h2>
-              <p className="leading-relaxed whitespace-pre-wrap text-fg-2">{p.bio}</p>
-            </div>
-          )}
-          {links.length > 0 && (
-            <div className="space-y-4">
-              <h2 className={section}>リンク</h2>
-              <LinkList links={links} />
-            </div>
-          )}
+      {p.bio && (
+        <section className="space-y-4">
+          <h2 className={section}>自己紹介</h2>
+          <p className="leading-relaxed whitespace-pre-wrap text-fg-2">{p.bio}</p>
         </section>
       )}
 

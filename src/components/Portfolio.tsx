@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { brandIcon } from "@/components/BrandIcon";
 import Icon, { type IconName } from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, gearLink, linkName, normalizeLink } from "@/lib/links.mjs";
@@ -7,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { gearCategories, type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・入手ボタン → 数字の行 → スクリーンショットの棚 → 説明と関連リンク → 情報
+// アイコン・名前・入手ボタン（メールと SNS）→ 数字の行 → スクリーンショットの棚 → 説明 → 情報
 
 export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
 
@@ -21,6 +22,10 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
 export function ProfileHero({ p }: { p: Profile }) {
+  // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
+  const links = p.links.filter((u) => u.startsWith("https://"));
+  // DB でも形を絞っているが、mailto: に入れる直前にも確かめる
+  const email = contactEmailPattern.test(p.contact_email);
   return (
     <section className="space-y-5">
       {p.cover && <img src={p.cover} alt="" className="aspect-3/1 w-full rounded-2xl object-cover" />}
@@ -33,12 +38,17 @@ export function ProfileHero({ p }: { p: Profile }) {
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
             <p className="text-sm text-fg-3">@{p.username}</p>
           </div>
-          {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、主役の黄色のボタン。
-              DB でも形を絞っているが、mailto: に入れる直前にも確かめる */}
-          {contactEmailPattern.test(p.contact_email) && (
-            <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
-              <Icon name="mail" />メールで連絡
-            </a>
+          {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
+              SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
+          {(email || links.length > 0) && (
+            <div className="flex flex-wrap gap-2">
+              {email && (
+                <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
+                  <Icon name="mail" />メールで連絡
+                </a>
+              )}
+              {links.map((u) => <SocialLink key={u} url={u} />)}
+            </div>
           )}
         </div>
       </div>
@@ -196,21 +206,17 @@ function WorkDetail({ w }: { w: Work }) {
   );
 }
 
-/** SNS・リンクの一覧（App Store の「Web サイト」「サポート」の並びにあたる）。渡す前に https だけに絞っておくこと */
-export function LinkList({ links }: { links: string[] }) {
+/** SNS・リンク1件。ロゴを持っているサービスは丸いアイコンだけのボタン、それ以外は名前（知らないサイトはドメイン）を書いたボタン。
+ *  アイコンだけだと、知らないサイトはどこへ飛ぶのか分からないため。渡す前に https だけに絞っておくこと */
+function SocialLink({ url }: { url: string }) {
+  const name = linkName(url);
+  const logo = brandIcon(name);
   return (
-    <ul className="divide-y divide-line border-y border-line">
-      {links.map((u) => (
-        <li key={u}>
-          {/* rel="me": このページの持ち主のアカウントだと、相手のサービスに伝える */}
-          <a href={u} target="_blank" rel="noopener noreferrer me"
-            className="flex min-h-12 items-center justify-between gap-3 text-tertiary transition hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-            {linkName(u)}
-            <Icon name="external" className="h-4 w-4" />
-          </a>
-        </li>
-      ))}
-    </ul>
+    // rel="me": このページの持ち主のアカウントだと、相手のサービスに伝える
+    <a href={url} target="_blank" rel="noopener noreferrer me" aria-label={logo ? name : undefined}
+      className={`btn rounded-full ${logo ? "w-11 px-0" : ""}`}>
+      {logo ?? <><Icon name="link" className="h-4 w-4" />{name}</>}
+    </a>
   );
 }
 
