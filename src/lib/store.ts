@@ -21,7 +21,6 @@ export type Work = {
   title: string;
   period: string;
   role: string;
-  progress: number;
   status: WorkStatus;
   techs: string; // カンマ区切り
   summary: string;

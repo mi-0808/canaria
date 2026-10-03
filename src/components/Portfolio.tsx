@@ -49,12 +49,6 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
             {live ? "● " : ""}{status}
           </span>
           {w.period && <span className="font-mono text-xs text-zinc-500">{w.period}</span>}
-          {!live && (
-            <span className="ml-auto flex items-center gap-2 font-mono text-xs text-zinc-500">
-              <span className="h-1.5 w-16 rounded-full bg-zinc-100"><span className="block h-1.5 rounded-full bg-gradient-to-r from-yellow-300 to-amber-400" style={{ width: `${w.progress}%` }} /></span>
-              {w.progress}%
-            </span>
-          )}
         </div>
         <h3 className="text-2xl leading-snug font-bold tracking-tight">{w.title}</h3>
         {w.summary && <p className="leading-relaxed whitespace-pre-wrap text-zinc-600">{w.summary}</p>}
