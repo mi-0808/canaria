@@ -1,6 +1,7 @@
 import DeviceShowcase from "@/components/DeviceShowcase";
 import BlockPuzzle from "@/components/BlockPuzzle";
 import Link from "next/link";
+import Phrases from "@/components/Phrases";
 
 // 初心者の「まだいいや」をつぶす: よくある不安 → 答え
 const worries = [
@@ -14,7 +15,7 @@ const worries = [
 const features = [
   {
     panel: "bg-primary-container",
-    title: "簡単に、作品を並べる",
+    title: "簡単に、|作品を並べる",
     desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
     visual: (
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -33,7 +34,7 @@ const features = [
   },
   {
     panel: "bg-tertiary-container",
-    title: "つくりながら発信して、プロに教わる",
+    title: "つくりながら|発信して、|プロに教わる",
     desc: "まだ世に出ていない作品の裏側を、テキスト・音声・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
     visual: (
       <div className="space-y-3 text-sm">
@@ -51,7 +52,7 @@ const features = [
   },
   {
     panel: "bg-secondary-container",
-    title: "できる人の仕事場から、次の相棒を見つける",
+    title: "できる人の|仕事場から、|次の相棒を|見つける",
     desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
     visual: (
       <div className="space-y-2">
@@ -116,7 +117,7 @@ export default function Home() {
             <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
               <div className={`rounded-3xl ${f.panel} p-6 sm:p-8 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
               <div className="max-w-md space-y-4">
-                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">{f.title}</h3>
+                <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl"><Phrases text={f.title} /></h3>
                 <p className="leading-relaxed text-fg-2">{f.desc}</p>
               </div>
             </div>
@@ -127,9 +128,8 @@ export default function Home() {
       {/* 不安をつぶす。直前の機能紹介（ブロック間 64px）と切れ目が分かるよう、PC では上を広めに空ける */}
       <section className="space-y-10 md:pt-8">
         <div className="space-y-3 text-center">
-          {/* 言葉の途中で折り返さないよう、意味の切れ目ごとに inline-block でまとめる */}
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <span className="inline-block">「ポートフォリオは、</span><span className="inline-block">あとでいいや」</span><span className="inline-block">と思っていませんか？</span>
+            <Phrases text="「ポートフォリオは、|あとでいいや」|と思っていませんか？" />
           </h2>
           <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
         </div>
@@ -177,7 +177,7 @@ export default function Home() {
 
       {/* Closing */}
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
-        <h2 className="text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
+        <h2 className="text-3xl font-bold tracking-tight"><Phrases text="まだ結果が|出ていない|今こそ、|見せよう。" /></h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
         <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">マイページをつくる →</Link>
       </section>

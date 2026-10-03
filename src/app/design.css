@@ -28,6 +28,8 @@
  * - 10px 以下は禁止。入力欄が 16px 未満だと iOS でフォーカス時に拡大される
  * - 日本語の本文は leading-relaxed。見出しは leading-tight 可
  * - 見出しの上に「// responsive」のような小さい飾りの副題を付けない。見出しだけで伝える
+ * - 単語（文節）の途中で折り返さない。全体は下の word-break: auto-phrase（Chrome / Edge のみ対応）、
+ *   見出しは Safari でも効くよう Phrases コンポーネントで区切りを指定する（例: "次の|相棒を見つける"）
  * - 画面の文言は日本語で書く。「empty.」「no posts yet.」のような英語の飾り文言は使わない
  *   （固有名詞・技術名・URL・ユーザー名はそのまま）
  *
@@ -131,6 +133,15 @@
 body {
   background: var(--color-surface);
   color: var(--color-fg);
+}
+
+/* 日本語を文節で折り返す（lang="ja" のとき。未対応のブラウザでは普通の折り返しになる） */
+html {
+  word-break: auto-phrase;
+}
+/* 見出しは行の長さをそろえ、最後の行に1〜2文字だけ残らないようにする */
+h1, h2, h3 {
+  text-wrap: balance;
 }
 
 /* ---- 共通部品 ---- */
