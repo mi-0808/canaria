@@ -1,4 +1,5 @@
 // LP: PCとスマホで公開ページの見え方を並べるセクション（中身はすべてCSSのモック）
+import Phrases from "@/components/Phrases";
 
 const works = [
   { title: "3秒家計簿アプリ", status: "運用中", live: true, techs: ["Next.js", "Supabase"], cover: "bg-primary-container" },
@@ -43,10 +44,10 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
 
 export default function DeviceShowcase() {
   return (
-    <section className="relative -mx-4 overflow-hidden px-4 py-16">
+    <section className="relative -mx-4 overflow-hidden px-4">
       <div className="relative space-y-12">
         <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">PCでもスマホでも、そのまま名刺に。</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl"><Phrases text="PCでもスマホでも、|そのまま名刺に。" /></h2>
           <p className="text-fg-2">URLを送るだけ。どの画面で開かれても、あなたの作品がきれいに並ぶ。</p>
         </div>
 

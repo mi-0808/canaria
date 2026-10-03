@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Header";
 import { sendPasswordReset, signIn, signUp, useUser } from "@/lib/store";
@@ -34,7 +33,6 @@ const copy = {
 
 export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
   const t = copy[mode];
-  const router = useRouter();
   const user = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,10 +40,10 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // ログイン済みならマイページへ
+  // ログイン済みならトップ（ホーム）へ。cookie が変わったので、画面ごと読み直して proxy に判定させる
   useEffect(() => {
-    if (user) router.replace("/me");
-  }, [user, router]);
+    if (user) location.replace("/");
+  }, [user]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

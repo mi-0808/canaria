@@ -12,7 +12,7 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
   const [reply, setReply] = useState("");
 
   const share = async () => {
-    await navigator.clipboard.writeText(`${location.origin}/p/${post.id}`);
+    await navigator.clipboard.writeText(`${location.origin}/@${post.author.username}/posts/${post.id}`);
     alert("リンクをコピーしました");
   };
   // 書き込み後はその投稿だけ取り直す
@@ -31,9 +31,9 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
   return (
     <article className="card space-y-3 p-5">
       <div className="flex items-center gap-3">
-        <Link href={`/u/${post.author.id}`}><Avatar src={post.author.icon} /></Link>
+        <Link href={`/@${post.author.username}`}><Avatar src={post.author.icon} /></Link>
         <div>
-          <Link href={`/u/${post.author.id}`} className="text-sm font-bold hover:underline">{post.author.name || "名前未設定"}</Link>
+          <Link href={`/@${post.author.username}`} className="text-sm font-bold hover:underline">{post.author.name || "名前未設定"}</Link>
           <p className="font-mono text-[11px] text-fg-3">{fmt(post.created_at)}</p>
         </div>
         {post.media && (

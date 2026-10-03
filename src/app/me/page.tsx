@@ -7,7 +7,7 @@ import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
 import {
   ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
-  useAuthedUser, useLoad, workStatuses, type Gear, type Post, type Profile, type Work,
+  useAuthedUser, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
 const profileFields: [keyof Profile, string][] = [
@@ -46,6 +46,7 @@ export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [work, setWork] = useState<Work | null>(null);
   const [gear, setGear] = useState<Gear | null>(null);
+  const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
 
   if (!user || !data) return null;
 
@@ -53,8 +54,10 @@ export default function MyPage() {
   // 色付きボタンは1つだけ: 編集中は「保存」、それ以外は表示中タブの「追加」
   const editing = profile || work || gear;
 
+  const usernameInvalid = profile && !usernamePattern.test(profile.username);
   const saveProfile = async () => {
-    await putProfile(user.id, profile!);
+    const err = await putProfile(user.id, profile!);
+    if (err) return setUsernameError(err);
     setData({ ...data, profile: profile! });
     setProfile(null);
   };
@@ -189,7 +192,7 @@ export default function MyPage() {
 
   const postsTab = (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex justify-end"><Link href="/timeline" className="btn">タイムラインで投稿する →</Link></div>
+      <div className="flex justify-end"><Link href="/" className="btn">ホームで投稿する →</Link></div>
       {data.posts.length === 0 && <Empty text="制作の過程を発信してみよう" />}
       {data.posts.map((p) => <PostItem key={p.id} post={p} uid={user.id} onChange={updatePost} />)}
     </div>
@@ -213,12 +216,24 @@ export default function MyPage() {
             <h2 className="text-2xl font-bold tracking-tight">プロフィール</h2>
           </div>
           <div className="flex gap-2">
-            <Link href={`/u/${user.id}`} className="btn">公開ページを見る ↗</Link>
+            <Link href={`/@${data.profile.username}`} className="btn">公開ページを見る ↗</Link>
             {!editing && <button className="btn" onClick={() => setProfile(data.profile)}>編集</button>}
           </div>
         </div>
         {profile ? (
           <div className="card space-y-6 p-6">
+            <Field label="ユーザー名（公開ページの URL） *" hint="英小文字・数字・_ の3〜20文字">
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-fg-3">/@</span>
+                <input className="input font-mono" maxLength={20} value={profile.username} aria-invalid={!!(usernameError || usernameInvalid)}
+                  onChange={(e) => { setProfile({ ...profile, username: e.target.value.toLowerCase() }); setUsernameError(""); }} />
+              </span>
+              {usernameError || usernameInvalid ? (
+                <span role="alert" className="block text-sm text-error">{usernameError || "英小文字・数字・_ の3〜20文字で入力してください"}</span>
+              ) : profile.username !== data.profile.username && (
+                <span className="block text-sm text-warning">変えると、前の URL（/@{data.profile.username}）は開けなくなります</span>
+              )}
+            </Field>
             <Field label="アイコン *">
               <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile({ ...profile, icon })} />
             </Field>
@@ -233,8 +248,8 @@ export default function MyPage() {
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
             <div className="flex justify-end gap-2 border-t border-line pt-5">
-              <button className="btn" onClick={() => setProfile(null)}>キャンセル</button>
-              <button className="btn-primary" onClick={saveProfile}>保存</button>
+              <button className="btn" onClick={() => { setProfile(null); setUsernameError(""); }}>キャンセル</button>
+              <button className="btn-primary" disabled={!!usernameInvalid} onClick={saveProfile}>保存</button>
             </div>
           </div>
         ) : (

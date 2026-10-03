@@ -6,6 +6,7 @@ import { useEffect, useState, type DependencyList, type Dispatch, type SetStateA
 import { createClient as db } from "./supabase";
 
 export type Profile = {
+  username: string; // 公開ページの URL（/@username）
   name: string;
   icon: string;
   gender: string;
@@ -58,6 +59,9 @@ export const requiredProfile: [keyof Profile, string][] = [["name", "名前"], [
 export const missingProfile = (p: Profile) => requiredProfile.filter(([k]) => !p[k]).map(([, label]) => label);
 
 export const newId = () => crypto.randomUUID();
+
+/** 公開ページの URL に使えるユーザー名。DB の check 制約と同じ */
+export const usernamePattern = /^[a-z0-9_]{3,20}$/;
 
 // 失敗を黙って捨てない（入力が消えたように見えるのを防ぐ）
 function must<T>({ data, error }: { data: T; error: unknown }) {
@@ -170,7 +174,7 @@ const posts = () => db().from("posts").select(postSelect).order("created_at", { 
 export const loadProfile = async (uid: string) =>
   must(await db().from("profiles").select("*").eq("id", uid).maybeSingle()) as Profile | null;
 
-/** 公開ページ・マイページ用。プロフィールが無ければ null */
+/** 公開ページ・/me（ポートフォリオを作る）用。プロフィールが無ければ null */
 export async function loadPortfolio(uid: string, viewer?: string): Promise<Portfolio | null> {
   const [profile, works, gear, ps] = await Promise.all([
     loadProfile(uid),
@@ -180,6 +184,13 @@ export async function loadPortfolio(uid: string, viewer?: string): Promise<Portf
   ]);
   if (!profile) return null;
   return { profile, works: works as Work[], gear: gear as Gear[], posts: (ps as unknown as PostRow[]).map((r) => toPost(r, viewer)) };
+}
+
+/** 公開ページ用。/@username（旧 URL の /u/ユーザーID なら id）から引く。見つからなければ null */
+export async function loadPublicPortfolio(key: "id" | "username", value: string) {
+  const p = must(await db().from("profiles").select("id").eq(key, value).maybeSingle()) as { id: string } | null;
+  const portfolio = p && (await loadPortfolio(p.id));
+  return portfolio && { id: p!.id, ...portfolio };
 }
 
 // ponytail: 全件取得。投稿が増えたら range() でページング
@@ -192,11 +203,16 @@ export async function loadPost(id: string, viewer?: string) {
 
 // --- write ---
 
-/** マイページ初回表示時にプロフィール行を用意する（作品などの外部キー先） */
+/** /me を初めて開いたときにプロフィール行を用意する（作品などの外部キー先） */
 export const ensureProfile = async (uid: string) =>
   must(await db().from("profiles").upsert({ id: uid }, { onConflict: "id", ignoreDuplicates: true }));
 
-export const saveProfile = async (uid: string, p: Profile) => must(await db().from("profiles").update(p).eq("id", uid));
+/** ユーザー名が他の人と重なったときだけ、画面に出すエラー文を返す */
+export async function saveProfile(uid: string, p: Profile) {
+  const { error } = await db().from("profiles").update(p).eq("id", uid);
+  if (error?.code === "23505") return "そのユーザー名は使われています。別の名前にしてください";
+  must({ data: null, error });
+}
 export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
 export const saveGear = async (g: Gear) => must(await db().from("gear").upsert(g));
 export const remove = async (table: "works" | "gear", id: string) => must(await db().from(table).delete().eq("id", id));

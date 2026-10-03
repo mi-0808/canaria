@@ -45,6 +45,7 @@ npm run build   # プロダクションビルド
 ```
 src/
 ├── app/            # ページ（URL ルート）と design.css
+├── proxy.ts        # ログイン中は `/` でホーム（app/home）を出す
 ├── components/     # UI コンポーネント
 └── lib/
     ├── store.ts    # Supabase とのやりとり・型
