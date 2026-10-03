@@ -1,6 +1,6 @@
 // src/lib/links.mjs の自己チェック。URL の正規化は「危ないリンクを描画させない」守りなので、壊れたら npm run check で止める
 import assert from "node:assert/strict";
-import { contactEmailPattern, linkName, normalizeLink } from "../src/lib/links.mjs";
+import { AMAZON_TAG, amazonSearchUrl, contactEmailPattern, gearLink, linkName, normalizeLink } from "../src/lib/links.mjs";
 
 // スキームが無ければ https を補う。http は https に上げる
 assert.equal(normalizeLink("github.com/you"), "https://github.com/you");
@@ -35,3 +35,15 @@ assert.ok(!contactEmailPattern.test("kana@example.com?subject=hi"));
 assert.ok(!contactEmailPattern.test("kana@example.com&cc=x@y.z"));
 assert.ok(!contactEmailPattern.test("kana @example.com"));
 assert.ok(!contactEmailPattern.test("kana@example.com\nbcc:x@y.z"));
+
+// Amazon の商品 URL は /dp/ASIN にそろえる。他人の tag や追跡用パラメータは残さない
+const tag = AMAZON_TAG ? `?tag=${AMAZON_TAG}` : "";
+assert.equal(gearLink("https://www.amazon.co.jp/Apple-MacBook/dp/B0DLHBM5C9/ref=sr_1_1?crid=X&tag=other-22"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
+assert.equal(gearLink("amazon.co.jp/gp/product/b0dlhbm5c9"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
+assert.equal(gearLink("https://amazon.co.jp/dp/B0DLHBM5C9?th=1"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
+// ASIN が読めない・Amazon でない・似た名前の別ドメインは触らない
+assert.equal(gearLink("https://www.amazon.co.jp/s?k=keyboard"), "https://www.amazon.co.jp/s?k=keyboard");
+assert.equal(gearLink("https://amzn.to/3abcdef"), "https://amzn.to/3abcdef");
+assert.equal(gearLink("https://evilamazon.co.jp/dp/B0DLHBM5C9"), "https://evilamazon.co.jp/dp/B0DLHBM5C9");
+assert.equal(gearLink("javascript:alert(1)"), null);
+assert.ok(amazonSearchUrl(" HHKB 静音 ").startsWith("https://www.amazon.co.jp/s?k=HHKB%20%E9%9D%99%E9%9F%B3"));

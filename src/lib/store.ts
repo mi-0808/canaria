@@ -49,7 +49,7 @@ export type Post = {
   replies: Reply[];
 };
 
-// 開発環境（仕事場）のアイテム。url は将来アフィリエイトリンクに差し替え可能
+// 開発環境（仕事場）のアイテム。url は表示のときに gearLink（src/lib/links.mjs）でアソシエイトリンクにする
 export const gearCategories = { machine: "パソコン", keyboard: "キーボード", display: "ディスプレイ", mouse: "マウス", audio: "オーディオ", other: "その他" } as const;
 // comment は「これいいよ」のひとこと。購入のきっかけになる部分
 export type Gear = { id: string; category: keyof typeof gearCategories; name: string; comment: string; url: string };

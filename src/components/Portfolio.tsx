@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Icon, { type IconName } from "@/components/Icon";
 import Sheet from "@/components/Sheet";
-import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
+import { contactEmailPattern, gearLink, linkName, normalizeLink } from "@/lib/links.mjs";
 import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { gearCategories, type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
@@ -205,8 +205,8 @@ export function LinkList({ links }: { links: string[] }) {
 }
 
 export function GearRow({ g }: { g: Gear }) {
-  // 商品 URL も https に絞ってから href に入れる（javascript: などを踏ませない）
-  const url = g.url ? normalizeLink(g.url) : null;
+  // 商品 URL も https に絞ってから href に入れる（javascript: などを踏ませない）。Amazon ならアソシエイトリンクにする
+  const url = g.url ? gearLink(g.url) : null;
   const body = (
     <>
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container"><Icon name={gearIcons[g.category]} /></span>
