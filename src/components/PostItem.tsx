@@ -44,7 +44,7 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
       {post.media?.kind === "audio" && (
         <div className="rounded-xl bg-primary-container p-3"><audio controls src={post.media.src} className="w-full" /></div>
       )}
-      {post.media?.kind === "video" && <video controls src={post.media.src} className="w-full rounded-xl bg-ink" />}
+      {post.media?.kind === "video" && <video controls src={post.media.src} className="w-full rounded-xl bg-secondary" />}
 
       {post.replies.length > 0 && (
         <ul className="space-y-2 rounded-xl bg-surface-1 p-3 text-sm">

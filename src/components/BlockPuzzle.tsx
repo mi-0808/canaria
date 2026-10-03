@@ -36,18 +36,18 @@ const blocks = [
     value: <p className="flex h-full items-center text-xs leading-relaxed text-fg-2">レシートを撮るだけで記録が終わる家計簿。企画から運用まで一人で担当。</p>,
   },
   {
-    id: "techs", label: "使用技術", icon: "</>", h: "h-7", piece: "bg-ink text-on-ink",
+    id: "techs", label: "使用技術", icon: "</>", h: "h-7", piece: "bg-secondary text-on-secondary",
     value: (
       <div className="flex h-full items-center gap-1.5">
-        {["Next.js", "TypeScript", "Supabase"].map((t) => <span key={t} className="rounded-full border border-line px-2 py-0.5 font-mono text-[10px] text-fg-2">{t}</span>)}
+        {["Next.js", "TypeScript", "Supabase"].map((t) => <span key={t} className="rounded-full bg-tertiary-container px-2 py-0.5 font-mono text-[10px] text-on-tertiary-container">{t}</span>)}
       </div>
     ),
   },
   {
-    id: "url", label: "リンク", icon: "↗", h: "h-9", piece: "bg-primary text-on-primary",
+    id: "url", label: "リンク", icon: "↗", h: "h-9", piece: "bg-tertiary text-on-tertiary",
     value: (
       <div className="flex h-full items-center">
-        <span className="rounded-lg border-2 border-fg px-3 py-1.5 text-xs font-bold">実際に触ってみる ↗</span>
+        <span className="rounded-lg bg-tertiary-container px-3 py-1.5 text-xs font-bold text-on-tertiary-container">実際に触ってみる ↗</span>
       </div>
     ),
   },

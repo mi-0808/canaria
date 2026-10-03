@@ -2,7 +2,7 @@
 
 const works = [
   { title: "3秒家計簿アプリ", status: "運用中", live: true, techs: ["Next.js", "Supabase"], cover: "bg-primary-container" },
-  { title: "チーム開発SNS", status: "ベータ公開", live: false, techs: ["React", "Firebase"], cover: "bg-ink" },
+  { title: "チーム開発SNS", status: "ベータ公開", live: false, techs: ["React", "Firebase"], cover: "bg-secondary" },
 ];
 
 function MiniPage({ mobile = false }: { mobile?: boolean }) {
@@ -31,7 +31,7 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
               <span className={`inline-block rounded-full px-1.5 py-px text-[7px] font-bold ${w.live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>{w.status}</span>
               <p className="text-[9px] font-bold">{w.title}</p>
               <div className="flex gap-1">
-                {w.techs.map((t) => <span key={t} className="rounded-full border border-line px-1 font-mono text-[6px] text-fg-3">{t}</span>)}
+                {w.techs.map((t) => <span key={t} className="rounded-full bg-tertiary-container px-1 font-mono text-[6px] text-on-tertiary-container">{t}</span>)}
               </div>
             </div>
           </div>
@@ -53,7 +53,7 @@ export default function DeviceShowcase() {
         <div className="relative mx-auto max-w-3xl pb-6">
           {/* PC */}
           <div className="mx-auto w-[88%]">
-            <div className="rounded-t-2xl border-[10px] border-b-0 border-fg bg-ink shadow-2xl">
+            <div className="rounded-t-2xl border-[10px] border-b-0 border-secondary bg-secondary shadow-2xl">
               <div className="aspect-[16/10] overflow-hidden rounded-t-md">
                 <MiniPage />
               </div>
@@ -65,9 +65,9 @@ export default function DeviceShowcase() {
           </div>
 
           {/* スマホ */}
-          <div className="absolute right-0 bottom-0 w-[26%] min-w-28 rotate-3 rounded-[1.75rem] border-[6px] border-fg bg-ink shadow-2xl">
+          <div className="absolute right-0 bottom-0 w-[26%] min-w-28 rotate-3 rounded-[1.75rem] border-[6px] border-secondary bg-secondary shadow-2xl">
             <div className="relative aspect-[9/19] overflow-hidden rounded-[1.25rem]">
-              <div className="absolute top-1 left-1/2 z-10 h-3 w-12 -translate-x-1/2 rounded-full bg-ink" />
+              <div className="absolute top-1 left-1/2 z-10 h-3 w-12 -translate-x-1/2 rounded-full bg-secondary" />
               <div className="h-full pt-3">
                 <MiniPage mobile />
               </div>

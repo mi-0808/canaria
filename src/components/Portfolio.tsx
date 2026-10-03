@@ -55,14 +55,13 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
         {w.role && <p className="text-sm font-bold">役割：{w.role}</p>}
         {techs.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {techs.map((t) => <span key={t} className="rounded-full border border-line px-3 py-1 font-mono text-xs text-fg-2">{t}</span>)}
+            {techs.map((t) => <span key={t} className="rounded-full bg-tertiary-container px-3 py-1 font-mono text-xs text-on-tertiary-container">{t}</span>)}
           </div>
         )}
         <div className="mt-auto flex flex-wrap items-center gap-4 pt-2">
-          {/* 色付きボタンは1画面1つのルールのため、黒の枠線ボタン */}
+          {/* 濃い黄色は1画面1つなので、作品のリンクは2番目のボタン（薄い藍） */}
           {w.url && (
-            <a href={w.url} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-fg px-5 py-2.5 text-sm font-bold transition hover:bg-ink hover:text-primary">
+            <a href={w.url} target="_blank" rel="noopener noreferrer" className="btn-tonal">
               実際に触ってみる ↗
             </a>
           )}
@@ -88,7 +87,7 @@ export function GearRow({ g, children }: { g: Gear; children?: React.ReactNode }
       {g.url ? (
         <a href={g.url} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
           {body}
-          <span className="ml-auto text-fg-3">↗</span>
+          <span className="ml-auto text-tertiary">↗</span>
         </a>
       ) : (
         <div className="flex min-w-0 flex-1 items-center gap-3">{body}</div>

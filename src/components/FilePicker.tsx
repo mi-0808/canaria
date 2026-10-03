@@ -34,7 +34,7 @@ export default function FilePicker({
           {input}
           {uploading ? <span className="flex h-full items-center justify-center font-mono text-[10px] text-fg-3">uploading…</span>
             : value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-2xl text-fg-3">＋</span>}
-          <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-on-ink opacity-0 transition group-hover:opacity-100">変更</span>
+          <span className="absolute inset-0 flex items-center justify-center bg-secondary/40 text-xs text-on-secondary opacity-0 transition group-hover:opacity-100">変更</span>
         </label>
         <p className="text-xs text-fg-3">クリックして画像を選択<br />正方形がおすすめ</p>
       </div>
@@ -48,7 +48,7 @@ export default function FilePicker({
       ) : value && isImage ? (
         <>
           <img src={value} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-sm text-on-ink opacity-0 transition group-hover:opacity-100">画像を変更</span>
+          <span className="absolute inset-0 flex items-center justify-center bg-secondary/40 text-sm text-on-secondary opacity-0 transition group-hover:opacity-100">画像を変更</span>
         </>
       ) : value ? (
         <span className="font-mono text-sm text-fg-2">✓ ファイルを選択済み（クリックで変更）</span>

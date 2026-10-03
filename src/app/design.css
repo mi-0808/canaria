@@ -10,13 +10,17 @@
  *
  * ■ 色
  * 1. 面の色と文字色はペアで使う。bg-primary なら text-on-primary。面に黒や灰色を勝手に載せない
- * 2. カナリア（黄）は面にだけ使う。白地の上の文字色にはしない（墨の面の上は可）
- * 3. 濃いカナリアの塗り（bg-primary / btn-primary）は1画面に1つ、メインボタンだけ
- * 4. 状態色は意味でだけ使う。赤=エラー・削除、緑=成功・公開中、青=リンク・情報、橙=注意
- * 5. グラデーション・発光する影は使わない。奥行きは面の段階（surface → surface-3）で出す
- * 6. 文字色は fg / fg-2 / fg-3 と状態色だけ。text-fg-3/60 のように薄めない（コントラストが崩れる）。
+ * 2. 色の役割は3つ。混ぜない
+ *    - カナリア（primary）= 主役。メインボタンと見出しのマーカー
+ *    - 藍（tertiary）= 押せるもの・つながり。2番目のボタン（btn-tonal）・リンク・技術タグ・発信
+ *    - グレー（secondary）= 締め。LP の最後の帯のような濃い面
+ * 3. カナリアは面にだけ使う。白地の上の文字色にはしない（グレーの面の上は可）
+ * 4. 濃いカナリアの塗り（bg-primary / btn-primary）は1画面（同時に見える範囲）に1つ、メインボタンだけ
+ * 5. 状態色は意味でだけ使う。赤=エラー・削除、緑=成功・公開中、橙=注意。リンク・情報は藍
+ * 6. グラデーション・発光する影は使わない。奥行きは面の段階（surface → surface-3）で出す
+ * 7. 文字色は fg / fg-2 / fg-3・藍・状態色だけ。text-fg-3/60 のように薄めない（コントラストが崩れる）。
  *    優先度は色の薄さではなく、サイズ・配置・余白で表す
- * 7. 情報を色だけで伝えない。状態やエラーには文言かアイコンを添える
+ * 8. 情報を色だけで伝えない。状態やエラーには文言かアイコンを添える
  *
  * ■ 文字（新しく作る・触った画面から寄せる。既存への一括適用は求めない）
  * - 本文・入力値は text-base（16px）以上。補助・ラベル・メタ情報は text-sm（14px）以上
@@ -54,22 +58,23 @@
 @theme {
   --color-*: initial;
 
-  /* ブランド: カナリア（M3 primary） */
+  /* ブランド: カナリア（M3 primary）= 主役 */
   --color-primary: #ffc72c;
   --color-on-primary: #2b2100;
   --color-primary-container: #fff4cc;
   --color-on-primary-container: #5c4300;
-  /* ブランド: 墨（M3 secondary） */
-  --color-ink: #26231e;
-  --color-on-ink: #fff8e1;
-  --color-ink-container: #eeece7;
-  --color-on-ink-container: #1d1b17;
+  /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
+  --color-secondary: #2a2e35;
+  --color-on-secondary: #f2f3f5;
+  --color-secondary-container: #eceef1;
+  --color-on-secondary-container: #2e333b;
+  /* ブランド: 藍（M3 tertiary）= 押せるもの・つながり。リンク・情報もこの色 */
+  --color-tertiary: #2f4fc8;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e3e8fb;
+  --color-on-tertiary-container: #1c2e7a;
 
   /* 状態色（HIG system colors のように意味を固定） */
-  --color-info: #1f5fd1;
-  --color-on-info: #ffffff;
-  --color-info-container: #dce8fc;
-  --color-on-info-container: #16469e;
   --color-success: #17804a;
   --color-on-success: #ffffff;
   --color-success-container: #dbf4e3;
@@ -96,8 +101,8 @@
 
   /* ダーク（未実装。入れるときは上と同じ名前でこの値に差し替える）
      primary #ffd54a / on #2b2100 / container #3b300f / on-container #ffe08a
-     ink #e8e5de / on #1d1b17 / container #2c2a25 / on-container #e8e5de
-     info #9cc1ff / on #0b2552 / container #17325f / on-container #c9dcff
+     secondary #c9ced6 / on #1e2228 / container #2e333b / on-container #dde1e7
+     tertiary #9fb2ff / on #0f1b4d / container #1b2758 / on-container #d3dcff
      success #6fd49a / on #05301a / container #133a22 / on-container #b6efc9
      warning #ffa766 / on #3a1a00 / container #4a2600 / on-container #ffd7b0
      error #ff8a7e / on #4a0e09 / container #5a1a15 / on-container #ffdad5
@@ -130,6 +135,10 @@ body {
 /* hover は M3 の state layer（面に文字色を 8% 重ねる） */
 @utility btn-primary {
   @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-[color-mix(in_srgb,var(--color-primary),var(--color-on-primary)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
+}
+/* 2番目に大事な行動。薄い藍の面（M3 の filled tonal button）。主役は btn-primary に任せる */
+@utility btn-tonal {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-tertiary-container px-5 py-2.5 text-sm font-semibold text-on-tertiary-container transition hover:bg-[color-mix(in_srgb,var(--color-tertiary-container),var(--color-on-tertiary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
 }
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-fg-2 transition hover:border-outline hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
