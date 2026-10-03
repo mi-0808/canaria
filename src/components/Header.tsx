@@ -32,15 +32,21 @@ export default function Header() {
           <Logo /> Canaria
           <span className="rounded-md bg-yellow-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-yellow-800">beta</span>
         </Link>
-        <nav className="flex gap-6 text-sm">
-          {nav.map(([href, label]) => (
+        <nav className="flex gap-4 text-sm whitespace-nowrap sm:gap-6">
+          {/* 未ログインだとどちらもログイン画面に飛ぶだけなので出さない */}
+          {user && nav.map(([href, label]) => (
             <Link key={href} href={href}
               className={`transition ${path.startsWith(href) ? "font-bold text-black" : "text-zinc-500 hover:text-black"}`}>
               {label}
             </Link>
           ))}
           {user && <button className="text-zinc-500 transition hover:text-black" onClick={logout}>ログアウト</button>}
-          {user === null && <Link href="/login" className="text-zinc-500 transition hover:text-black">ログイン</Link>}
+          {user === null && (
+            <>
+              <Link href="/login" className="text-zinc-500 transition hover:text-black">ログイン</Link>
+              <Link href="/signup" className="font-semibold text-black underline-offset-4 hover:underline">新規会員登録</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>
