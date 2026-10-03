@@ -9,7 +9,7 @@ import PostItem from "@/components/PostItem";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
-import { normalizeLink } from "@/lib/links.mjs";
+import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import {
   ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
   useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
@@ -85,10 +85,11 @@ export default function MyPage() {
   };
   const usernameInvalid = !!profile && !usernamePattern.test(profile.username);
   const linksInvalid = !!profile?.links.some((l) => l.trim() && !normalizeLink(l));
+  const emailInvalid = !!profile?.contact_email.trim() && !contactEmailPattern.test(profile.contact_email.trim());
   const saveProfile = () =>
     run(async () => {
       // 空の行は捨て、https にそろえた形で保存する（DB の valid_links と同じ条件）
-      const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l) };
+      const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l), contact_email: profile!.contact_email.trim() };
       const err = await putProfile(user.id, saved);
       if (err) return setUsernameError(err);
       setData({ ...data, profile: saved });
@@ -212,7 +213,7 @@ export default function MyPage() {
       />
 
       <Sheet open={!!profile} onClose={() => setProfile(null)} dismissible={false} title="プロフィールを編集"
-        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid} saving={saving} />}>
+        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid} saving={saving} />}>
         {profile && (
           <>
             <div className="space-y-1.5">
@@ -242,6 +243,15 @@ export default function MyPage() {
             </div>
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
+            </Field>
+            <Field label="連絡用メールアドレス">
+              <input type="email" inputMode="email" autoComplete="email" className="input" placeholder="you@example.com" value={profile.contact_email}
+                aria-invalid={emailInvalid} onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })} />
+              {emailInvalid ? (
+                <span role="alert" className="block text-sm text-error">メールアドレスの形で入力してください</span>
+              ) : (
+                <span className="block text-sm text-fg-3">公開ページに「メールで連絡」ボタンが出ます。誰でも見られるので、ログイン用と別のアドレスでも大丈夫です</span>
+              )}
             </Field>
             <LinksEditor links={profile.links} onChange={(links) => setProfile({ ...profile, links })} />
           </>

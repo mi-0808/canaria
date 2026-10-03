@@ -24,6 +24,8 @@ create table public.profiles (
   tagline text not null default '',
   bio text not null default '' check (char_length(bio) <= 200),
   links text[] not null default '{}' check (public.valid_links(links)), -- SNS・ブログなどの URL
+  -- 仕事の相談を受けるメールアドレス（公開ページに出る）。mailto: に件名などを足せる文字は通さない（画面側は links.mjs の contactEmailPattern）
+  contact_email text not null default '' check (contact_email = '' or (char_length(contact_email) <= 254 and contact_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')),
   created_at timestamptz not null default now()
 );
 
@@ -139,3 +141,6 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 --   from unnest(links) as l
 -- $$;
 -- alter table public.profiles add column links text[] not null default '{}' check (public.valid_links(links));
+-- 2026-10-03 連絡用メールアドレス
+-- alter table public.profiles add column contact_email text not null default ''
+--   check (contact_email = '' or (char_length(contact_email) <= 254 and contact_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'));

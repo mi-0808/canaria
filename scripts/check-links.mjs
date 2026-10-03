@@ -1,6 +1,6 @@
 // src/lib/links.mjs の自己チェック。URL の正規化は「危ないリンクを描画させない」守りなので、壊れたら npm run check で止める
 import assert from "node:assert/strict";
-import { linkName, normalizeLink } from "../src/lib/links.mjs";
+import { contactEmailPattern, linkName, normalizeLink } from "../src/lib/links.mjs";
 
 // スキームが無ければ https を補う。http は https に上げる
 assert.equal(normalizeLink("github.com/you"), "https://github.com/you");
@@ -26,3 +26,12 @@ assert.equal(linkName("https://twitter.com/you"), "X");
 assert.equal(linkName("https://www.youtube.com/@you"), "YouTube");
 assert.equal(linkName("https://evilgithub.com/you"), "evilgithub.com");
 assert.equal(linkName("https://www.example.com/"), "example.com");
+
+// 連絡用メールアドレス。mailto: に件名や宛先を足せる文字（? & 空白 改行）は通さない
+assert.ok(contactEmailPattern.test("kana@example.com"));
+assert.ok(contactEmailPattern.test("kana.work+canaria@mail.example.co.jp"));
+assert.ok(!contactEmailPattern.test("kana@example"));
+assert.ok(!contactEmailPattern.test("kana@example.com?subject=hi"));
+assert.ok(!contactEmailPattern.test("kana@example.com&cc=x@y.z"));
+assert.ok(!contactEmailPattern.test("kana @example.com"));
+assert.ok(!contactEmailPattern.test("kana@example.com\nbcc:x@y.z"));

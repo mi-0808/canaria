@@ -3,6 +3,12 @@
 
 export const MAX_LINKS = 6;
 
+/**
+ * 連絡用メールアドレス。DB の check と同じ条件。公開ページで mailto: のリンクにするので、
+ * 「?」「&」のような、件名や宛先を足せてしまう文字は通さない
+ */
+export const contactEmailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
 /** @type {[string[], string][]} [ドメイン, 表示名]。サブドメイン（gist.github.com など）も同じサービスとみなす */
 const services = [
   [["github.com"], "GitHub"],
