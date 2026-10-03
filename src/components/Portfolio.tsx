@@ -100,8 +100,7 @@ export function GearRow({ g, children }: { g: Gear; children?: React.ReactNode }
 export function Empty({ text }: { text: string }) {
   return (
     <div className="rounded-2xl border-2 border-dashed border-line py-14 text-center">
-      <p className="font-mono text-sm text-fg-3">empty.</p>
-      <p className="mt-1 text-sm text-fg-3">{text}</p>
+      <p className="text-sm text-fg-2">{text}</p>
     </div>
   );
 }

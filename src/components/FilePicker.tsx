@@ -32,7 +32,7 @@ export default function FilePicker({
       <div className="flex items-center gap-4">
         <label className="group relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-outline bg-surface-1 transition hover:border-primary">
           {input}
-          {uploading ? <span className="flex h-full items-center justify-center font-mono text-[10px] text-fg-3">uploading…</span>
+          {uploading ? <span className="flex h-full items-center justify-center font-mono text-[10px] text-fg-3">アップロード中…</span>
             : value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-2xl text-fg-3">＋</span>}
           <span className="absolute inset-0 flex items-center justify-center bg-secondary/40 text-xs text-on-secondary opacity-0 transition group-hover:opacity-100">変更</span>
         </label>
@@ -56,7 +56,7 @@ export default function FilePicker({
         <>
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-xl text-fg-3 shadow-sm">↑</span>
           <span className="text-sm text-fg-2">クリックしてファイルを選択</span>
-          {maxMB && <span className="font-mono text-xs text-fg-3">max {maxMB}MB</span>}
+          {maxMB && <span className="text-xs text-fg-3">{maxMB}MBまで</span>}
         </>
       )}
     </label>

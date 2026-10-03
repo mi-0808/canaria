@@ -47,14 +47,14 @@ const features = [
     visual: (
       <div className="space-y-3 text-sm">
         <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-3.5 shadow-md">
-          <span className="font-mono text-[11px] text-fg-3">@you · 2h</span>
+          <span className="font-mono text-[11px] text-fg-3">@you · 2時間前</span>
           <br />認証まわりで詰まってます…どこでガードするのが正解？
         </div>
         <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-secondary p-3.5 text-on-secondary shadow-md">
-          <span className="font-mono text-[11px] text-primary">@senior_dev · 1h</span>
+          <span className="font-mono text-[11px] text-primary">@senior_dev · 1時間前</span>
           <br />middlewareでまとめて守るのがおすすめ！
         </div>
-        <p className="text-right font-mono text-[11px] text-on-tertiary-container">★ 12 reactions</p>
+        <p className="text-right text-xs text-on-tertiary-container">★ リアクション 12</p>
       </div>
     ),
   },
@@ -161,13 +161,13 @@ export default function Home() {
         {/* ある/なしの比較 */}
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-line bg-surface-1 p-6">
-            <p className="font-mono text-xs text-fg-3">without portfolio</p>
+            <p className="text-sm font-bold text-fg-2">ポートフォリオがない場合</p>
             <p className="mt-3 text-sm text-fg-3">応募メッセージ</p>
             <p className="mt-1 rounded-xl bg-surface p-4 text-sm text-fg-3">「未経験ですが、やる気はあります。GitHubを見てください。」</p>
             <p className="mt-3 text-sm text-fg-3">→ 何ができる人なのか、相手に探してもらうことになる</p>
           </div>
           <div className="rounded-2xl border border-primary bg-primary-container p-6 text-on-primary-container">
-            <p className="font-mono text-xs">with Canaria</p>
+            <p className="text-sm font-bold">Canariaがある場合</p>
             <p className="mt-3 text-sm font-medium">応募メッセージ</p>
             <p className="mt-1 rounded-xl bg-surface p-4 text-sm font-medium">「作ったものをまとめています。canaria.app/@you」</p>
             <p className="mt-3 text-sm font-bold">→ 作品・役割・使った技術が、1ページで伝わる</p>

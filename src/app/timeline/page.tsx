@@ -71,7 +71,7 @@ export default function Timeline() {
           {savedOnly ? "← すべて表示" : "☆ 保存した投稿"}
         </button>
       </div>
-      {shown.length === 0 && <p className="py-10 text-center font-mono text-sm text-fg-3">no posts yet.</p>}
+      {shown.length === 0 && <p className="py-10 text-center text-sm text-fg-2">まだ投稿がありません。制作の裏側を最初に発信してみよう</p>}
       <div className="space-y-4">
         {shown.map((p) => <PostItem key={p.id} post={p} uid={user.id} onChange={update} />)}
       </div>
