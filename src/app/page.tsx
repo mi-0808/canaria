@@ -10,9 +10,17 @@ const worries = [
   ["無料って、なにか裏がありそう", "初期費用は0円。まだ結果が出ていない人こそ、コストをかけずに始められるように作りました。"],
 ];
 
+// 機能ごとに色の役割を分ける: 作品=カナリア（主役）、発信=藍（つながり）、仕事場=グレー
+const tones = {
+  primary: { panel: "bg-primary-container", num: "text-primary/50", text: "text-on-primary-container", dot: "bg-primary-container text-on-primary-container" },
+  tertiary: { panel: "bg-tertiary-container", num: "text-tertiary/15", text: "text-on-tertiary-container", dot: "bg-tertiary-container text-on-tertiary-container" },
+  secondary: { panel: "bg-secondary-container", num: "text-secondary/10", text: "text-on-secondary-container", dot: "bg-secondary-container text-on-secondary-container" },
+};
+
 const features = [
   {
     n: "01",
+    tone: tones.primary,
     tag: "portfolio",
     title: "簡単に、作品を並べる",
     desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
@@ -33,6 +41,7 @@ const features = [
   },
   {
     n: "02",
+    tone: tones.tertiary,
     tag: "timeline",
     title: "つくりながら発信して、プロに教わる",
     desc: "まだ世に出ていない作品の裏側を、テキスト・音声・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
@@ -43,16 +52,17 @@ const features = [
           <span className="font-mono text-[11px] text-fg-3">@you · 2h</span>
           <br />認証まわりで詰まってます…どこでガードするのが正解？
         </div>
-        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-ink p-3.5 text-on-ink shadow-md">
+        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-secondary p-3.5 text-on-secondary shadow-md">
           <span className="font-mono text-[11px] text-primary">@senior_dev · 1h</span>
           <br />middlewareでまとめて守るのがおすすめ！
         </div>
-        <p className="text-right font-mono text-[11px] text-on-primary-container">★ 12 reactions</p>
+        <p className="text-right font-mono text-[11px] text-on-tertiary-container">★ 12 reactions</p>
       </div>
     ),
   },
   {
     n: "03",
+    tone: tones.secondary,
     tag: "workspace",
     title: "できる人の仕事場から、次の相棒を見つける",
     desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
@@ -68,7 +78,7 @@ const features = [
               <p className="font-medium">{t}</p>
               <p className="font-sans text-[11px] text-fg-3">“{c}”</p>
             </div>
-            <span className="ml-auto text-fg-3">↗</span>
+            <span className="ml-auto text-tertiary">↗</span>
           </div>
         ))}
       </div>
@@ -94,15 +104,16 @@ export default function Home() {
             <p className="max-w-md text-fg-2">
               作品はある。でも、まだ仕事にはつながっていない。そんなエンジニアのための、打ち込むだけで完成するポートフォリオ＋α。
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
               <Link href="/signup" className="btn-primary px-6 py-3 text-base">無料ではじめる →</Link>
+              <Link href="#features" className="btn-tonal px-6 py-3 text-base">できることを見る</Link>
               <span className="font-mono text-xs text-fg-3">初期費用 ¥0</span>
             </div>
           </div>
 
           {/* ブロックを積むと作品ページになる、というモック */}
           <div className="relative mx-auto w-full max-w-sm md:w-80 lg:w-[26rem] lg:max-w-none">
-            <div className="absolute -inset-3 rotate-1 rounded-3xl bg-primary-container" />
+            <div className="absolute -inset-3 rotate-1 rounded-3xl bg-tertiary-container" />
             <BlockPuzzle />
           </div>
         </div>
@@ -111,20 +122,20 @@ export default function Home() {
       <DeviceShowcase />
 
       {/* Features */}
-      <section className="space-y-10">
+      <section id="features" className="scroll-mt-20 space-y-10">
         <div className="space-y-2 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
         </div>
         <div className="space-y-20">
           {features.map((f, i) => (
             <div key={f.n} className="grid items-center gap-10 md:grid-cols-2">
-              <div className={`relative overflow-hidden rounded-3xl bg-primary-container p-8 sm:p-10 ${i % 2 ? "md:order-2" : ""}`}>
+              <div className={`relative overflow-hidden rounded-3xl ${f.tone.panel} p-8 sm:p-10 ${i % 2 ? "md:order-2" : ""}`}>
                 <div className="bg-grid absolute inset-0 opacity-50" />
-                <span className="absolute -top-6 -right-2 font-mono text-[10rem] leading-none font-bold text-primary/50">{f.n}</span>
+                <span className={`absolute -top-6 -right-2 font-mono text-[10rem] leading-none font-bold ${f.tone.num}`}>{f.n}</span>
                 <div className="relative">{f.visual}</div>
               </div>
               <div className="space-y-5">
-                <p className="flex items-center gap-2 font-mono text-sm text-on-primary-container">
+                <p className={`flex items-center gap-2 font-mono text-sm ${f.tone.text}`}>
                   {f.n} / {f.tag}
                   {f.soon && <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] text-fg-3">coming soon</span>}
                 </p>
@@ -133,7 +144,7 @@ export default function Home() {
                 <ul className="space-y-2.5">
                   {f.points.map((pt) => (
                     <li key={pt} className="flex items-start gap-3 text-sm">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[11px] font-bold text-on-primary-container">✓</span>
+                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${f.tone.dot} text-[11px] font-bold`}>✓</span>
                       {pt}
                     </li>
                   ))}
@@ -185,13 +196,11 @@ export default function Home() {
       </section>
 
       {/* Closing */}
-      <section className="relative overflow-hidden rounded-3xl bg-primary-container px-8 py-14 text-on-primary-container text-center">
-        <div className="bg-grid absolute inset-0 opacity-40" />
-        <p className="relative font-mono text-xs">$ canaria init --free</p>
-        <h2 className="relative mt-3 text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
-        <Link href="/signup" className="relative mt-6 inline-block font-semibold underline decoration-2 underline-offset-4 hover:no-underline">
-          マイページをつくる →
-        </Link>
+      <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
+        <p className="font-mono text-xs">$ canaria init --free</p>
+        <h2 className="mt-3 text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
+        {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
+        <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">マイページをつくる →</Link>
       </section>
     </div>
   );
