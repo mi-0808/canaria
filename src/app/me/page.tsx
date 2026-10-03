@@ -29,7 +29,7 @@ function Field({ label, children, hint }: { label: string; children: React.React
     <label className="block space-y-1.5">
       <span className="flex justify-between">
         <span className="label">{label}</span>
-        {hint && <span className="font-mono text-[11px] text-zinc-400">{hint}</span>}
+        {hint && <span className="font-mono text-[11px] text-fg-3">{hint}</span>}
       </span>
       {children}
     </label>
@@ -120,7 +120,7 @@ export default function MyPage() {
               <input type="url" className="input font-mono" placeholder="https://" value={work.url} onChange={(e) => setWork({ ...work, url: e.target.value })} />
             </Field>
           </div>
-          <div className="flex justify-end gap-2 border-t border-zinc-100 pt-5 md:col-span-2">
+          <div className="flex justify-end gap-2 border-t border-line pt-5 md:col-span-2">
             <button className="btn" onClick={() => setWork(null)}>キャンセル</button>
             <button className="btn-primary" disabled={!work.title.trim()} onClick={saveWork}>保存</button>
           </div>
@@ -165,7 +165,7 @@ export default function MyPage() {
           <Field label="商品URL">
             <input type="url" className="input font-mono" placeholder="https://" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
           </Field>
-          <div className="flex justify-end gap-2 border-t border-zinc-100 pt-5">
+          <div className="flex justify-end gap-2 border-t border-line pt-5">
             <button className="btn" onClick={() => setGear(null)}>キャンセル</button>
             <button className="btn-primary" disabled={!gear.name.trim()} onClick={saveGear}>保存</button>
           </div>
@@ -198,11 +198,11 @@ export default function MyPage() {
   return (
     <div className="space-y-10">
       {missing.length > 0 && !profile && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50 px-5 py-4 text-sm">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-warning-container px-5 text-on-warning-container py-4 text-sm">
           <span className="text-lg">🐤</span>
           <span>
             プロフィールを完成させると、タイムラインが見られるようになります。
-            <span className="ml-1 font-mono text-xs text-amber-700">未入力: {missing.join(" / ")}</span>
+            <span className="ml-1 font-mono text-xs">未入力: {missing.join(" / ")}</span>
           </span>
         </div>
       )}
@@ -210,7 +210,6 @@ export default function MyPage() {
       <section className="space-y-4">
         <div className="flex items-end justify-between">
           <div>
-            <p className="label">{"// profile"}</p>
             <h2 className="text-2xl font-bold tracking-tight">プロフィール</h2>
           </div>
           <div className="flex gap-2">
@@ -233,7 +232,7 @@ export default function MyPage() {
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
-            <div className="flex justify-end gap-2 border-t border-zinc-100 pt-5">
+            <div className="flex justify-end gap-2 border-t border-line pt-5">
               <button className="btn" onClick={() => setProfile(null)}>キャンセル</button>
               <button className="btn-primary" onClick={saveProfile}>保存</button>
             </div>

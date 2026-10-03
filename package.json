@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check": "next typegen && tsc --noEmit && eslint && sh scripts/check-tokens.sh"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

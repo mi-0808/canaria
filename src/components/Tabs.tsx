@@ -6,12 +6,12 @@ export default function Tabs({ tabs }: { tabs: { label: string; count: number; c
   const [active, setActive] = useState(0);
   return (
     <section className="space-y-6">
-      <div className="flex gap-1 border-b border-zinc-200">
+      <div className="flex gap-1 border-b border-line">
         {tabs.map((t, i) => (
           <button key={t.label} onClick={() => setActive(i)}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition ${i === active ? "border-yellow-400 font-bold" : "border-transparent text-zinc-500 hover:text-black"}`}>
+            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition ${i === active ? "border-primary font-bold" : "border-transparent text-fg-3 hover:text-fg"}`}>
             {t.label}
-            <span className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] ${i === active ? "bg-yellow-100 text-yellow-800" : "bg-zinc-100"}`}>{t.count}</span>
+            <span className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] ${i === active ? "bg-primary-container text-on-primary-container" : "bg-surface-2"}`}>{t.count}</span>
           </button>
         ))}
       </div>

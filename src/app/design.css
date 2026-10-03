@@ -1,0 +1,173 @@
+/*
+ * Canaria デザイン方針（見た目のルール・色・共通部品はすべてこのファイルで定義する）
+ * 参考: Material Design 3（色の役割）／Apple HIG（意味の固定・文字の段階）／MyHood の UI 規約
+ *
+ * ■ トークン
+ * - このファイルが唯一の真実。コンポーネントに色や任意の値（text-[13px] など）を直接書かない
+ * - 足りないときは「先にこのファイルにトークンを足す → コンポーネントで使う」の二段階。逆順だと整理されない
+ * - Tailwind 標準の色（zinc / yellow / black / white など）は無効にしてある。使ってもビルドは通るが
+ *   無音で色が付かない。npm run check（scripts/check-tokens.sh）で落とす
+ *
+ * ■ 色
+ * 1. 面の色と文字色はペアで使う。bg-primary なら text-on-primary。面に黒や灰色を勝手に載せない
+ * 2. 色の役割は3つ。混ぜない
+ *    - カナリア（primary）= 主役。メインボタンと見出しのマーカー
+ *    - 藍（tertiary）= 押せるもの・つながり。2番目のボタン（btn-tonal）・リンク・技術タグ・発信
+ *    - グレー（secondary）= 締め。LP の最後の帯のような濃い面
+ * 3. カナリアは面にだけ使う。白地の上の文字色にはしない（グレーの面の上は可）
+ * 4. 濃いカナリアの塗り（bg-primary / btn-primary）は1画面（同時に見える範囲）に1つ、メインボタンだけ
+ * 5. 状態色は意味でだけ使う。赤=エラー・削除、緑=成功・公開中、橙=注意。リンク・情報は藍
+ * 6. グラデーション・発光する影は使わない。奥行きは面の段階（surface → surface-3）で出す
+ * 7. 文字色は fg / fg-2 / fg-3・藍・状態色だけ。text-fg-3/60 のように薄めない（コントラストが崩れる）。
+ *    優先度は色の薄さではなく、サイズ・配置・余白で表す
+ * 8. 情報を色だけで伝えない。状態やエラーには文言かアイコンを添える
+ *
+ * ■ 文字（新しく作る・触った画面から寄せる。既存への一括適用は求めない）
+ * - 本文・入力値は text-base（16px）以上。補助・ラベル・メタ情報は text-sm（14px）以上
+ * - text-xs（12px）はバッジ内の短い語・タイムスタンプ・注記だけ。文章には使わない
+ * - 10px 以下は禁止。入力欄が 16px 未満だと iOS でフォーカス時に拡大される
+ * - 日本語の本文は leading-relaxed。見出しは leading-tight 可
+ * - 見出しの上に「// responsive」のような小さい飾りの副題を付けない。見出しだけで伝える
+ * - 画面の文言は日本語で書く。「empty.」「no posts yet.」のような英語の飾り文言は使わない
+ *   （固有名詞・技術名・URL・ユーザー名はそのまま）
+ *
+ * ■ アクセシビリティ（WCAG 2.1 AA。後付けしない）
+ * - コントラスト比: 文字 4.5 以上、大きい文字・枠線・アイコン 3 以上（下の組み合わせは確認済み）
+ * - 押せる要素は 44×44px 以上。見た目を小さくしたいときは padding で当たり判定を広げる
+ * - focus-visible の表示を消さない。outline-none を書くなら代わりのリングを同時に付ける
+ * - 押せるものは <button> / <a>。<div onClick> は使わない。アイコンだけのボタンには aria-label
+ * - 動きは prefers-reduced-motion を尊重する（このファイルの末尾で一括対応済み）
+ *
+ * ■ モバイル（スマホを基準に作り、広い画面へ広げる）
+ * - 基準は 375px 幅。クラスは「スマホの値 → sm: / md: / lg: で上書き」の順に書く。
+ *   PC の値を先に書いて max-md: などで縮める書き方はしない
+ * - 375px で横スクロールを出さない。固定幅（w-[600px] / min-w-[...]）は使わず、w-full + max-w-* で上限を付ける
+ * - 左右の余白は px-4（16px）以上。文字を画面の端に付けない
+ * - 横並びはスマホで縦に積むか折り返す（grid-cols-1 md:grid-cols-2 / flex-wrap）
+ * - スマホだからと文字を小さくしない。大きい見出しはスマホの値から md: で大きくする
+ * - ホバーに頼らない。ホバーでしか出ない操作や情報を作らない（スマホにはホバーが無い）
+ * - 押せる要素同士は 8px 以上離す。親指で押し間違えない間隔にする
+ * - ナビゲーションは 375px に収める。収まらないなら項目を減らすか、下部タブ・メニューに逃がす
+ * - 画面端に固定するヘッダー・バーは env(safe-area-inset-*) でノッチやホームバーを避ける
+ * - 確認は 375px と 1280px の2幅で行う。スクリーンショットも2枚撮る
+ *
+ * ■ 進め方
+ * - 新しい UI・レイアウト変更には参考画像か参考サイトを1つ以上用意する。無ければ作る前に聞く
+ * - レビューは時間を空ける。直後は「動いた」で満足してしまうので、別の日にスクショを見て違和感を探す
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+
+  /* ブランド: カナリア（M3 primary）= 主役 */
+  --color-primary: #ffc72c;
+  --color-on-primary: #2b2100;
+  --color-primary-container: #fff4cc;
+  --color-on-primary-container: #5c4300;
+  /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
+  --color-secondary: #2a2e35;
+  --color-on-secondary: #f2f3f5;
+  --color-secondary-container: #eceef1;
+  --color-on-secondary-container: #2e333b;
+  /* ブランド: 藍（M3 tertiary）= 押せるもの・つながり。リンク・情報もこの色 */
+  --color-tertiary: #2f4fc8;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e3e8fb;
+  --color-on-tertiary-container: #1c2e7a;
+
+  /* 状態色（HIG system colors のように意味を固定） */
+  --color-success: #17804a;
+  --color-on-success: #ffffff;
+  --color-success-container: #dbf4e3;
+  --color-on-success-container: #0e5a2e;
+  --color-warning: #b95300;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #ffe7d1;
+  --color-on-warning-container: #7a3600;
+  --color-error: #c9302a;
+  --color-on-error: #ffffff;
+  --color-error-container: #fde4e2;
+  --color-on-error-container: #8c1d16;
+
+  /* ニュートラル: 面（M3 surface container）→ 線 → 文字（HIG label） */
+  --color-surface: #ffffff;
+  --color-surface-1: #faf9f6;
+  --color-surface-2: #f4f2ee;
+  --color-surface-3: #ece9e3;
+  --color-line: #e2ded6;
+  --color-outline: #8f8a80;
+  --color-fg: #1d1b17;
+  --color-fg-2: #5e5a51;
+  --color-fg-3: #77726a;
+
+  /* ダーク（未実装。入れるときは上と同じ名前でこの値に差し替える）
+     primary #ffd54a / on #2b2100 / container #3b300f / on-container #ffe08a
+     secondary #c9ced6 / on #1e2228 / container #2e333b / on-container #dde1e7
+     tertiary #9fb2ff / on #0f1b4d / container #1b2758 / on-container #d3dcff
+     success #6fd49a / on #05301a / container #133a22 / on-container #b6efc9
+     warning #ffa766 / on #3a1a00 / container #4a2600 / on-container #ffd7b0
+     error #ff8a7e / on #4a0e09 / container #5a1a15 / on-container #ffdad5
+     surface #121110 / 1 #1a1916 / 2 #211f1c / 3 #2b2925 / line #3a3732 / outline #6e6a62
+     fg #edeae3 / fg-2 #c4bfb4 / fg-3 #9a958b */
+
+  --font-sans: var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --animate-drop: drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-shake: shake 0.4s;
+}
+
+@keyframes shake {
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ブロックが上から落ちてはまる */
+@keyframes drop {
+  from { opacity: 0; transform: translateY(-28px) rotate(-3deg); }
+  to { opacity: 1; transform: none; }
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-fg);
+}
+
+/* ---- 共通部品 ---- */
+/* hover は M3 の state layer（面に文字色を 8% 重ねる） */
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-[color-mix(in_srgb,var(--color-primary),var(--color-on-primary)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
+}
+/* 2番目に大事な行動。薄い藍の面（M3 の filled tonal button）。主役は btn-primary に任せる */
+@utility btn-tonal {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-tertiary-container px-5 py-2.5 text-sm font-semibold text-on-tertiary-container transition hover:bg-[color-mix(in_srgb,var(--color-tertiary-container),var(--color-on-tertiary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-fg-2 transition hover:border-outline hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
+}
+@utility input {
+  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm transition outline-none placeholder:text-fg-3 focus:border-primary focus:ring-4 focus:ring-primary-container;
+}
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)];
+}
+@utility label {
+  @apply font-mono text-[11px] tracking-wider text-fg-3 uppercase;
+}
+/* 方眼の背景 */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* 動きを減らす設定の人には、アニメーションと遷移を止める。個別のコンポーネントでは書かない */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

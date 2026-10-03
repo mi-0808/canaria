@@ -76,7 +76,7 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
         <h1 className="text-2xl font-bold tracking-tight">{sent ? "メールを確認してください" : t.title}</h1>
       </div>
       {sent ? (
-        <p className="text-center text-sm leading-relaxed text-zinc-600">
+        <p className="text-center text-sm leading-relaxed text-fg-2">
           <span className="font-mono">{email}</span> {t.sent}
         </p>
       ) : (
@@ -90,23 +90,23 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
               <label className="block space-y-1.5">
                 <span className="flex justify-between">
                   <span className="label">パスワード</span>
-                  {mode === "signup" && <span className="font-mono text-[11px] text-zinc-400">8文字以上</span>}
+                  {mode === "signup" && <span className="font-mono text-[11px] text-fg-3">8文字以上</span>}
                 </span>
                 <input type="password" required minLength={mode === "signup" ? 8 : undefined} className="input"
                   autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} />
               </label>
               {mode === "login" && (
-                <Link href="/forgot" className="block text-right text-xs text-zinc-500 underline-offset-4 hover:text-black hover:underline">パスワードを忘れた方</Link>
+                <Link href="/forgot" className="block text-right text-xs text-fg-3 underline-offset-4 hover:text-fg hover:underline">パスワードを忘れた方</Link>
               )}
             </div>
           )}
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-error">{error}</p>}
           <button className="btn-primary w-full" disabled={busy}>{busy ? "送信中…" : t.submit}</button>
         </form>
       )}
-      <p className="border-t border-zinc-100 pt-6 text-center text-sm text-zinc-600">
+      <p className="border-t border-line pt-6 text-center text-sm text-fg-2">
         {t.switchText}
-        <Link href={t.switchHref} className="ml-1 font-semibold text-black underline underline-offset-4 hover:no-underline">{t.switchLink}</Link>
+        <Link href={t.switchHref} className="ml-1 font-semibold text-fg underline underline-offset-4 hover:no-underline">{t.switchLink}</Link>
       </p>
     </div>
   );

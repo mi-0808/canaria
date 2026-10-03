@@ -23,11 +23,11 @@ export default function Timeline() {
   if (missing.length)
     return (
       <div className="mx-auto max-w-md space-y-5 py-16 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-200 to-amber-300 text-3xl">🔒</div>
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-container text-3xl">🔒</div>
         <h1 className="text-2xl font-bold tracking-tight">プロフィールを完成させよう</h1>
-        <p className="text-sm text-zinc-600">タイムラインは、プロフィールを完成させたユーザーだけが見られます。</p>
+        <p className="text-sm text-fg-2">タイムラインは、プロフィールを完成させたユーザーだけが見られます。</p>
         <div className="flex flex-wrap justify-center gap-2">
-          {missing.map((m) => <span key={m} className="rounded-lg bg-zinc-100 px-2.5 py-1 font-mono text-xs text-zinc-600">未入力: {m}</span>)}
+          {missing.map((m) => <span key={m} className="rounded-lg bg-surface-2 px-2.5 py-1 font-mono text-xs text-fg-2">未入力: {m}</span>)}
         </div>
         <Link href="/me" className="btn-primary">プロフィールを編集する →</Link>
       </div>
@@ -53,11 +53,11 @@ export default function Timeline() {
             value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
         {kind !== "text" && <FilePicker key={kind} accept={`${kind}/*`} maxMB={MAX_MB} value={media} onChange={setMedia} />}
-        <div className="flex items-center justify-between border-t border-zinc-100 pt-4">
-          <div className="flex gap-1 rounded-xl bg-zinc-100 p-1 text-xs">
+        <div className="flex items-center justify-between border-t border-line pt-4">
+          <div className="flex gap-1 rounded-xl bg-surface-2 p-1 text-xs">
             {kinds.map(([k, label]) => (
               <button key={k} onClick={() => { setKind(k); setMedia(""); }}
-                className={`rounded-lg px-3 py-1.5 transition ${kind === k ? "bg-white font-medium shadow-sm" : "text-zinc-500 hover:text-black"}`}>
+                className={`rounded-lg px-3 py-1.5 transition ${kind === k ? "bg-surface font-medium shadow-sm" : "text-fg-3 hover:text-fg"}`}>
                 {label}
               </button>
             ))}
@@ -66,13 +66,12 @@ export default function Timeline() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="label">{"// timeline"}</p>
-        <button className="font-mono text-xs text-zinc-500 hover:text-black" onClick={() => setSavedOnly(!savedOnly)}>
+      <div className="flex justify-end">
+        <button className="font-mono text-xs text-fg-3 hover:text-fg" onClick={() => setSavedOnly(!savedOnly)}>
           {savedOnly ? "← すべて表示" : "☆ 保存した投稿"}
         </button>
       </div>
-      {shown.length === 0 && <p className="py-10 text-center font-mono text-sm text-zinc-400">no posts yet.</p>}
+      {shown.length === 0 && <p className="py-10 text-center text-sm text-fg-2">まだ投稿がありません。制作の裏側を最初に発信してみよう</p>}
       <div className="space-y-4">
         {shown.map((p) => <PostItem key={p.id} post={p} uid={user.id} onChange={update} />)}
       </div>

@@ -39,16 +39,16 @@ export default function Reset() {
           <label className="block space-y-1.5">
             <span className="flex justify-between">
               <span className="label">新しいパスワード</span>
-              <span className="font-mono text-[11px] text-zinc-400">8文字以上</span>
+              <span className="font-mono text-[11px] text-fg-3">8文字以上</span>
             </span>
             <input type="password" required minLength={8} autoComplete="new-password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-error">{error}</p>}
           <button className="btn-primary w-full" disabled={busy}>{busy ? "保存中…" : "パスワードを変更する"}</button>
         </form>
       ) : (
         // 期限切れ、または再設定を申し込んだのと別のブラウザで開いた場合
-        <div className="space-y-4 text-center text-sm text-zinc-600">
+        <div className="space-y-4 text-center text-sm text-fg-2">
           <p>リンクの有効期限が切れているか、申し込みをしたのとは別のブラウザで開かれています。<br />お手数ですが、もう一度お試しください。</p>
           <Link href="/forgot" className="btn">再設定メールを送り直す</Link>
         </div>
