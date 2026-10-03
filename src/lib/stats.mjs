@@ -33,7 +33,7 @@ export function topTech(works) {
 }
 
 /**
- * 「2」「2年」「2.5 年」のような入力は、数字を大きく出して単位を補足に回す。「半年」のような書き方はそのまま
+ * 「24」「24歳」のような入力は、数字を大きく出して単位を補足に回す。「20代」のような書き方はそのまま
  * @param {string} input
  * @param {string} unit
  */
@@ -43,26 +43,54 @@ function withUnit(input, unit) {
 }
 
 /**
- * 数字の行の項目。性別は出さない（数字の行に並べるものではないため。編集画面では入力できる）
- * @param {{ company: string, years: string, location: string, mbti: string, age: string }} p
+ * 数字の行の項目。性別は出さない（数字の行に並べるものではないため。編集画面では入力できる）。
+ * 勤務先は数字の行ではなく「経歴」に並べる
+ * @param {{ location: string, mbti: string, age: string }} p
  * @param {{ status: string, techs: string }[]} works
  * @returns {{ label: string, value: string, sub: string }[]}
  */
 export function statItems(p, works) {
   const live = works.filter((w) => w.status === "リリース・運用中").length;
   const tech = topTech(works);
-  const years = p.years.trim() && withUnit(p.years, "年");
-  /** @type {({ label: string, value: string, sub: string } | false | "")[]} */
+  /** @type {({ label: string, value: string, sub: string } | false)[]} */
   const items = [
     { label: "作品", value: String(works.length), sub: live ? `うち運用中 ${live}` : "件" },
     !!tech && { label: "よく使う技術", value: tech.name, sub: `${tech.count}作品で使用` },
-    // 勤務先があれば「勤務先・勤続年数」を1つにまとめ、勤続年数だけなら数字で出す
-    p.company.trim()
-      ? { label: "勤務先", value: p.company.trim(), sub: years ? `勤続 ${years.value}${years.sub}` : "" }
-      : !!years && { label: "勤続年数", ...years },
     !!p.location.trim() && { label: "拠点", value: p.location.trim(), sub: "" },
     !!p.mbti.trim() && { label: "MBTI", value: p.mbti.trim().toUpperCase(), sub: "" },
     !!p.age.trim() && { label: "年齢", ...withUnit(p.age, "歳") },
   ];
   return items.filter((x) => !!x);
+}
+
+// ---- 経歴の期間 ----
+// DB は date（その月の1日 "2024-04-01"）、入力欄は <input type="month"> の値（"2024-04"）。
+// month に対応していないブラウザ（PC の Safari・Firefox）では文字の入力欄になるので、手で打った文字もここで確かめる
+
+/**
+ * 入力欄の値が「2024-04」の形か
+ * @param {string} value
+ */
+export const isMonth = (value) => /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+
+/**
+ * DB の date を入力欄の値に（"2024-04-01" → "2024-04"）
+ * @param {string} date
+ */
+export const toMonth = (date) => date.slice(0, 7);
+
+/**
+ * 入力欄の値を DB の date に（"2024-04" → "2024-04-01"）。isMonth で確かめてから使う
+ * @param {string} month
+ */
+export const fromMonth = (month) => `${month}-01`;
+
+/**
+ * 公開ページに出す期間（"2024年4月 – 現在"）
+ * @param {string} started DB の date
+ * @param {string | null} ended DB の date。null なら現在
+ */
+export function careerPeriod(started, ended) {
+  const label = (/** @type {string} */ d) => `${Number(d.slice(0, 4))}年${Number(d.slice(5, 7))}月`;
+  return `${label(started)} – ${ended ? label(ended) : "現在"}`;
 }

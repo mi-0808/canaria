@@ -18,10 +18,11 @@ create table public.profiles (
   gender text not null default '',
   age text not null default '',
   location text not null default '',
-  company text not null default '',
-  years text not null default '',
   mbti text not null default '',
   tagline text not null default '',
+  -- 「いまやっていること」「これからやりたいこと」。MyHood の一言のような短い近況（公開ページで2枚のカードになる）
+  doing_now text not null default '' check (char_length(doing_now) <= 100),
+  want_next text not null default '' check (char_length(want_next) <= 100),
   bio text not null default '' check (char_length(bio) <= 200),
   links text[] not null default '{}' check (public.valid_links(links)), -- SNS・ブログなどの URL
   -- 仕事の相談を受けるメールアドレス（公開ページに出る）。mailto: に件名などを足せる文字は通さない（画面側は links.mjs の contactEmailPattern）
@@ -50,6 +51,19 @@ create table public.gear (
   name text not null check (char_length(name) > 0),
   comment text not null default '' check (char_length(comment) <= 80),
   url text not null default '',
+  created_at timestamptz not null default now()
+);
+
+-- 経歴（勤務先・学校などと、そこでの実績）。公開ページでは始まりの新しい順に年表で並べる。
+-- 期間は年月で持つ（その月の1日）。ended が null なら「現在」
+create table public.careers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
+  company text not null check (char_length(company) between 1 and 100),
+  role text not null default '' check (char_length(role) <= 100),
+  started date not null,
+  ended date check (ended is null or ended >= started),
+  summary text not null default '' check (char_length(summary) <= 300),
   created_at timestamptz not null default now()
 );
 
@@ -94,13 +108,14 @@ create index on public.saves (user_id);
 alter table public.profiles enable row level security;
 alter table public.works enable row level security;
 alter table public.gear enable row level security;
+alter table public.careers enable row level security;
 alter table public.posts enable row level security;
 alter table public.replies enable row level security;
 alter table public.reactions enable row level security;
 alter table public.saves enable row level security;
 
-grant select on public.profiles, public.works, public.gear, public.posts, public.replies, public.reactions to anon, authenticated;
-grant select, insert, update, delete on public.profiles, public.works, public.gear, public.posts, public.replies, public.reactions, public.saves to authenticated;
+grant select on public.profiles, public.works, public.gear, public.careers, public.posts, public.replies, public.reactions to anon, authenticated;
+grant select, insert, update, delete on public.profiles, public.works, public.gear, public.careers, public.posts, public.replies, public.reactions, public.saves to authenticated;
 
 create policy "profiles: public read" on public.profiles for select to anon, authenticated using (true);
 create policy "profiles: own insert" on public.profiles for insert to authenticated with check ((select auth.uid()) = id);
@@ -110,7 +125,7 @@ create policy "profiles: own update" on public.profiles for update to authentica
 do $$
 declare t text;
 begin
-  foreach t in array array['works', 'gear', 'posts', 'replies', 'reactions'] loop
+  foreach t in array array['works', 'gear', 'careers', 'posts', 'replies', 'reactions'] loop
     execute format('create policy "%1$s: public read" on public.%1$I for select to anon, authenticated using (true)', t);
     execute format('create policy "%1$s: own insert" on public.%1$I for insert to authenticated with check ((select auth.uid()) = user_id)', t);
     execute format('create policy "%1$s: own update" on public.%1$I for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id)', t);
@@ -144,3 +159,27 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- 2026-10-03 連絡用メールアドレス
 -- alter table public.profiles add column contact_email text not null default ''
 --   check (contact_email = '' or (char_length(contact_email) <= 254 and contact_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'));
+-- 2026-10-03 「いま・これから」と経歴。勤務先・勤続年数は経歴にまとめる（入っていたデータは無かった）
+-- ① マージ前に流す（足すだけなので、本番で動いている古いコードは壊れない）
+-- alter table public.profiles
+--   add column doing_now text not null default '' check (char_length(doing_now) <= 100),
+--   add column want_next text not null default '' check (char_length(want_next) <= 100);
+-- create table public.careers (
+--   id uuid primary key default gen_random_uuid(),
+--   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
+--   company text not null check (char_length(company) between 1 and 100),
+--   role text not null default '' check (char_length(role) <= 100),
+--   started date not null,
+--   ended date check (ended is null or ended >= started),
+--   summary text not null default '' check (char_length(summary) <= 300),
+--   created_at timestamptz not null default now()
+-- );
+-- alter table public.careers enable row level security;
+-- grant select on public.careers to anon, authenticated;
+-- grant select, insert, update, delete on public.careers to authenticated;
+-- create policy "careers: public read" on public.careers for select to anon, authenticated using (true);
+-- create policy "careers: own insert" on public.careers for insert to authenticated with check ((select auth.uid()) = user_id);
+-- create policy "careers: own update" on public.careers for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+-- create policy "careers: own delete" on public.careers for delete to authenticated using ((select auth.uid()) = user_id);
+-- ② マージして本番が新しいコードになってから流す（古いコードはまだ company / years を保存しようとするため）
+-- alter table public.profiles drop column company, drop column years;
