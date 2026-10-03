@@ -52,6 +52,7 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
       {post.media?.kind === "audio" && (
         <div className="rounded-xl bg-primary-container p-3"><audio controls src={post.media.src} className="w-full" /></div>
       )}
+      {post.media?.kind === "image" && <img src={post.media.src} alt="投稿の画像" className="w-full rounded-xl" />}
       {post.media?.kind === "video" && <video controls src={post.media.src} className="w-full rounded-xl bg-secondary" />}
 
       {post.replies.length > 0 && (

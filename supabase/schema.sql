@@ -72,7 +72,7 @@ create table public.posts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
   body text not null default '',
-  media_kind text check (media_kind in ('audio', 'video')),
+  media_kind text check (media_kind in ('audio', 'video', 'image')), -- audio は投稿画面から外した。過去の投稿のために残す
   media_src text,
   created_at timestamptz not null default now()
 );

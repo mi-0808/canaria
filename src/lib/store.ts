@@ -58,7 +58,7 @@ export type Reply = { id: string; body: string; created_at: string; author: Pick
 export type Post = {
   id: string;
   body: string;
-  media?: { kind: "audio" | "video"; src: string };
+  media?: { kind: "audio" | "video" | "image"; src: string };
   created_at: string;
   author: Author;
   reacted: boolean; // 閲覧中のユーザーが
@@ -196,7 +196,7 @@ export function useBusy(): [boolean, (fn: () => Promise<unknown>) => Promise<voi
 const postSelect = "*, author:profiles!posts_user_id_fkey(*), replies(*, author:profiles!replies_user_id_fkey(name, icon)), reactions(user_id), saves(user_id)";
 
 type PostRow = {
-  id: string; body: string; media_kind: "audio" | "video" | null; media_src: string | null; created_at: string;
+  id: string; body: string; media_kind: "audio" | "video" | "image" | null; media_src: string | null; created_at: string;
   author: Author; replies: Reply[]; reactions: { user_id: string }[]; saves: { user_id: string }[];
 };
 const toPost = (r: PostRow, viewer?: string): Post => ({
