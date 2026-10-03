@@ -2,7 +2,7 @@ import Icon, { type IconName } from "@/components/Icon";
 import { linkName } from "@/lib/links.mjs";
 import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
 
-const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
+export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -53,9 +53,17 @@ export function ProfileView({ p }: { p: Profile }) {
   );
 }
 
-export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode }) {
-  const status = w.status ?? "開発中"; // 旧データ互換
+/** 作品のステータス。運用中だけ緑＋「●」（色だけで伝えない） */
+export function StatusBadge({ status = "開発中" }: { status?: Work["status"] }) {
   const live = status === "リリース・運用中";
+  return (
+    <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>
+      {live ? "● " : ""}{status}
+    </span>
+  );
+}
+
+export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode }) {
   const techs = (w.techs ?? "").split(",").map((t) => t.trim()).filter(Boolean);
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:shadow-xl">
@@ -64,9 +72,7 @@ export function WorkCard({ w, children }: { w: Work; children?: React.ReactNode 
       </div>
       <div className="flex flex-1 flex-col gap-5 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>
-            {live ? "● " : ""}{status}
-          </span>
+          <StatusBadge status={w.status} />
           {w.period && <span className="text-sm text-fg-3">{w.period}</span>}
         </div>
         <h3 className="text-2xl leading-snug font-bold tracking-tight">{w.title}</h3>

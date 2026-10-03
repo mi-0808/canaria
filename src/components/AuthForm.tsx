@@ -94,7 +94,7 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
                   autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} />
               </label>
               {mode === "login" && (
-                <Link href="/forgot" className="block text-right text-xs text-fg-3 underline-offset-4 hover:text-fg hover:underline">パスワードを忘れた方</Link>
+                <div className="flex justify-end"><Link href="/forgot" className="-mr-1 inline-flex min-h-11 items-center px-1 text-sm text-tertiary underline-offset-4 hover:underline">パスワードを忘れた方</Link></div>
               )}
             </div>
           )}
@@ -104,7 +104,7 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
       )}
       <p className="border-t border-line pt-6 text-center text-sm text-fg-2">
         {t.switchText}
-        <Link href={t.switchHref} className="ml-1 font-semibold text-fg underline underline-offset-4 hover:no-underline">{t.switchLink}</Link>
+        <Link href={t.switchHref} className="ml-1 inline-flex min-h-11 items-center font-semibold text-tertiary underline underline-offset-4 hover:no-underline">{t.switchLink}</Link>
       </p>
     </div>
   );
