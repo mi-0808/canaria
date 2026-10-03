@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import FilePicker from "@/components/FilePicker";
+import LinksEditor from "@/components/LinksEditor";
 import Icon from "@/components/Icon";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
+import { normalizeLink } from "@/lib/links.mjs";
 import {
   ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
   useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
@@ -63,11 +65,14 @@ export default function MyPage() {
   const editing = profile || work || gear;
 
   const usernameInvalid = profile && !usernamePattern.test(profile.username);
+  const linksInvalid = profile?.links.some((l) => l.trim() && !normalizeLink(l));
   const saveProfile = () =>
     run(async () => {
-      const err = await putProfile(user.id, profile!);
+      // 空の行は捨て、https にそろえた形で保存する（DB の valid_links と同じ条件）
+      const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l) };
+      const err = await putProfile(user.id, saved);
       if (err) return setUsernameError(err);
-      setData({ ...data, profile: profile! });
+      setData({ ...data, profile: saved });
       setProfile(null);
     });
   const saveWork = () =>
@@ -259,9 +264,10 @@ export default function MyPage() {
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
+            <LinksEditor links={profile.links} onChange={(links) => setProfile({ ...profile, links })} />
             <div className="flex justify-end gap-2 border-t border-line pt-5">
               <button className="btn" onClick={() => { setProfile(null); setUsernameError(""); }}>キャンセル</button>
-              <button className="btn-primary" disabled={!!usernameInvalid || saving} onClick={saveProfile}>{saveLabel}</button>
+              <button className="btn-primary" disabled={!!usernameInvalid || linksInvalid || saving} onClick={saveProfile}>{saveLabel}</button>
             </div>
           </div>
         ) : (

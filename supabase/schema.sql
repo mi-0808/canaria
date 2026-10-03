@@ -1,6 +1,14 @@
 -- Canaria schema. 公開ポートフォリオなので読み取りは誰でも、書き込みは本人だけ（saves だけ本人のみ閲覧）。
 -- ponytail: 単一ファイルを手で流す運用。Supabase CLI を入れたら migrations に移す。
 
+-- プロフィールの SNS リンクの検査。https の URL だけ・6件まで・1件300文字まで。
+-- javascript: などをリンクとして描画させないための最後の砦（画面側は src/lib/links.mjs の normalizeLink で同じ条件）
+create function public.valid_links(links text[]) returns boolean language sql immutable as $$
+  select cardinality(links) <= 6
+    and coalesce(bool_and(l ~ '^https://[^[:space:]]+$' and char_length(l) <= 300), true)
+  from unnest(links) as l
+$$;
+
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   -- 公開ページの URL（/@username）。本人があとから変えられる（変えると古い /@URL は開けなくなる）
@@ -15,6 +23,7 @@ create table public.profiles (
   mbti text not null default '',
   tagline text not null default '',
   bio text not null default '' check (char_length(bio) <= 200),
+  links text[] not null default '{}' check (public.valid_links(links)), -- SNS・ブログなどの URL
   created_at timestamptz not null default now()
 );
 
@@ -123,3 +132,10 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- 2026-10-03 ユーザー名。既存ユーザーには user_xxxxxxxx が1人ずつ別の値で入る（random() は行ごとに評価される）
 -- alter table public.profiles add column username text not null unique
 --   default ('user_' || substr(md5(random()::text), 1, 8)) check (username ~ '^[a-z0-9_]{3,20}$');
+-- 2026-10-03 SNS リンク。先頭の valid_links 関数を作ってから流す
+-- create function public.valid_links(links text[]) returns boolean language sql immutable as $$
+--   select cardinality(links) <= 6
+--     and coalesce(bool_and(l ~ '^https://[^[:space:]]+$' and char_length(l) <= 300), true)
+--   from unnest(links) as l
+-- $$;
+-- alter table public.profiles add column links text[] not null default '{}' check (public.valid_links(links));

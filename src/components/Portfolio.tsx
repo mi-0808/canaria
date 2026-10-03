@@ -1,4 +1,5 @@
 import Icon, { type IconName } from "@/components/Icon";
+import { linkName } from "@/lib/links.mjs";
 import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
 
 const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
@@ -24,6 +25,21 @@ export function ProfileView({ p }: { p: Profile }) {
           <h1 className="text-2xl font-bold tracking-tight">{p.name || "名前未設定"}</h1>
           {p.tagline && <p className="text-fg-2">{p.tagline}</p>}
         </div>
+        {/* SNS・リンク。DB で https だけに絞っているが、描画する直前にも確かめる（href に危ない URL を入れない） */}
+        {p.links.length > 0 && (
+          <ul className="flex flex-wrap gap-2">
+            {p.links.filter((u) => u.startsWith("https://")).map((u) => (
+              <li key={u}>
+                {/* rel="me": このページの持ち主のアカウントだと、相手のサービスに伝える */}
+                <a href={u} target="_blank" rel="noopener noreferrer me"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-tertiary-container px-4 text-sm font-medium text-on-tertiary-container transition hover:bg-[color-mix(in_srgb,var(--color-tertiary-container),var(--color-on-tertiary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+                  <Icon name="link" className="h-4 w-4" />
+                  {linkName(u)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
         {chips.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {chips.map((c) => (

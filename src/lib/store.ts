@@ -17,6 +17,7 @@ export type Profile = {
   mbti: string;
   tagline: string;
   bio: string;
+  links: string[]; // SNS・ブログなどの https の URL（src/lib/links.mjs の normalizeLink を通したもの）
 };
 
 export type Work = {
