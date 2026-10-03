@@ -29,6 +29,8 @@ const pairs = [
   ...["fg", "fg-2", "fg-3"].flatMap((f) => ["surface", "surface-1", "surface-2"].map((s) => [f, s, TEXT])),
   ["fg", "surface-3", TEXT],
   ["fg-2", "surface-3", TEXT],
+  ["fg", "surface-raised", TEXT], // セグメントの選択中の文字と件数
+  ["fg-3", "surface-raised", TEXT],
   ...["primary", "secondary", "tertiary", "success", "warning", "error"].flatMap((r) => [
     [`on-${r}`, r, TEXT],
     [`on-${r}-container`, `${r}-container`, TEXT],

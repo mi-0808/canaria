@@ -2,7 +2,7 @@
 // ponytail: 全部クライアントから Supabase を直接叩く（守りは RLS）。公開ページの SEO/OGP が要るときにサーバー取得へ
 import type { AuthError, User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type DependencyList, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type DependencyList, type Dispatch, type SetStateAction } from "react";
 import { createClient as db } from "./supabase";
 
 export type Profile = {
@@ -48,7 +48,7 @@ export type Post = {
 };
 
 // 開発環境（仕事場）のアイテム。url は将来アフィリエイトリンクに差し替え可能
-export const gearCategories = { machine: "💻", keyboard: "⌨️", display: "🖥", mouse: "🖱", audio: "🎧", other: "🧰" } as const;
+export const gearCategories = { machine: "パソコン", keyboard: "キーボード", display: "ディスプレイ", mouse: "マウス", audio: "オーディオ", other: "その他" } as const;
 // comment は「これいいよ」のひとこと。購入のきっかけになる部分
 export type Gear = { id: string; category: keyof typeof gearCategories; name: string; comment: string; url: string };
 
@@ -150,6 +150,25 @@ export function useLoad<T>(fn: () => Promise<T> | undefined, deps: DependencyLis
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   return [data, setData];
+}
+
+/** 書き込み中かどうかと、書き込みを包む関数。終わるまで同じ操作を受け付けない（二度押しで二重に保存・投稿されるのを防ぐ）。
+ *  state だけだと連打が再描画より速いと両方通るので、ref で止める */
+export function useBusy(): [boolean, (fn: () => Promise<unknown>) => Promise<void>] {
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const run = async (fn: () => Promise<unknown>) => {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+  return [busy, run];
 }
 
 const postSelect = "*, author:profiles!posts_user_id_fkey(*), replies(*, author:profiles!replies_user_id_fkey(name, icon)), reactions(user_id), saves(user_id)";
