@@ -19,7 +19,7 @@ const features = [
     visual: (
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
-          <div key={t} className="overflow-hidden rounded-xl border border-line bg-surface">
+          <div key={t} className="overflow-hidden rounded-xl bg-surface">
             <div className="aspect-video bg-primary-container" />
             <div className="space-y-2 p-2 sm:p-3">
               <p className="truncate text-xs font-bold">{t}</p>
@@ -57,7 +57,7 @@ const features = [
       <div className="space-y-2">
         <p className="text-xs text-on-secondary-container">@senior_dev の仕事場</p>
         {[["27インチ 4Kモニター", "作業領域が倍。もう戻れない"], ["HHKB Studio", "手首がラクになった"], ["MacBook Pro M4", "ビルドが一瞬"]].map(([t, c]) => (
-          <div key={t} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+          <div key={t} className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3">
             <div className="min-w-0">
               <p className="text-sm font-medium">{t}</p>
               <p className="text-xs text-fg-2">{c}</p>
@@ -133,39 +133,33 @@ export default function Home() {
           <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
         </div>
 
-        {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-1 p-5 sm:p-6">
+        {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる。箱で囲むのは Canaria 側だけ */}
+        <div className="grid items-start gap-10 md:grid-cols-2 md:gap-8">
+          <div className="flex flex-col gap-3 md:p-6">
             <p className="text-sm font-bold text-fg-2">ポートフォリオがない場合</p>
             <p className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
               未経験ですが、やる気はあります。GitHubを見てください。
             </p>
             <p className="-mt-1 self-end text-xs text-fg-3">既読</p>
-            <p className="mt-auto pt-4 text-sm text-fg-2">返事は来ない。何ができる人なのか、相手が探すことになる</p>
+            <p className="pt-2 text-sm text-fg-2">返事は来ない。何ができる人なのか、相手が探すことになる</p>
           </div>
-          <div className="flex flex-col gap-3 rounded-2xl border border-primary bg-primary-container p-5 text-on-primary-container sm:p-6">
+          <div className="flex flex-col gap-3 rounded-3xl bg-primary-container p-6 text-on-primary-container">
             <p className="text-sm font-bold">Canariaがある場合</p>
             <div className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-secondary-container px-4 py-3 text-sm text-on-secondary-container">
               作ったものをまとめています。
               {/* 公開ページのリンクカード */}
-              <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3">
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 shrink-0 rounded-full bg-primary" />
-                  <span className="font-bold text-fg">山田 カナ</span>
-                  <span className="text-xs text-fg-3">フロントエンド</span>
+              <div className="mt-2 flex items-center gap-3 rounded-xl bg-surface p-3">
+                <span className="h-8 w-8 shrink-0 rounded-full bg-primary" />
+                <div className="min-w-0">
+                  <p className="font-bold text-fg">山田 カナ</p>
+                  <p className="text-xs text-tertiary">canaria.app/@kana</p>
                 </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <span className="h-8 rounded-md bg-primary-container" />
-                  <span className="h-8 rounded-md bg-tertiary-container" />
-                  <span className="h-8 rounded-md bg-secondary-container" />
-                </div>
-                <p className="font-mono text-xs text-tertiary">canaria.app/@kana</p>
               </div>
             </div>
             <p className="max-w-[85%] self-start rounded-2xl rounded-bl-md bg-secondary px-4 py-3 text-sm leading-relaxed text-on-secondary">
               家計簿アプリ、触ってみました。一度お話ししませんか？
             </p>
-            <p className="mt-auto pt-4 text-sm font-bold">作品・役割・使った技術が、1ページで伝わる</p>
+            <p className="pt-2 text-sm font-bold">作品・役割・使った技術が、1ページで伝わる</p>
           </div>
         </div>
 
