@@ -13,7 +13,7 @@ export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
-// ログイン中の行き先。PC はヘッダーに文字で、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
+// ログイン中の行き先。PC はヘッダーに、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
 const nav: [href: string, label: string, icon: IconName][] = [
   ["/", "トップ", "home"],
   ["/me", "ポートフォリオ", "easel"],
@@ -38,12 +38,14 @@ export default function Header() {
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
 
-        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる */}
+        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる。
+            アイコンと選択中の色（藍）はタブバーとそろえ、幅が変わっても同じメニューに見えるようにする */}
         {user && (
           <nav aria-label="メインメニュー" className="-mr-2 hidden gap-4 text-sm whitespace-nowrap sm:flex">
-            {nav.map(([href, label]) => (
+            {nav.map(([href, label, icon]) => (
               <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-                className={`${item} text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-fg`}>
+                className={`${item} gap-1.5 text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-tertiary`}>
+                <Icon name={icon} className="h-4.5 w-4.5" />
                 {label}
               </Link>
             ))}
