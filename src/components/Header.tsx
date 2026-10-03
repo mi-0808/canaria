@@ -8,7 +8,8 @@ export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden>
       <path d="M4 20 L14 8 L22 10 L30 6 L24 14 L20 26 L12 22 Z" fill="var(--color-primary)" stroke="var(--color-fg)" strokeWidth="2" strokeLinejoin="miter" />
-      <circle cx="18" cy="12" r="1.5" fill="var(--color-fg)" />
+      {/* 目は黄色い体の上にあるので on-primary（ライト・ダークとも暗い色）。fg だとダークで白く飛ぶ */}
+      <circle cx="18" cy="12" r="1.5" fill="var(--color-on-primary)" />
     </svg>
   );
 }

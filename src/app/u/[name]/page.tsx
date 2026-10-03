@@ -78,8 +78,6 @@ export default function PublicPage() {
         <section className="space-y-4">
           <h2 className={section}>開発環境</h2>
           <div className="grid gap-3 sm:grid-cols-2">{gear.map((g) => <GearRow key={g.id} g={g} />)}</div>
-          {/* アソシエイト・プログラムの規約で必須の開示 */}
-          <p className="text-sm text-fg-3">Amazonのアソシエイトとして、Canariaは適格販売により収入を得ています。</p>
         </section>
       )}
 

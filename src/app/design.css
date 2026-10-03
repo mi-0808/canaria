@@ -98,7 +98,7 @@
   --color-edge: light-dark(#1d1b17, #7a756d);
   /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
   --color-secondary: light-dark(#2a2e35, #3a3f47);
-  --color-on-secondary: light-dark(#f2f3f5, #f2f3f5);
+  --color-on-secondary: light-dark(#f2f3f5, #dcdee2);
   --color-secondary-container: light-dark(#eceef1, #2e333b);
   --color-on-secondary-container: light-dark(#2e333b, #dde1e7);
   /* ブランド: 藍（M3 tertiary）= 押せるもの・つながり。リンク・情報もこの色 */
@@ -121,7 +121,8 @@
   --color-error-container: light-dark(#fde4e2, #5a1a15);
   --color-on-error-container: light-dark(#8c1d16, #ffdad5);
 
-  /* ニュートラル: 面（M3 surface container）→ 線 → 文字（HIG label） */
+  /* ニュートラル: 面（M3 surface container）→ 線 → 文字（HIG label）
+     ダークの fg / fg-2 / on-secondary は真っ白に寄せない。黒地で白が飛んで眩しく見えたため一段落とした（2026-10-04） */
   --color-surface: light-dark(#ffffff, #121110);
   --color-surface-1: light-dark(#faf9f6, #1a1916);
   --color-surface-2: light-dark(#f4f2ee, #211f1c);
@@ -130,8 +131,8 @@
   --color-surface-raised: light-dark(#ffffff, #312e29);
   --color-line: light-dark(#e2ded6, #3a3732);
   --color-outline: light-dark(#8f8a80, #6e6a62);
-  --color-fg: light-dark(#1d1b17, #edeae3);
-  --color-fg-2: light-dark(#5e5a51, #c4bfb4);
+  --color-fg: light-dark(#1d1b17, #d9d5cc);
+  --color-fg-2: light-dark(#5e5a51, #b3aea3);
   --color-fg-3: light-dark(#736e66, #9a958b); /* surface-2 の上でも 4.5 を超える下限 */
 
   --font-sans: var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP", sans-serif;
