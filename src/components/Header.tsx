@@ -73,12 +73,10 @@ export function TabBar() {
       {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
       <div aria-hidden className="h-[calc(3.5rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
       <nav aria-label="メインメニュー"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
-        {/* 色と太字だけでは選択中が分かりにくかったので、上の区切り線に藍の短い線を重ねる（before）。
-            線を区切り線の位置に置くため、上の余白はバーでなく各リンクに持たせている */}
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
         {nav.map(([href, label, icon]) => (
           <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-            className="relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 pt-2 text-xs text-fg-2 transition before:absolute before:-top-px before:h-0.75 before:w-7 before:rounded-b-full aria-[current=page]:font-bold aria-[current=page]:text-tertiary aria-[current=page]:before:bg-tertiary">
+            className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
             <Icon name={icon} className="h-5 w-5" />
             {label}
           </Link>
