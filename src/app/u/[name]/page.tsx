@@ -44,7 +44,11 @@ export default function PublicPage() {
             label: "開発環境",
             count: data.gear.length,
             content: data.gear.length ? (
-              <div className="grid gap-3 sm:grid-cols-2">{data.gear.map((g) => <GearRow key={g.id} g={g} />)}</div>
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">{data.gear.map((g) => <GearRow key={g.id} g={g} />)}</div>
+                {/* アソシエイト・プログラムの規約で必須の開示 */}
+                <p className="text-sm text-fg-3">Amazonのアソシエイトとして、Canariaは適格販売により収入を得ています。</p>
+              </div>
             ) : <Empty text="まだ登録がありません" />,
           },
           {

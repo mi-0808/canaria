@@ -1,5 +1,5 @@
 import Icon, { type IconName } from "@/components/Icon";
-import { contactEmailPattern, linkName } from "@/lib/links.mjs";
+import { contactEmailPattern, gearLink, linkName } from "@/lib/links.mjs";
 import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
 
 export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
@@ -114,10 +114,11 @@ export function GearRow({ g, children }: { g: Gear; children?: React.ReactNode }
       </div>
     </>
   );
+  const href = gearLink(g.url);
   return (
     <div className="card flex items-center gap-3 p-3 transition hover:shadow-md">
-      {g.url ? (
-        <a href={g.url} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
           {body}
           <Icon name="external" className="ml-auto h-4 w-4 text-tertiary" />
         </a>

@@ -9,7 +9,7 @@ import PostItem from "@/components/PostItem";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
-import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
+import { amazonSearchUrl, contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import {
   ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
   useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
@@ -304,19 +304,29 @@ export default function MyPage() {
         footer={<SaveBar onCancel={() => setGear(null)} onSave={saveGear} disabled={!gear?.name.trim()} saving={saving} />}>
         {gear && (
           <>
+            {/* 名前で Amazon を探し、商品ページの URL を貼ってもらう（アプリ内検索は API の条件待ち。src/lib/links.mjs） */}
+            <div className="space-y-2">
+              <Field label="アイテム名 *">
+                <input type="search" className="input" placeholder="MacBook Pro M4" value={gear.name} onChange={(e) => setGear({ ...gear, name: e.target.value })} />
+              </Field>
+              {gear.name.trim() ? (
+                <a href={amazonSearchUrl(gear.name)} target="_blank" rel="noopener noreferrer sponsored" className="btn w-full">
+                  Amazonで探す <Icon name="external" className="h-4 w-4" />
+                </a>
+              ) : (
+                <button className="btn w-full" disabled>Amazonで探す</button>
+              )}
+            </div>
+            <Field label="商品URL" hint="Amazonの商品ページのURL">
+              <input type="url" className="input font-mono" placeholder="https://www.amazon.co.jp/dp/…" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
+            </Field>
             <Field label="カテゴリ">
               <select className="input" value={gear.category} onChange={(e) => setGear({ ...gear, category: e.target.value as Gear["category"] })}>
                 {Object.entries(gearCategories).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
               </select>
             </Field>
-            <Field label="アイテム名 *">
-              <input className="input" placeholder="MacBook Pro M4" value={gear.name} onChange={(e) => setGear({ ...gear, name: e.target.value })} />
-            </Field>
             <Field label="おすすめポイント" hint={`${gear.comment.length}/80`}>
               <input className="input" maxLength={80} placeholder="作業領域が倍になって、もう戻れない" value={gear.comment} onChange={(e) => setGear({ ...gear, comment: e.target.value })} />
-            </Field>
-            <Field label="商品URL">
-              <input type="url" className="input font-mono" placeholder="https://" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
             </Field>
             {!isNewGear && (
               <button className="btn w-full text-error" onClick={() => setDeleting({ table: "gear", id: gear.id, name: gear.name })}>
