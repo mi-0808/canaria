@@ -12,10 +12,10 @@ export type Profile = {
   gender: string;
   age: string;
   location: string;
-  company: string;
-  years: string;
   mbti: string;
   tagline: string;
+  doing_now: string; // いまやっていること（100文字まで）
+  want_next: string; // これからやりたいこと（100文字まで）
   bio: string;
   links: string[]; // SNS・ブログなどの https の URL（src/lib/links.mjs の normalizeLink を通したもの）
   contact_email: string; // 仕事の相談を受けるメールアドレス。公開ページに出る。ログイン用とは別。空なら出さない
@@ -54,7 +54,10 @@ export const gearCategories = { machine: "パソコン", keyboard: "キーボー
 // comment は「これいいよ」のひとこと。購入のきっかけになる部分
 export type Gear = { id: string; category: keyof typeof gearCategories; name: string; comment: string; url: string };
 
-export type Portfolio = { profile: Profile; works: Work[]; gear: Gear[]; posts: Post[] };
+// 経歴（勤務先・学校など）。started / ended は DB の date（"2024-04-01"）。ended が null なら「現在」
+export type Career = { id: string; company: string; role: string; started: string; ended: string | null; summary: string };
+
+export type Portfolio = { profile: Profile; works: Work[]; gear: Gear[]; careers: Career[]; posts: Post[] };
 
 // タイムラインを見るのに必要なプロフィール項目
 export const requiredProfile: [keyof Profile, string][] = [["name", "名前"], ["icon", "アイコン"], ["tagline", "ひとこと"]];
@@ -197,14 +200,16 @@ export const loadProfile = async (uid: string) =>
 
 /** 公開ページ・/me（ポートフォリオを作る）用。プロフィールが無ければ null */
 export async function loadPortfolio(uid: string, viewer?: string): Promise<Portfolio | null> {
-  const [profile, works, gear, ps] = await Promise.all([
+  const [profile, works, gear, careers, ps] = await Promise.all([
     loadProfile(uid),
     db().from("works").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
     db().from("gear").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
+    // 経歴は始まりの新しい順。1人で 50 件を超えることはまず無いが、青天井にしない
+    db().from("careers").select("*").eq("user_id", uid).order("started", { ascending: false }).limit(50).then(must),
     posts().eq("user_id", uid).then(must),
   ]);
   if (!profile) return null;
-  return { profile, works: works as Work[], gear: gear as Gear[], posts: (ps as unknown as PostRow[]).map((r) => toPost(r, viewer)) };
+  return { profile, works: works as Work[], gear: gear as Gear[], careers: careers as Career[], posts: (ps as unknown as PostRow[]).map((r) => toPost(r, viewer)) };
 }
 
 /** 公開ページ用。/@username（旧 URL の /u/ユーザーID なら id）から引く。見つからなければ null */
@@ -236,7 +241,8 @@ export async function saveProfile(uid: string, p: Profile) {
 }
 export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
 export const saveGear = async (g: Gear) => must(await db().from("gear").upsert(g));
-export const remove = async (table: "works" | "gear", id: string) => must(await db().from(table).delete().eq("id", id));
+export const saveCareer = async (c: Career) => must(await db().from("careers").upsert(c));
+export const remove = async (table: "works" | "gear" | "careers", id: string) => must(await db().from(table).delete().eq("id", id));
 
 export const createPost = async (body: string, media?: Post["media"]) =>
   must(await db().from("posts").insert({ body, media_kind: media?.kind ?? null, media_src: media?.src ?? null }));
