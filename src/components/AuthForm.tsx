@@ -6,7 +6,7 @@ import { sendPasswordReset, signIn, signUp, useUser } from "@/lib/store";
 
 const copy = {
   signup: {
-    title: "アカウントを作成",
+    title: "新規登録",
     submit: "登録する",
     switchText: "アカウントをお持ちの方は",
     switchLink: "こちらからログイン",

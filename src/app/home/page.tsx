@@ -32,7 +32,7 @@ export default function Home() {
         <div className="flex flex-wrap justify-center gap-2">
           {missing.map((m) => <span key={m} className="rounded-lg bg-surface-2 px-2.5 py-1 text-sm text-fg-2">未入力: {m}</span>)}
         </div>
-        <Link href="/me" className="btn-primary">プロフィールを編集する →</Link>
+        <Link href="/me" className="btn-primary">プロフィールを編集する<Icon name="arrow" className="h-4 w-4" /></Link>
       </div>
     );
 

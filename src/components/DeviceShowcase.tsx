@@ -10,7 +10,7 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className="h-full overflow-hidden bg-surface text-[8px]">
       <div className="flex items-center justify-between border-b border-line px-3 py-1.5">
-        <span className="font-bold">🐤 Canaria</span>
+        <span className="font-bold">Canaria</span>
         {!mobile && <span className="font-mono text-[7px] text-fg-3">canaria.app/@you</span>}
       </div>
       <div className="h-8 bg-primary-container" />
@@ -51,7 +51,8 @@ export default function DeviceShowcase() {
           <p className="text-fg-2">URLを送るだけ。どの画面で開かれても、あなたの作品がきれいに並ぶ。</p>
         </div>
 
-        <div className="relative mx-auto max-w-3xl pb-6">
+        {/* 端末の見本は絵（中の文字は 10px 以下の飾り）。読み上げでは飛ばす */}
+        <div aria-hidden className="relative mx-auto max-w-3xl pb-6">
           {/* PC */}
           <div className="mx-auto w-[88%]">
             <div className="rounded-t-2xl border-[10px] border-b-0 border-secondary bg-secondary shadow-2xl">

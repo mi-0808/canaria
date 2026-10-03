@@ -52,7 +52,7 @@ export default function Header() {
         {user === null && (
           <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
             <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
-            <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規会員登録</Link>
+            <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規登録</Link>
           </nav>
         )}
       </div>

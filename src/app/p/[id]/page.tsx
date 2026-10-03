@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Icon from "@/components/Icon";
 import PostItem from "@/components/PostItem";
 import { FeedSkeleton } from "@/components/Skeleton";
 import { loadPost, useLoad } from "@/lib/store";
@@ -14,7 +15,7 @@ export default function SharedPost() {
     <div className="mx-auto max-w-2xl space-y-8">
       {post ? <PostItem post={post} /> : <p className="text-sm text-fg-3">投稿が見つかりません。</p>}
       <div className="rounded-2xl bg-primary-container p-8 text-center">
-        <Link href="/signup" className="btn-primary">Canariaに登録する</Link>
+        <Link href="/signup" className="btn-primary">無料ではじめる<Icon name="arrow" className="h-4 w-4" /></Link>
       </div>
     </div>
   );
