@@ -42,7 +42,7 @@ export default function PublicPage() {
       />
       <div className="rounded-2xl bg-gradient-to-r from-yellow-50 via-yellow-100 to-amber-50 p-8 text-center">
         <p className="text-sm text-zinc-600">あなたもポートフォリオを持とう</p>
-        <Link href="/" className="btn-primary mt-3">Canariaに登録する →</Link>
+        <Link href="/signup" className="btn-primary mt-3">Canariaに登録する →</Link>
       </div>
     </div>
   );

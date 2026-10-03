@@ -1,6 +1,6 @@
 "use client";
 // ponytail: 全部クライアントから Supabase を直接叩く（守りは RLS）。公開ページの SEO/OGP が要るときにサーバー取得へ
-import type { User } from "@supabase/supabase-js";
+import type { AuthError, User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type DependencyList, type Dispatch, type SetStateAction } from "react";
 import { createClient as db } from "./supabase";
@@ -90,8 +90,28 @@ export function useAuthedUser() {
   return user ?? undefined;
 }
 
-export const signIn = async (email: string) =>
-  must(await db().auth.signInWithOtp({ email, options: { emailRedirectTo: `${location.origin}/me` } }));
+const authErrors: Record<string, string> = {
+  invalid_credentials: "メールアドレスかパスワードが違います",
+  email_not_confirmed: "メールアドレスの確認がまだ済んでいません。届いたメールのリンクを開いてください",
+  user_already_exists: "このメールアドレスは登録済みです。ログインしてください",
+  weak_password: "パスワードが弱すぎます。もっと長くしてください",
+  over_email_send_rate_limit: "メールの送信回数が上限に達しました。しばらくしてからお試しください",
+};
+const authError = (e: AuthError) => authErrors[e.code ?? ""] ?? "うまくいきませんでした。もう一度お試しください";
+
+/** 確認メールを送った場合は confirm: true（リンクを開くと /me に戻ってログイン済みになる） */
+export async function signUp(email: string, password: string): Promise<{ error?: string; confirm?: boolean }> {
+  const { data, error } = await db().auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/me` } });
+  if (error) return { error: authError(error) };
+  // 確認メールが有効だと、登録済みアドレスでもエラーにならず identities が空で返る
+  if (data.user?.identities?.length === 0) return { error: authErrors.user_already_exists };
+  return { confirm: !data.session };
+}
+
+export async function signIn(email: string, password: string) {
+  const { error } = await db().auth.signInWithPassword({ email, password });
+  return error ? authError(error) : undefined;
+}
 export const signOut = () => db().auth.signOut();
 
 // --- read ---
