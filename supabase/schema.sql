@@ -3,6 +3,8 @@
 
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
+  -- 公開ページの URL（/@username）。本人があとから変えられる（変えると古い /@URL は開けなくなる）
+  username text not null unique default ('user_' || substr(md5(random()::text), 1, 8)) check (username ~ '^[a-z0-9_]{3,20}$'),
   name text not null default '',
   icon text not null default '',
   gender text not null default '',
@@ -116,3 +118,8 @@ values ('media', 'media', true, 50 * 1024 * 1024);
 
 create policy "media: own upload" on storage.objects for insert to authenticated
   with check (bucket_id = 'media' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- 既存 DB への変更履歴（上の定義には反映済み。既存の環境でだけ、一度流す）
+-- 2026-10-03 ユーザー名。既存ユーザーには user_xxxxxxxx が1人ずつ別の値で入る（random() は行ごとに評価される）
+-- alter table public.profiles add column username text not null unique
+--   default ('user_' || substr(md5(random()::text), 1, 8)) check (username ~ '^[a-z0-9_]{3,20}$');

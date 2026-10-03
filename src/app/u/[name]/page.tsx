@@ -1,19 +1,33 @@
 "use client";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
-import { loadPortfolio, useLoad } from "@/lib/store";
+import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
 
-// ponytail: URL は uid。見せたい URL にするなら profiles に username を足して /u/[username] へ
+// /@username から next.config の rewrites で来る。旧 URL の /u/ユーザーID は /@username に置き換える
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 export default function PublicPage() {
-  const { id } = useParams<{ id: string }>();
-  const [data] = useLoad(() => loadPortfolio(id), [id]);
+  const { name } = useParams<{ name: string }>();
+  const router = useRouter();
+  const user = useUser();
+  const legacy = uuid.test(name);
+  // ユーザー名は小文字だけなので、/@Yamada と打たれても開けるようにする
+  const [data] = useLoad(() => loadPublicPortfolio(legacy ? "id" : "username", name.toLowerCase()), [name]);
+  useEffect(() => {
+    if (legacy && data) router.replace(`/@${data.profile.username}`);
+  }, [legacy, data, router]);
+
   if (data === undefined) return null;
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
   return (
     <div className="space-y-10">
+      {user?.id === data.id && (
+        <div className="flex justify-end"><Link href="/me" className="btn">編集する</Link></div>
+      )}
       <ProfileView p={data.profile} />
       <Tabs
         tabs={[
@@ -40,10 +54,13 @@ export default function PublicPage() {
           },
         ]}
       />
-      <div className="rounded-2xl bg-primary-container p-8 text-center">
-        <p className="text-sm text-fg-2">あなたもポートフォリオを持とう</p>
-        <Link href="/signup" className="btn-primary mt-3">Canariaに登録する →</Link>
-      </div>
+      {/* 登録済みの人には出さない */}
+      {user === null && (
+        <div className="rounded-2xl bg-primary-container p-8 text-center">
+          <p className="text-sm text-fg-2">あなたもポートフォリオを持とう</p>
+          <Link href="/signup" className="btn-primary mt-3">Canariaに登録する →</Link>
+        </div>
+      )}
     </div>
   );
 }
