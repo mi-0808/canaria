@@ -95,6 +95,7 @@ const authErrors: Record<string, string> = {
   email_not_confirmed: "メールアドレスの確認がまだ済んでいません。届いたメールのリンクを開いてください",
   user_already_exists: "このメールアドレスは登録済みです。ログインしてください",
   weak_password: "パスワードが弱すぎます。もっと長くしてください",
+  same_password: "今と同じパスワードです。別のパスワードにしてください",
   over_email_send_rate_limit: "メールの送信回数が上限に達しました。しばらくしてからお試しください",
 };
 const authError = (e: AuthError) => authErrors[e.code ?? ""] ?? "うまくいきませんでした。もう一度お試しください";
@@ -110,6 +111,17 @@ export async function signUp(email: string, password: string): Promise<{ error?:
 
 export async function signIn(email: string, password: string) {
   const { error } = await db().auth.signInWithPassword({ email, password });
+  return error ? authError(error) : undefined;
+}
+
+/** 未登録のアドレスでも成功扱いになる（登録の有無を外に漏らさない） */
+export async function sendPasswordReset(email: string) {
+  const { error } = await db().auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset` });
+  return error ? authError(error) : undefined;
+}
+
+export async function updatePassword(password: string) {
+  const { error } = await db().auth.updateUser({ password });
   return error ? authError(error) : undefined;
 }
 export const signOut = () => db().auth.signOut();
