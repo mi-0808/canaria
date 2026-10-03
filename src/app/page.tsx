@@ -154,41 +154,58 @@ export default function Home() {
       {/* 不安をつぶす */}
       <section className="space-y-10">
         <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">「ポートフォリオは、あとでいいや」<br className="sm:hidden" />と思っていませんか？</h2>
+          {/* 言葉の途中で折り返さないよう、意味の切れ目ごとに inline-block でまとめる */}
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <span className="inline-block">「ポートフォリオは、</span><span className="inline-block">あとでいいや」</span><span className="inline-block">と思っていませんか？</span>
+          </h2>
           <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
         </div>
 
-        {/* ある/なしの比較 */}
+        {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる */}
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-surface-1 p-6">
+          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface-1 p-5 sm:p-6">
             <p className="text-sm font-bold text-fg-2">ポートフォリオがない場合</p>
-            <p className="mt-3 text-sm text-fg-3">応募メッセージ</p>
-            <p className="mt-1 rounded-xl bg-surface p-4 text-sm text-fg-3">「未経験ですが、やる気はあります。GitHubを見てください。」</p>
-            <p className="mt-3 text-sm text-fg-3">→ 何ができる人なのか、相手に探してもらうことになる</p>
+            <p className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
+              未経験ですが、やる気はあります。GitHubを見てください。
+            </p>
+            <p className="-mt-1 self-end text-xs text-fg-3">既読</p>
+            <p className="mt-auto pt-4 text-sm text-fg-2">返事は来ない。何ができる人なのか、相手が探すことになる</p>
           </div>
-          <div className="rounded-2xl border border-primary bg-primary-container p-6 text-on-primary-container">
+          <div className="flex flex-col gap-3 rounded-2xl border border-primary bg-primary-container p-5 text-on-primary-container sm:p-6">
             <p className="text-sm font-bold">Canariaがある場合</p>
-            <p className="mt-3 text-sm font-medium">応募メッセージ</p>
-            <p className="mt-1 rounded-xl bg-surface p-4 text-sm font-medium">「作ったものをまとめています。canaria.app/@you」</p>
-            <p className="mt-3 text-sm font-bold">→ 作品・役割・使った技術が、1ページで伝わる</p>
+            <div className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-secondary-container px-4 py-3 text-sm text-on-secondary-container">
+              作ったものをまとめています。
+              {/* 公開ページのリンクカード */}
+              <div className="mt-2 space-y-2 rounded-xl border border-line bg-surface p-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-6 shrink-0 rounded-full bg-primary" />
+                  <span className="font-bold text-fg">山田 カナ</span>
+                  <span className="text-xs text-fg-3">フロントエンド</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <span className="h-8 rounded-md bg-primary-container" />
+                  <span className="h-8 rounded-md bg-tertiary-container" />
+                  <span className="h-8 rounded-md bg-secondary-container" />
+                </div>
+                <p className="font-mono text-xs text-tertiary">canaria.app/@kana</p>
+              </div>
+            </div>
+            <p className="max-w-[85%] self-start rounded-2xl rounded-bl-md bg-secondary px-4 py-3 text-sm leading-relaxed text-on-secondary">
+              家計簿アプリ、触ってみました。一度お話ししませんか？
+            </p>
+            <p className="mt-auto pt-4 text-sm font-bold">作品・役割・使った技術が、1ページで伝わる</p>
           </div>
         </div>
 
-        {/* よくある不安 */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* よくある不安: カードで囲まず、線で区切った一覧にする */}
+        <dl className="mx-auto max-w-4xl divide-y divide-line border-y border-line">
           {worries.map(([q, a]) => (
-            <div key={q} className="card space-y-3 p-6">
-              <p className="flex items-start gap-2 font-bold">
-                <span className="shrink-0 rounded-md bg-surface-2 px-1.5 font-mono text-xs leading-6 text-fg-3">Q</span>
-                {q}
-              </p>
-              <p className="flex items-start gap-2 text-sm leading-relaxed text-fg-2">
-                <span className="shrink-0 rounded-md bg-primary-container px-1.5 font-mono text-xs leading-6 font-bold text-on-primary-container">A</span>
-                {a}
-              </p>
+            <div key={q} className="grid gap-2 py-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8">
+              <dt className="text-lg leading-snug font-bold">{q}</dt>
+              <dd className="leading-relaxed text-fg-2">{a}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
       {/* Closing */}
