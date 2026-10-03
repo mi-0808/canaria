@@ -26,7 +26,7 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
     setReply("");
     setReplying(false);
   };
-  const action = "rounded-lg px-2.5 py-1.5 transition hover:bg-zinc-100";
+  const action = "rounded-lg px-2.5 py-1.5 transition hover:bg-surface-2";
 
   return (
     <article className="card space-y-3 p-5">
@@ -34,23 +34,23 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
         <Link href={`/u/${post.author.id}`}><Avatar src={post.author.icon} /></Link>
         <div>
           <Link href={`/u/${post.author.id}`} className="text-sm font-bold hover:underline">{post.author.name || "名前未設定"}</Link>
-          <p className="font-mono text-[11px] text-zinc-400">{fmt(post.created_at)}</p>
+          <p className="font-mono text-[11px] text-fg-3">{fmt(post.created_at)}</p>
         </div>
         {post.media && (
-          <span className="ml-auto rounded-md bg-yellow-100 px-2 py-0.5 font-mono text-[10px] text-yellow-800">{post.media.kind}</span>
+          <span className="ml-auto rounded-md bg-primary-container px-2 py-0.5 font-mono text-[10px] text-on-primary-container">{post.media.kind}</span>
         )}
       </div>
       {post.body && <p className="leading-relaxed whitespace-pre-wrap">{post.body}</p>}
       {post.media?.kind === "audio" && (
-        <div className="rounded-xl bg-gradient-to-r from-yellow-100 to-amber-100 p-3"><audio controls src={post.media.src} className="w-full" /></div>
+        <div className="rounded-xl bg-primary-container p-3"><audio controls src={post.media.src} className="w-full" /></div>
       )}
-      {post.media?.kind === "video" && <video controls src={post.media.src} className="w-full rounded-xl bg-black" />}
+      {post.media?.kind === "video" && <video controls src={post.media.src} className="w-full rounded-xl bg-ink" />}
 
       {post.replies.length > 0 && (
-        <ul className="space-y-2 rounded-xl bg-zinc-50 p-3 text-sm">
+        <ul className="space-y-2 rounded-xl bg-surface-1 p-3 text-sm">
           {post.replies.map((r) => (
-            <li key={r.id} className="border-l-2 border-yellow-400 pl-3">
-              <span className="font-bold">{r.author.name}</span> {r.body} <span className="font-mono text-[11px] text-zinc-400">{fmt(r.created_at)}</span>
+            <li key={r.id} className="border-l-2 border-primary pl-3">
+              <span className="font-bold">{r.author.name}</span> {r.body} <span className="font-mono text-[11px] text-fg-3">{fmt(r.created_at)}</span>
             </li>
           ))}
         </ul>
@@ -58,13 +58,13 @@ export default function PostItem({ post, uid, onChange }: { post: Post; uid?: st
 
       {uid && onChange && (
         <>
-          <div className="-mx-2.5 flex gap-1 text-sm text-zinc-500">
-            <button className={`${action} ${post.reacted ? "text-amber-500" : ""}`} onClick={() => run(toggle("reactions", post, !post.reacted))}>
+          <div className="-mx-2.5 flex gap-1 text-sm text-fg-3">
+            <button className={`${action} ${post.reacted ? "text-on-primary-container" : ""}`} onClick={() => run(toggle("reactions", post, !post.reacted))}>
               {post.reacted ? "★" : "☆"} リアクション
             </button>
             <button className={action} onClick={() => setReplying(!replying)}>↩ 返信 {post.replies.length || ""}</button>
             <button className={action} onClick={share}>⇪ 共有</button>
-            <button className={`${action} ml-auto ${post.saved ? "text-black" : ""}`} onClick={() => run(toggle("saves", post, !post.saved))}>
+            <button className={`${action} ml-auto ${post.saved ? "text-fg" : ""}`} onClick={() => run(toggle("saves", post, !post.saved))}>
               {post.saved ? "■ 保存済み" : "□ 保存"}
             </button>
           </div>

@@ -20,11 +20,11 @@ const features = [
     visual: (
       <div className="grid grid-cols-3 gap-3">
         {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
-          <div key={t} className="overflow-hidden rounded-xl bg-white shadow-md">
-            <div className="aspect-video bg-gradient-to-br from-yellow-200 to-amber-300" />
+          <div key={t} className="overflow-hidden rounded-xl bg-surface shadow-md">
+            <div className="aspect-video bg-primary-container" />
             <div className="space-y-1.5 p-2.5">
               <p className="truncate text-xs font-bold">{t}</p>
-              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${st === "運用中" ? "bg-yellow-300" : "bg-zinc-100 text-zinc-600"}`}>{st}</span>
+              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${st === "運用中" ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>{st}</span>
             </div>
           </div>
         ))}
@@ -39,15 +39,15 @@ const features = [
     points: ["テキスト・音声・動画から選んで投稿", "リアクション・返信で、プロとつながる", "投稿は作品と紐づけて、ポートフォリオの厚みに"],
     visual: (
       <div className="space-y-3 text-sm">
-        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white p-3.5 shadow-md">
-          <span className="font-mono text-[11px] text-zinc-400">@you · 2h</span>
+        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-3.5 shadow-md">
+          <span className="font-mono text-[11px] text-fg-3">@you · 2h</span>
           <br />認証まわりで詰まってます…どこでガードするのが正解？
         </div>
-        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-black p-3.5 text-white shadow-md">
-          <span className="font-mono text-[11px] text-yellow-300">@senior_dev · 1h</span>
+        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-ink p-3.5 text-on-ink shadow-md">
+          <span className="font-mono text-[11px] text-primary">@senior_dev · 1h</span>
           <br />middlewareでまとめて守るのがおすすめ！
         </div>
-        <p className="text-right font-mono text-[11px] text-amber-700">★ 12 reactions</p>
+        <p className="text-right font-mono text-[11px] text-on-primary-container">★ 12 reactions</p>
       </div>
     ),
   },
@@ -60,15 +60,15 @@ const features = [
     soon: true,
     visual: (
       <div className="space-y-2 font-mono text-sm">
-        <p className="text-[11px] text-zinc-500">@senior_dev の仕事場</p>
+        <p className="text-[11px] text-fg-3">@senior_dev の仕事場</p>
         {[["🖥", "27inch 4K Monitor", "作業領域が倍。もう戻れない"], ["⌨️", "HHKB Studio", "手首がラクになった"], ["💻", "MacBook Pro M4", "ビルドが一瞬"]].map(([i, t, c]) => (
-          <div key={t} className="flex items-center gap-3 rounded-xl bg-white px-3.5 py-2.5 shadow-md">
+          <div key={t} className="flex items-center gap-3 rounded-xl bg-surface px-3.5 py-2.5 shadow-md">
             <span>{i}</span>
             <div className="min-w-0">
               <p className="font-medium">{t}</p>
-              <p className="font-sans text-[11px] text-zinc-500">“{c}”</p>
+              <p className="font-sans text-[11px] text-fg-3">“{c}”</p>
             </div>
-            <span className="ml-auto text-amber-500">↗</span>
+            <span className="ml-auto text-fg-3">↗</span>
           </div>
         ))}
       </div>
@@ -82,28 +82,27 @@ export default function Home() {
       {/* Hero */}
       <section className="relative -mx-4 -mt-10 overflow-hidden px-4 pt-16 pb-8">
         <div className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" />
-        <div className="absolute -top-32 left-1/2 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-300 to-amber-200 opacity-60 blur-3xl" />
         <div className="relative grid items-center gap-12 md:grid-cols-[1fr_auto]">
           <div className="space-y-7">
             <h1 className="text-3xl leading-[1.15] font-bold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
               つくった作品で、
               <br />
-              <span className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-400 whitespace-nowrap bg-clip-text text-transparent">次の仕事をとりにいく</span>
+              <span className="bg-[linear-gradient(transparent_62%,var(--color-primary)_62%)] whitespace-nowrap">次の仕事をとりにいく</span>
               <br />
               ポートフォリオ
             </h1>
-            <p className="max-w-md text-zinc-600">
+            <p className="max-w-md text-fg-2">
               作品はある。でも、まだ仕事にはつながっていない。そんなエンジニアのための、打ち込むだけで完成するポートフォリオ＋α。
             </p>
             <div className="flex items-center gap-4">
               <Link href="/signup" className="btn-primary px-6 py-3 text-base">無料ではじめる →</Link>
-              <span className="font-mono text-xs text-zinc-400">初期費用 ¥0</span>
+              <span className="font-mono text-xs text-fg-3">初期費用 ¥0</span>
             </div>
           </div>
 
           {/* ブロックを積むと作品ページになる、というモック */}
           <div className="relative mx-auto w-full max-w-sm md:w-80 lg:w-[26rem] lg:max-w-none">
-            <div className="absolute -inset-3 rotate-1 rounded-3xl bg-gradient-to-br from-yellow-200 to-amber-100" />
+            <div className="absolute -inset-3 rotate-1 rounded-3xl bg-primary-container" />
             <BlockPuzzle />
           </div>
         </div>
@@ -114,28 +113,27 @@ export default function Home() {
       {/* Features */}
       <section className="space-y-10">
         <div className="space-y-2 text-center">
-          <p className="label">{"// 3 features"}</p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
         </div>
         <div className="space-y-20">
           {features.map((f, i) => (
             <div key={f.n} className="grid items-center gap-10 md:grid-cols-2">
-              <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-amber-200 p-8 sm:p-10 ${i % 2 ? "md:order-2" : ""}`}>
+              <div className={`relative overflow-hidden rounded-3xl bg-primary-container p-8 sm:p-10 ${i % 2 ? "md:order-2" : ""}`}>
                 <div className="bg-grid absolute inset-0 opacity-50" />
-                <span className="absolute -top-6 -right-2 font-mono text-[10rem] leading-none font-bold text-yellow-300/50">{f.n}</span>
+                <span className="absolute -top-6 -right-2 font-mono text-[10rem] leading-none font-bold text-primary/50">{f.n}</span>
                 <div className="relative">{f.visual}</div>
               </div>
               <div className="space-y-5">
-                <p className="flex items-center gap-2 font-mono text-sm text-amber-600">
+                <p className="flex items-center gap-2 font-mono text-sm text-on-primary-container">
                   {f.n} / {f.tag}
-                  {f.soon && <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">coming soon</span>}
+                  {f.soon && <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] text-fg-3">coming soon</span>}
                 </p>
                 <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">{f.title}</h3>
-                <p className="leading-relaxed text-zinc-600">{f.desc}</p>
+                <p className="leading-relaxed text-fg-2">{f.desc}</p>
                 <ul className="space-y-2.5">
                   {f.points.map((pt) => (
                     <li key={pt} className="flex items-start gap-3 text-sm">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-yellow-300 text-[11px] font-bold">✓</span>
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[11px] font-bold text-on-primary-container">✓</span>
                       {pt}
                     </li>
                   ))}
@@ -149,23 +147,22 @@ export default function Home() {
       {/* 不安をつぶす */}
       <section className="space-y-10">
         <div className="space-y-3 text-center">
-          <p className="label">{"// why now"}</p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">「ポートフォリオは、あとでいいや」<br className="sm:hidden" />と思っていませんか？</h2>
-          <p className="text-zinc-600">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
+          <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
         </div>
 
         {/* ある/なしの比較 */}
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
-            <p className="font-mono text-xs text-zinc-400">without portfolio</p>
-            <p className="mt-3 text-sm text-zinc-500">応募メッセージ</p>
-            <p className="mt-1 rounded-xl bg-white p-4 text-sm text-zinc-500">「未経験ですが、やる気はあります。GitHubを見てください。」</p>
-            <p className="mt-3 text-sm text-zinc-500">→ 何ができる人なのか、相手に探してもらうことになる</p>
+          <div className="rounded-2xl border border-line bg-surface-1 p-6">
+            <p className="font-mono text-xs text-fg-3">without portfolio</p>
+            <p className="mt-3 text-sm text-fg-3">応募メッセージ</p>
+            <p className="mt-1 rounded-xl bg-surface p-4 text-sm text-fg-3">「未経験ですが、やる気はあります。GitHubを見てください。」</p>
+            <p className="mt-3 text-sm text-fg-3">→ 何ができる人なのか、相手に探してもらうことになる</p>
           </div>
-          <div className="rounded-2xl bg-gradient-to-br from-yellow-200 via-yellow-300 to-amber-300 p-6 shadow-[0_20px_50px_-20px_rgba(245,158,11,0.7)]">
-            <p className="font-mono text-xs text-black/60">with Canaria</p>
+          <div className="rounded-2xl border border-primary bg-primary-container p-6 text-on-primary-container">
+            <p className="font-mono text-xs">with Canaria</p>
             <p className="mt-3 text-sm font-medium">応募メッセージ</p>
-            <p className="mt-1 rounded-xl bg-white p-4 text-sm font-medium">「作ったものをまとめています。canaria.app/@you」</p>
+            <p className="mt-1 rounded-xl bg-surface p-4 text-sm font-medium">「作ったものをまとめています。canaria.app/@you」</p>
             <p className="mt-3 text-sm font-bold">→ 作品・役割・使った技術が、1ページで伝わる</p>
           </div>
         </div>
@@ -175,11 +172,11 @@ export default function Home() {
           {worries.map(([q, a]) => (
             <div key={q} className="card space-y-3 p-6">
               <p className="flex items-start gap-2 font-bold">
-                <span className="shrink-0 rounded-md bg-zinc-100 px-1.5 font-mono text-xs leading-6 text-zinc-500">Q</span>
+                <span className="shrink-0 rounded-md bg-surface-2 px-1.5 font-mono text-xs leading-6 text-fg-3">Q</span>
                 {q}
               </p>
-              <p className="flex items-start gap-2 text-sm leading-relaxed text-zinc-600">
-                <span className="shrink-0 rounded-md bg-yellow-300 px-1.5 font-mono text-xs leading-6 font-bold text-black">A</span>
+              <p className="flex items-start gap-2 text-sm leading-relaxed text-fg-2">
+                <span className="shrink-0 rounded-md bg-primary-container px-1.5 font-mono text-xs leading-6 font-bold text-on-primary-container">A</span>
                 {a}
               </p>
             </div>
@@ -188,9 +185,9 @@ export default function Home() {
       </section>
 
       {/* Closing */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-400 px-8 py-14 text-center">
+      <section className="relative overflow-hidden rounded-3xl bg-primary-container px-8 py-14 text-on-primary-container text-center">
         <div className="bg-grid absolute inset-0 opacity-40" />
-        <p className="relative font-mono text-xs text-black/60">$ canaria init --free</p>
+        <p className="relative font-mono text-xs">$ canaria init --free</p>
         <h2 className="relative mt-3 text-3xl font-bold tracking-tight">まだ結果が出ていない今こそ、見せよう。</h2>
         <Link href="/signup" className="relative mt-6 inline-block font-semibold underline decoration-2 underline-offset-4 hover:no-underline">
           マイページをつくる →

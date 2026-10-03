@@ -11,7 +11,7 @@ export default function PublicPage() {
   const { id } = useParams<{ id: string }>();
   const [data] = useLoad(() => loadPortfolio(id), [id]);
   if (data === undefined) return null;
-  if (data === null) return <p className="text-sm text-zinc-500">ユーザーが見つかりません。</p>;
+  if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
   return (
     <div className="space-y-10">
       <ProfileView p={data.profile} />
@@ -40,8 +40,8 @@ export default function PublicPage() {
           },
         ]}
       />
-      <div className="rounded-2xl bg-gradient-to-r from-yellow-50 via-yellow-100 to-amber-50 p-8 text-center">
-        <p className="text-sm text-zinc-600">あなたもポートフォリオを持とう</p>
+      <div className="rounded-2xl bg-primary-container p-8 text-center">
+        <p className="text-sm text-fg-2">あなたもポートフォリオを持とう</p>
         <Link href="/signup" className="btn-primary mt-3">Canariaに登録する →</Link>
       </div>
     </div>
