@@ -31,7 +31,7 @@ export default function Header() {
         {/* ロゴはトップへ。ログイン中ならホーム、未ログインなら LP が出る */}
         <Link href="/" className={`${item} -ml-2 gap-2 text-lg font-bold tracking-tight`}>
           <Logo /> Canaria
-          <span className="rounded-md bg-primary-container px-1.5 py-0.5 font-mono text-xs font-medium text-on-primary-container">beta</span>
+          <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
         <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
           {user && (
