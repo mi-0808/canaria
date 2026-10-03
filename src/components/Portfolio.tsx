@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { brandIcon } from "@/components/BrandIcon";
 import Icon, { type IconName } from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, gearLink, linkName, normalizeLink } from "@/lib/links.mjs";
@@ -7,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { gearCategories, type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・入手ボタン → 数字の行 → スクリーンショットの棚 → 説明と関連リンク → 情報
+// アイコン・名前・入手ボタン（メールと SNS）→ 数字の行 → スクリーンショットの棚 → 説明 → 情報
 
 export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
 
@@ -21,6 +22,10 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
 export function ProfileHero({ p }: { p: Profile }) {
+  // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
+  const links = p.links.filter((u) => u.startsWith("https://"));
+  // DB でも形を絞っているが、mailto: に入れる直前にも確かめる
+  const email = contactEmailPattern.test(p.contact_email);
   return (
     <section className="space-y-5">
       {/* カバーが無い人にはうすいカナリアの無地の帯を出す（人によってページの頭の形が変わらないように）。
@@ -31,16 +36,24 @@ export function ProfileHero({ p }: { p: Profile }) {
         <Avatar src={p.icon} className="relative -mt-17 ml-4 h-24 w-24 ring-4 ring-surface sm:-mt-23 sm:ml-6 sm:h-36 sm:w-36" />
         <div className="min-w-0 space-y-4">
           <div className="space-y-1">
-            <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
+            {/* ユーザー名は名前の右に（X のプロフィールと同じ）。名前が長くて入らなければ次の行に回る */}
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>
+              <p className="text-sm text-fg-3">@{p.username}</p>
+            </div>
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
-            <p className="text-sm text-fg-3">@{p.username}</p>
           </div>
-          {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、主役の黄色のボタン。
-              DB でも形を絞っているが、mailto: に入れる直前にも確かめる */}
-          {contactEmailPattern.test(p.contact_email) && (
-            <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
-              <Icon name="mail" />メールで連絡
-            </a>
+          {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
+              SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
+          {(email || links.length > 0) && (
+            <div className="flex flex-wrap gap-2">
+              {email && (
+                <a href={`mailto:${p.contact_email}`} className="btn-primary w-full sm:w-auto">
+                  <Icon name="mail" />メールで連絡
+                </a>
+              )}
+              {links.map((u) => <SocialLink key={u} url={u} />)}
+            </div>
           )}
         </div>
       </div>
@@ -73,8 +86,8 @@ export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
 /** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
 export function NowNext({ p }: { p: Profile }) {
   const cards: [label: string, text: string, icon: IconName, tone: string][] = [
-    ["いまやっていること", p.doing_now, "clock", "bg-primary-container text-on-primary-container"],
-    ["これからやりたいこと", p.want_next, "arrow", "bg-tertiary-container text-on-tertiary-container"],
+    ["いまやっていること", p.doing_now, "tool", "bg-primary-container text-on-primary-container"],
+    ["これからやりたいこと", p.want_next, "seedling", "bg-tertiary-container text-on-tertiary-container"],
   ];
   const filled = cards.filter(([, text]) => text.trim());
   if (!filled.length) return null;
@@ -198,21 +211,17 @@ function WorkDetail({ w }: { w: Work }) {
   );
 }
 
-/** SNS・リンクの一覧（App Store の「Web サイト」「サポート」の並びにあたる）。渡す前に https だけに絞っておくこと */
-export function LinkList({ links }: { links: string[] }) {
+/** SNS・リンク1件。ロゴを持っているサービスは丸いアイコンだけのボタン、それ以外は名前（知らないサイトはドメイン）を書いたボタン。
+ *  アイコンだけだと、知らないサイトはどこへ飛ぶのか分からないため。渡す前に https だけに絞っておくこと */
+function SocialLink({ url }: { url: string }) {
+  const name = linkName(url);
+  const logo = brandIcon(name);
   return (
-    <ul className="divide-y divide-line border-y border-line">
-      {links.map((u) => (
-        <li key={u}>
-          {/* rel="me": このページの持ち主のアカウントだと、相手のサービスに伝える */}
-          <a href={u} target="_blank" rel="noopener noreferrer me"
-            className="flex min-h-12 items-center justify-between gap-3 text-tertiary transition hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-            {linkName(u)}
-            <Icon name="external" className="h-4 w-4" />
-          </a>
-        </li>
-      ))}
-    </ul>
+    // rel="me": このページの持ち主のアカウントだと、相手のサービスに伝える
+    <a href={url} target="_blank" rel="noopener noreferrer me" aria-label={logo ? name : undefined}
+      className={`btn rounded-full ${logo ? "w-11 px-0" : ""}`}>
+      {logo ?? <><Icon name="link" className="h-4 w-4" />{name}</>}
+    </a>
   );
 }
 
