@@ -174,7 +174,7 @@ const posts = () => db().from("posts").select(postSelect).order("created_at", { 
 export const loadProfile = async (uid: string) =>
   must(await db().from("profiles").select("*").eq("id", uid).maybeSingle()) as Profile | null;
 
-/** 公開ページ・マイページ用。プロフィールが無ければ null */
+/** 公開ページ・/me（ポートフォリオを作る）用。プロフィールが無ければ null */
 export async function loadPortfolio(uid: string, viewer?: string): Promise<Portfolio | null> {
   const [profile, works, gear, ps] = await Promise.all([
     loadProfile(uid),
@@ -203,7 +203,7 @@ export async function loadPost(id: string, viewer?: string) {
 
 // --- write ---
 
-/** マイページ初回表示時にプロフィール行を用意する（作品などの外部キー先） */
+/** /me を初めて開いたときにプロフィール行を用意する（作品などの外部キー先） */
 export const ensureProfile = async (uid: string) =>
   must(await db().from("profiles").upsert({ id: uid }, { onConflict: "id", ignoreDuplicates: true }));
 

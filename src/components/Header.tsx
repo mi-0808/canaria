@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useUser } from "@/lib/store";
+import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   return (
@@ -18,13 +18,6 @@ const item = "inline-flex min-h-11 items-center px-2 transition";
 export default function Header() {
   const path = usePathname();
   const user = useUser();
-  // `/` の中身（LP かホームか）はログイン状態で変わる。画面ごと読み直して proxy に判定し直させる。
-  // router.push だと、Next のクライアントキャッシュに残ったホームが出ることがある（router.refresh は今のページ分しか消さない）
-  const logout = async () => {
-    await signOut();
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 上の理由で意図的に再読み込みする
-    location.assign("/");
-  };
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-1.5">
@@ -34,11 +27,9 @@ export default function Header() {
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
         <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
+          {/* ログアウトは /me の下に置く（2つ並べると 375px に収まらないため） */}
           {user && (
-            <>
-              <Link href="/me" className={`${item} ${path.startsWith("/me") ? "font-bold text-fg" : "text-fg-3 hover:text-fg"}`}>マイページ</Link>
-              <button className={`${item} text-fg-3 hover:text-fg`} onClick={logout}>ログアウト</button>
-            </>
+            <Link href="/me" className={`${item} ${path.startsWith("/me") ? "font-bold text-fg" : "text-fg-3 hover:text-fg"}`}>ポートフォリオを作る</Link>
           )}
           {user === null && (
             <>

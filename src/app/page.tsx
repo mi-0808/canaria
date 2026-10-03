@@ -179,7 +179,7 @@ export default function Home() {
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
         <h2 className="text-3xl font-bold tracking-tight"><Phrases text="まだ結果が|出ていない|今こそ、|見せよう。" /></h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
-        <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">マイページをつくる →</Link>
+        <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">ポートフォリオを作る →</Link>
       </section>
     </div>
   );
