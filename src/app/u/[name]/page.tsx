@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
+import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
 import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
 
@@ -21,7 +22,7 @@ export default function PublicPage() {
     if (legacy && data) router.replace(`/@${data.profile.username}`);
   }, [legacy, data, router]);
 
-  if (data === undefined) return null;
+  if (data === undefined) return <ProfileSkeleton />;
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
   return (
     <div className="space-y-10">
@@ -32,7 +33,7 @@ export default function PublicPage() {
       <Tabs
         tabs={[
           {
-            label: "ポートフォリオ",
+            label: "作品",
             count: data.works.length,
             content: data.works.length ? (
               <div className="grid gap-6 md:grid-cols-2">{data.works.map((w) => <WorkCard key={w.id} w={w} />)}</div>
@@ -46,7 +47,7 @@ export default function PublicPage() {
             ) : <Empty text="まだ登録がありません" />,
           },
           {
-            label: "タイムライン",
+            label: "投稿",
             count: data.posts.length,
             content: data.posts.length ? (
               <div className="mx-auto max-w-2xl space-y-4">{data.posts.map((p) => <PostItem key={p.id} post={p} />)}</div>
