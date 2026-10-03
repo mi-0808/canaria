@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
+import { isPublicPage } from "@/lib/nav.mjs";
 import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
@@ -14,10 +15,10 @@ export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
-// ログイン中の行き先。PC はヘッダーに文字で、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
+// ログイン中の行き先。PC はヘッダーに、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
 const nav: [href: string, label: string, icon: IconName][] = [
   ["/", "トップ", "home"],
-  ["/me", "ポートフォリオ", "briefcase"],
+  ["/me", "ポートフォリオ", "easel"],
   ["/settings", "設定", "settings"],
 ];
 // `/` は前方一致だと全部に当たるので完全一致
@@ -39,12 +40,14 @@ export default function Header() {
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
 
-        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる */}
+        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる。
+            アイコンと選択中の色（藍）はタブバーとそろえ、幅が変わっても同じメニューに見えるようにする */}
         {user && (
           <nav aria-label="メインメニュー" className="-mr-2 hidden gap-4 text-sm whitespace-nowrap sm:flex">
-            {nav.map(([href, label]) => (
+            {nav.map(([href, label, icon]) => (
               <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-                className={`${item} text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-fg`}>
+                className={`${item} gap-1.5 text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-tertiary`}>
+                <Icon name={icon} className="h-4.5 w-4.5" />
                 {label}
               </Link>
             ))}
@@ -61,21 +64,23 @@ export default function Header() {
   );
 }
 
-/** スマホの画面下に浮かぶタブバー（HIG の Tab bars）。ログイン中だけ出す */
+/** スマホの画面下に固定するタブバー（HIG の Tab bars）。ログイン中だけ出す。
+ *  浮かせた丸いバーは中身の上に被って大きく見えたので、画面の下辺いっぱいに敷く。
+ *  公開ページは見る人のためのページなので出さない（戻るのはヘッダーのロゴか、プレビューなら左上の戻るボタン） */
 export function TabBar() {
   const path = usePathname();
   const user = useUser();
-  if (!user) return null;
+  if (!user || isPublicPage(path)) return null;
   return (
     <>
       {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
-      <div aria-hidden className="h-24 sm:hidden" />
+      <div aria-hidden className="h-[calc(3.125rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
       <nav aria-label="メインメニュー"
-        className="fixed inset-x-4 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex rounded-full border border-line bg-surface-1 p-1.5 shadow-lg sm:hidden">
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
         {nav.map(([href, label, icon]) => (
           <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-            className="flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-xs text-fg-2 transition aria-[current=page]:bg-surface-raised aria-[current=page]:font-bold aria-[current=page]:text-tertiary aria-[current=page]:shadow-sm">
-            <Icon name={icon} className="h-6 w-6" />
+            className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
+            <Icon name={icon} className="h-4.5 w-4.5" />
             {label}
           </Link>
         ))}

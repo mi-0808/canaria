@@ -198,7 +198,8 @@ export default function MyPage() {
           <button className="btn" onClick={editProfile}><Icon name="pen" className="h-4 w-4" />編集</button>
         </div>
         {p.tagline && <p className="text-fg-2">{p.tagline}</p>}
-        <Link href={`/@${p.username}`} className="btn-tonal w-full">公開ページを見る<Icon name="chevron" className="h-4 w-4" /></Link>
+        {/* ?preview で開くと、見る人と同じ見た目（ヘッダー・タブバーなし、左上に戻るボタン）になる */}
+        <Link href={`/@${p.username}?preview`} className="btn-tonal w-full">公開ページを見る<Icon name="chevron" className="h-4 w-4" /></Link>
       </section>
 
       <Tabs
