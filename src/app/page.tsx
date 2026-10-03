@@ -105,18 +105,18 @@ export default function Home() {
       <DeviceShowcase />
 
       {/* Features */}
-      <section id="features" className="scroll-mt-20 space-y-14 md:space-y-20">
+      <section id="features" className="scroll-mt-20 space-y-12">
         <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">Canariaでできる、3つのこと</h2>
-        <div className="space-y-20 md:space-y-28">
+        <div className="space-y-16">
           {features.map((f, i) => (
-            <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-16">
-              <div className={`rounded-3xl ${f.panel} p-6 sm:p-12 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
+            <div key={f.title} className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+              <div className={`rounded-3xl ${f.panel} p-6 sm:p-8 ${i % 2 ? "md:order-2" : ""}`}>{f.visual}</div>
               <div className="max-w-md space-y-4">
                 <h3 className="text-2xl leading-snug font-bold tracking-tight sm:text-3xl">
                   {f.title}
                   {f.soon && <span className="ml-2 inline-block rounded-md bg-surface-2 px-2 py-0.5 align-middle text-xs font-medium text-fg-2">近日公開</span>}
                 </h3>
-                <p className="leading-loose text-fg-2">{f.desc}</p>
+                <p className="leading-relaxed text-fg-2">{f.desc}</p>
               </div>
             </div>
           ))}
