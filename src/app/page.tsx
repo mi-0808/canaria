@@ -36,7 +36,7 @@ const features = [
   {
     panel: "bg-tertiary-container",
     title: "つくりながら|発信して、|プロに教わる",
-    desc: "まだ世に出ていない作品の裏側を、テキスト・音声・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
+    desc: "まだ世に出ていない作品の裏側を、テキスト・画像・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
     visual: (
       <div className="space-y-3 text-sm">
         <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">

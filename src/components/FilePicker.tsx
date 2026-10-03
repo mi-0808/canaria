@@ -13,7 +13,7 @@ export default function FilePicker({
   value: string;
   onChange: (url: string) => void;
   accept?: string;
-  shape?: "wide" | "round";
+  shape?: "wide" | "cover" | "round"; // cover: プロフィールのカバー画像（3:1）
   maxMB?: number;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -53,7 +53,7 @@ export default function FilePicker({
 
   return (
     <div className="space-y-2">
-      <label className={`relative flex ${isImage ? "aspect-video" : "h-28"} w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed border-outline bg-surface-1 transition hover:border-primary hover:bg-primary-container/50 ${focus}`}>
+      <label className={`relative flex ${shape === "cover" ? "aspect-3/1" : isImage ? "aspect-video" : "h-28"} w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed border-outline bg-surface-1 transition hover:border-primary hover:bg-primary-container/50 ${focus}`}>
         {input}
         {uploading ? (
           <span className="text-sm text-fg-3">送信中…</span>

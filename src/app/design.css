@@ -215,6 +215,14 @@ h1, h2, h3 {
    16px 未満だと iOS がフォーカス時に拡大するので text-base。フォーカスは「押せるもの」の藍で示す */
 @utility input {
   @apply min-h-11 w-full rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-base transition outline-none placeholder:text-fg-3 focus:border-tertiary focus:ring-4 focus:ring-tertiary-container;
+  /* ブラウザ標準の ▾ は右端に張り付くので、自前の ▼ を右から 16px に描く。currentColor なのでダークでも追従する */
+  &:is(select) {
+    @apply appearance-none pr-10;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 21px) 50%, calc(100% - 16px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
 }
 @utility card {
   @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)];

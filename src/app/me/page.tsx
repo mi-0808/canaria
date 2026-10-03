@@ -11,19 +11,17 @@ import PostItem from "@/components/PostItem";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
-import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
+import { amazonSearchUrl, contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
-  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
+  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, profileChoices, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
   saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
 // ポートフォリオを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
 // 一覧の位置がずれず、キャンセル・保存がいつも同じ場所にある
 
-const profileFields: [keyof Profile, string][] = [
-  ["name", "名前 *"],
-  ["tagline", "ひとこと *"],
+const profileSelects: [keyof typeof profileChoices, string][] = [
   ["gender", "性別"],
   ["age", "年齢"],
   ["location", "居住地"],
@@ -219,6 +217,12 @@ export default function MyPage() {
               <span className="label">アイコン *</span>
               <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile({ ...profile, icon })} />
             </div>
+            <div className="space-y-1.5">
+              <span className="label">カバー画像</span>
+              <FilePicker shape="cover" value={profile.cover} onChange={(cover) => setProfile({ ...profile, cover })} />
+              {/* 任意の項目なので、入れたあとで外せるようにする */}
+              {profile.cover && <button className="btn" onClick={() => setProfile({ ...profile, cover: "" })}>カバー画像を外す</button>}
+            </div>
             <Field label="ユーザー名 *">
               <span className="flex items-center gap-2">
                 <span className="font-mono text-fg-3">/@</span>
@@ -233,12 +237,27 @@ export default function MyPage() {
                 <span className="block text-sm text-fg-3">公開ページの URL になります。英小文字・数字・_ の3〜20文字</span>
               )}
             </Field>
+            {/* 名前とひとことを横に並べると「姓・名」に見えるので縦に積み、幅も変える */}
+            <Field label="名前 *">
+              <input className="input max-w-60" autoComplete="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
+            </Field>
+            <Field label="ひとこと *">
+              <input className="input" value={profile.tagline} onChange={(e) => setProfile({ ...profile, tagline: e.target.value })} />
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              {profileFields.map(([k, label]) => (
-                <Field key={k} label={label}>
-                  <input className="input" value={profile[k]} onChange={(e) => setProfile({ ...profile, [k]: e.target.value })} />
-                </Field>
-              ))}
+              {profileSelects.map(([k, label]) => {
+                const choices: readonly string[] = profileChoices[k];
+                return (
+                  <Field key={k} label={label}>
+                    <select className="input" value={profile[k]} onChange={(e) => setProfile({ ...profile, [k]: e.target.value })}>
+                      <option value="">未選択</option>
+                      {/* 自由入力だった頃の値は消さずに残す */}
+                      {profile[k] && !choices.includes(profile[k]) && <option>{profile[k]}</option>}
+                      {choices.map((c) => <option key={c}>{c}</option>)}
+                    </select>
+                  </Field>
+                );
+              })}
             </div>
             {/* MyHood の一言のような短い近況。公開ページで2枚のカードになる */}
             <Field label="いまやっていること" hint={`${profile.doing_now.length}/100`}>
@@ -313,19 +332,29 @@ export default function MyPage() {
         footer={<SaveBar onCancel={() => setGear(null)} onSave={saveGear} disabled={!gear?.name.trim()} saving={saving} />}>
         {gear && (
           <>
+            {/* 名前で Amazon を探し、商品ページの URL を貼ってもらう（アプリ内検索は API の条件待ち。src/lib/links.mjs） */}
+            <div className="space-y-2">
+              <Field label="アイテム名 *">
+                <input type="search" className="input" placeholder="MacBook Pro M4" value={gear.name} onChange={(e) => setGear({ ...gear, name: e.target.value })} />
+              </Field>
+              {gear.name.trim() ? (
+                <a href={amazonSearchUrl(gear.name)} target="_blank" rel="noopener noreferrer sponsored" className="btn w-full">
+                  Amazonで探す <Icon name="external" className="h-4 w-4" />
+                </a>
+              ) : (
+                <button className="btn w-full" disabled>Amazonで探す</button>
+              )}
+            </div>
+            <Field label="商品URL" hint="Amazonの商品ページのURL">
+              <input type="url" className="input font-mono" placeholder="https://www.amazon.co.jp/dp/…" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
+            </Field>
             <Field label="カテゴリ">
               <select className="input" value={gear.category} onChange={(e) => setGear({ ...gear, category: e.target.value as Gear["category"] })}>
                 {Object.entries(gearCategories).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
               </select>
             </Field>
-            <Field label="アイテム名 *">
-              <input className="input" placeholder="MacBook Pro M4" value={gear.name} onChange={(e) => setGear({ ...gear, name: e.target.value })} />
-            </Field>
             <Field label="おすすめポイント" hint={`${gear.comment.length}/80`}>
               <input className="input" maxLength={80} placeholder="作業領域が倍になって、もう戻れない" value={gear.comment} onChange={(e) => setGear({ ...gear, comment: e.target.value })} />
-            </Field>
-            <Field label="商品URL">
-              <input type="url" className="input font-mono" placeholder="https://" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
             </Field>
             {!isNewGear && (
               <button className="btn w-full text-error" onClick={() => setDeleting({ table: "gear", id: gear.id, name: gear.name })}>
