@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Icon from "@/components/Icon";
-import { Empty, GearRow, LinkList, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
+import { CareerTimeline, Empty, GearRow, LinkList, NowNext, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
@@ -28,7 +28,7 @@ export default function PublicPage() {
   if (data === undefined) return <PublicSkeleton />;
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
 
-  const { profile: p, works, gear, posts } = data;
+  const { profile: p, works, gear, careers, posts } = data;
   // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
   const links = p.links.filter((u) => u.startsWith("https://"));
   const section = "text-2xl font-bold tracking-tight";
@@ -42,12 +42,20 @@ export default function PublicPage() {
       <div className="space-y-6">
         <ProfileHero p={p} />
         <StatsRow p={p} works={works} />
+        <NowNext p={p} />
       </div>
 
       <section className="space-y-4">
         <h2 className={section}>作品</h2>
         {works.length ? <WorkShelf works={works} /> : <Empty text="まだ作品がありません" />}
       </section>
+
+      {careers.length > 0 && (
+        <section className="space-y-4">
+          <h2 className={section}>経歴</h2>
+          <CareerTimeline careers={careers} />
+        </section>
+      )}
 
       {(p.bio || links.length > 0) && (
         <section className="grid gap-12 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-8">

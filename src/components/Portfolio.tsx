@@ -3,8 +3,8 @@ import { useState } from "react";
 import Icon, { type IconName } from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
-import { splitTechs, statItems } from "@/lib/stats.mjs";
-import { gearCategories, type Gear, type Profile, type Work } from "@/lib/store";
+import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
+import { gearCategories, type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
 // アイコン・名前・入手ボタン → 数字の行 → スクリーンショットの棚 → 説明と関連リンク → 情報
@@ -55,6 +55,45 @@ export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+/** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
+export function NowNext({ p }: { p: Profile }) {
+  const cards: [label: string, text: string, icon: IconName, tone: string][] = [
+    ["いまやっていること", p.doing_now, "clock", "bg-primary-container text-on-primary-container"],
+    ["これからやりたいこと", p.want_next, "arrow", "bg-tertiary-container text-on-tertiary-container"],
+  ];
+  const filled = cards.filter(([, text]) => text.trim());
+  if (!filled.length) return null;
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {filled.map(([label, text, icon, tone]) => (
+        <section key={label} className={`space-y-2 rounded-2xl p-5 ${tone}`}>
+          <h2 className="flex items-center gap-2 text-sm font-bold"><Icon name={icon} className="h-4 w-4" />{label}</h2>
+          <p className="leading-relaxed whitespace-pre-wrap">{text}</p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/** 経歴の年表（始まりの新しい順）。左に縦線と点を引き、勤務先・役職・期間・実績を並べる */
+export function CareerTimeline({ careers }: { careers: Career[] }) {
+  return (
+    <ol className="space-y-6 border-l-2 border-line pl-6">
+      {careers.map((c) => (
+        <li key={c.id} className="relative space-y-1">
+          {/* 年表の点。縦線（2px）の真ん中に 12px の点を置く: -(左の余白 24px + 線 2px) + 線の半分 1px - 点の半分 6px = -31px。
+              今も続いているものだけカナリア。色だけで伝えないよう、期間にも「現在」と出る */}
+          <span aria-hidden className={`absolute top-1.5 -left-[31px] h-3 w-3 rounded-full ring-4 ring-surface ${c.ended ? "bg-outline" : "bg-primary"}`} />
+          <h3 className="text-lg font-bold">{c.company}</h3>
+          {c.role && <p className="text-fg-2">{c.role}</p>}
+          <p className="text-sm text-fg-3">{careerPeriod(c.started, c.ended)}</p>
+          {c.summary && <p className="pt-1 leading-relaxed whitespace-pre-wrap text-fg-2">{c.summary}</p>}
+        </li>
+      ))}
+    </ol>
   );
 }
 

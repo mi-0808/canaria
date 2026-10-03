@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import CareersEditor from "@/components/CareersEditor";
+import Field from "@/components/Field";
 import FilePicker from "@/components/FilePicker";
 import Icon from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
@@ -10,9 +12,10 @@ import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
+import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
-  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
-  useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Gear, type Post, type Profile, type Work,
+  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
+  saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
 // ポートフォリオを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
@@ -24,25 +27,12 @@ const profileFields: [keyof Profile, string][] = [
   ["gender", "性別"],
   ["age", "年齢"],
   ["location", "居住地"],
-  ["company", "勤務先"],
-  ["years", "勤続年数"],
   ["mbti", "MBTI"],
 ];
 
 const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
 const blankGear = (): Gear => ({ id: newId(), category: "machine", name: "", comment: "", url: "" });
-
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="flex justify-between">
-        <span className="label">{label}</span>
-        {hint && <span className="text-sm text-fg-3">{hint}</span>}
-      </span>
-      {children}
-    </label>
-  );
-}
+const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
 
 /** シートの下に固定する「キャンセル・保存」 */
 function SaveBar({ onCancel, onSave, disabled, saving }: { onCancel: () => void; onSave: () => void; disabled?: boolean; saving: boolean }) {
@@ -68,6 +58,8 @@ export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [work, setWork] = useState<Work | null>(null);
   const [gear, setGear] = useState<Gear | null>(null);
+  // 経歴はプロフィールの編集の中で一緒に直す。編集中は started / ended を入力欄の値（"2024-04"）で持ち、保存するときに DB の date に直す
+  const [careerDrafts, setCareerDrafts] = useState<Career[]>([]);
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
   const [deleting, setDeleting] = useState<{ table: "works" | "gear"; id: string; name: string } | null>(null);
   const [saving, run] = useBusy();
@@ -81,18 +73,25 @@ export default function MyPage() {
 
   const editProfile = () => {
     setUsernameError("");
+    setCareerDrafts(data.careers.map((c) => ({ ...c, started: toMonth(c.started), ended: c.ended && toMonth(c.ended) })));
     setProfile(p);
   };
   const usernameInvalid = !!profile && !usernamePattern.test(profile.username);
   const linksInvalid = !!profile?.links.some((l) => l.trim() && !normalizeLink(l));
   const emailInvalid = !!profile?.contact_email.trim() && !contactEmailPattern.test(profile.contact_email.trim());
+  const careersInvalid = careerDrafts.some((c) => careerProblem(c));
   const saveProfile = () =>
     run(async () => {
       // 空の行は捨て、https にそろえた形で保存する（DB の valid_links と同じ条件）
       const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l), contact_email: profile!.contact_email.trim() };
+      // ユーザー名が他の人と重なったら、経歴には触らずにそこで止める
       const err = await putProfile(user.id, saved);
       if (err) return setUsernameError(err);
-      setData({ ...data, profile: saved });
+      // 経歴: 残っているものは書き直し（足したもの・直したもの）、編集の中で消したものは DB からも消す。どちらも並べて送る
+      const careers = careerDrafts.map((c) => ({ ...c, company: c.company.trim(), role: c.role.trim(), started: fromMonth(c.started), ended: c.ended && fromMonth(c.ended) }));
+      const removed = data.careers.filter((c) => !careers.some((d) => d.id === c.id));
+      await Promise.all([...careers.map(putCareer), ...removed.map((c) => remove("careers", c.id))]);
+      setData({ ...data, profile: saved, careers: careers.toSorted(byStartedDesc) });
       setProfile(null);
     });
   const saveWork = () =>
@@ -213,7 +212,7 @@ export default function MyPage() {
       />
 
       <Sheet open={!!profile} onClose={() => setProfile(null)} dismissible={false} title="プロフィールを編集"
-        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid} saving={saving} />}>
+        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid || careersInvalid} saving={saving} />}>
         {profile && (
           <>
             <div className="space-y-1.5">
@@ -241,9 +240,19 @@ export default function MyPage() {
                 </Field>
               ))}
             </div>
+            {/* MyHood の一言のような短い近況。公開ページで2枚のカードになる */}
+            <Field label="いまやっていること" hint={`${profile.doing_now.length}/100`}>
+              <textarea className="input" rows={2} maxLength={100} placeholder="家計簿アプリを運用しながら、決済まわりを勉強中"
+                value={profile.doing_now} onChange={(e) => setProfile({ ...profile, doing_now: e.target.value })} />
+            </Field>
+            <Field label="これからやりたいこと" hint={`${profile.want_next.length}/100`}>
+              <textarea className="input" rows={2} maxLength={100} placeholder="受託でフロントエンドの仕事を取りたい"
+                value={profile.want_next} onChange={(e) => setProfile({ ...profile, want_next: e.target.value })} />
+            </Field>
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
+            <CareersEditor careers={careerDrafts} onChange={setCareerDrafts} />
             <Field label="連絡用メールアドレス">
               <input type="email" inputMode="email" autoComplete="email" className="input" placeholder="you@example.com" value={profile.contact_email}
                 aria-invalid={emailInvalid} onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })} />
