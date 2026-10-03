@@ -74,7 +74,8 @@ const features = [
 
 export default function Home() {
   return (
-    <div className="space-y-24">
+    // LP は常にライトで見せる（design.css の :root:has([data-light-only])）
+    <div data-light-only className="space-y-24">
       {/* Hero */}
       <section className="relative -mx-4 -mt-10 overflow-hidden px-4 pt-16 pb-8 md:pt-24">
         <div className="relative grid items-center gap-12 md:grid-cols-[1fr_auto]">
