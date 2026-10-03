@@ -23,10 +23,12 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 export function ProfileHero({ p }: { p: Profile }) {
   return (
     <section className="space-y-5">
-      {p.cover && <img src={p.cover} alt="" className="aspect-3/1 w-full rounded-2xl object-cover" />}
+      {/* カバーが無い人にはうすいカナリアの無地の帯を出す（人によってページの頭の形が変わらないように）。
+          濃いカナリアは「メールで連絡」ボタンが使うので、帯は primary-container */}
+      {p.cover ? <img src={p.cover} alt="" className="aspect-3/1 w-full rounded-2xl object-cover" /> : <div className="aspect-3/1 w-full rounded-2xl bg-primary-container" />}
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
-        {/* カバーがあるときは、アイコンをカバーの下端に重ねる（X・LinkedIn と同じ形）。縁取りで背景から切り離す */}
-        <Avatar src={p.icon} className={`h-24 w-24 sm:h-36 sm:w-36 ${p.cover ? "relative -mt-17 ml-4 ring-4 ring-surface sm:-mt-23 sm:ml-6" : ""}`} />
+        {/* アイコンをカバーの下端に重ねる（X・LinkedIn と同じ形）。縁取りで背景から切り離す */}
+        <Avatar src={p.icon} className="relative -mt-17 ml-4 h-24 w-24 ring-4 ring-surface sm:-mt-23 sm:ml-6 sm:h-36 sm:w-36" />
         <div className="min-w-0 space-y-4">
           <div className="space-y-1">
             <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{p.name || "名前未設定"}</h1>

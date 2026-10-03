@@ -30,14 +30,16 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
 
   // 「公開ページを見る」から来たプレビュー。見る人と同じ見た目にするため、ヘッダー（design.css の data-preview）と
   // 「編集する」を出さず、戻るだけを置く。スクロールしても戻れるよう sticky で左上に残す。
-  // ヘッダーが無い分、上の余白（main の py-10）に少し食い込ませ、下の間隔も詰めて、見る人の画面との差を小さくする
+  // 場所を取るとカバーの上に空きができるので、高さ 0 の入れ物に入れてカバーの左上に重ねる（mb-0 で space-y の間隔も消す）
   const back = isPreview(preview, user, data) && (
-    <button type="button" aria-label="戻る" data-preview
-      // ponytail: 履歴の有無は history.length で見るだけ。プレビューの URL を直接開いたときはポートフォリオへ
-      onClick={() => (window.history.length > 1 ? router.back() : router.push("/me"))}
-      className="sticky top-[max(0.75rem,env(safe-area-inset-top))] z-20 -mt-6 mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-fg shadow-sm transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-      <Icon name="arrow" className="h-5 w-5 rotate-180" />
-    </button>
+    <div className="sticky top-[env(safe-area-inset-top)] z-20 mb-0 h-0">
+      <button type="button" aria-label="戻る" data-preview
+        // ponytail: 履歴の有無は history.length で見るだけ。プレビューの URL を直接開いたときはポートフォリオへ
+        onClick={() => (window.history.length > 1 ? router.back() : router.push("/me"))}
+        className="flex h-11 w-11 translate-3 items-center justify-center rounded-full border border-line bg-surface text-fg shadow-sm transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+        <Icon name="arrow" className="h-5 w-5 rotate-180" />
+      </button>
+    </div>
   );
 
   if (data === undefined) return <div className="space-y-12">{back}<PublicSkeleton /></div>;
