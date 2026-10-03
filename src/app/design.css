@@ -14,7 +14,7 @@
  *    - カナリア（primary）= 主役。メインボタンと見出しのマーカー
  *    - 藍（tertiary）= 押せるもの・つながり。2番目のボタン（btn-tonal）・リンク・技術タグ・発信
  *    - グレー（secondary）= 締め。LP の最後の帯のような濃い面
- * 3. カナリアは面にだけ使う。白地の上の文字色にはしない（グレーの面の上は可）
+ * 3. カナリアは面にだけ使う。白地の上の文字色にはしない（グレーの面・ダークの暗い面の上は可）
  * 4. 濃いカナリアの塗り（bg-primary / btn-primary）は1画面（同時に見える範囲）に1つ、メインボタンだけ
  * 5. 状態色は意味でだけ使う。赤=エラー・削除、緑=成功・公開中、橙=注意。リンク・情報は藍
  * 6. グラデーション・発光する影は使わない。奥行きは面の段階（surface → surface-3）で出す
@@ -78,16 +78,21 @@
   --color-*: initial;
   /* 色はすべて light-dark(ライト, ダーク)。どちらが効くかは html の color-scheme で決まる（下の html の指定）。
      名前はライト・ダーク共通なので、コンポーネント側は何も書き分けない。値を変えたら npm run check がコントラストを検査する
+     - ダークの primary-container / tertiary-container は M3 の値より彩度を下げてある。広い面に使うと、
+       オリーブ色・鮮やかな紺が濁って重く見えたため（2026-10-03）
      - secondary（グレー）のダークは M3 の値（明るいグレー）にしない。Canaria では「濃い面」の役割なので、
        ダークでも暗い面のまま一段持ち上げる。明るくすると LP の帯や吹き出しが白く反転し、上のカナリア文字が読めなくなる */
 
   /* ブランド: カナリア（M3 primary）= 主役 */
   --color-primary: light-dark(#ffc72c, #ffd54a);
   --color-on-primary: light-dark(#2b2100, #2b2100);
-  --color-primary-container: light-dark(#fff4cc, #3b300f);
+  --color-primary-container: light-dark(#fff4cc, #2f2817);
   --color-on-primary-container: light-dark(#5c4300, #ffe08a);
-  /* 見出しのマーカー（文字の下半分に引く線）。ダークでは上の文字が明るくなるので、暗い黄に替えて文字を読めるようにする */
-  --color-marker: light-dark(#ffc72c, #7a5d00);
+  /* 見出しのマーカー（文字の下半分に引く黄色の線）と、その上の文字。
+     ダークでは線をやめて文字そのものを黄色にする（白い文字の下に暗い黄の帯を敷くと、濁って見えるため）。
+     marker-text のライトは fg と同じ値。fg を変えたらここも変える */
+  --color-marker: light-dark(#ffc72c, transparent);
+  --color-marker-text: light-dark(#1d1b17, #ffd54a);
   /* LP のパズルのピースの縁と段差。ライトは文字色で積み木らしく。ダークで文字色（明るい色）にすると段差が光って見えるので中間のグレー */
   --color-edge: light-dark(#1d1b17, #7a756d);
   /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
@@ -98,7 +103,7 @@
   /* ブランド: 藍（M3 tertiary）= 押せるもの・つながり。リンク・情報もこの色 */
   --color-tertiary: light-dark(#2f4fc8, #9fb2ff);
   --color-on-tertiary: light-dark(#ffffff, #0f1b4d);
-  --color-tertiary-container: light-dark(#e3e8fb, #1b2758);
+  --color-tertiary-container: light-dark(#e3e8fb, #222842);
   --color-on-tertiary-container: light-dark(#1c2e7a, #d3dcff);
 
   /* 状態色（HIG system colors のように意味を固定） */
