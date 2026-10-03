@@ -22,6 +22,27 @@ export function ProfileSkeleton() {
   );
 }
 
+/** 公開ページ（頭・数字の行・作品の棚） */
+export function PublicSkeleton() {
+  const pulse = "animate-pulse bg-surface-2";
+  return (
+    <div role="status" aria-label="読み込み中" className="space-y-6">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+        <div className={`h-24 w-24 rounded-full sm:h-36 sm:w-36 ${pulse}`} />
+        <div className="space-y-3">
+          <div className={`h-9 w-48 rounded-lg ${pulse}`} />
+          <div className={`h-6 w-64 max-w-full rounded-lg ${pulse}`} />
+          <div className={`h-11 w-40 rounded-xl ${pulse}`} />
+        </div>
+      </div>
+      <div className={`h-24 rounded-lg ${pulse}`} />
+      <div className="flex gap-4 overflow-hidden">
+        {[0, 1, 2].map((i) => <div key={i} className={`aspect-[4/3] w-[85%] shrink-0 rounded-3xl sm:w-96 ${pulse}`} />)}
+      </div>
+    </div>
+  );
+}
+
 /** 投稿の一覧（ホーム・共有された投稿） */
 export function FeedSkeleton({ count = 3 }: { count?: number }) {
   return (
