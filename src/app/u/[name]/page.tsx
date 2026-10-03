@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Icon from "@/components/Icon";
 import { CareerTimeline, Empty, GearRow, LinkList, NowNext, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import { PublicSkeleton } from "@/components/Skeleton";
+import { isPreview } from "@/lib/nav.mjs";
 import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
 
 // /@username から next.config の rewrites で来る。旧 URL の /u/ユーザーID は /@username に置き換える
@@ -13,8 +14,10 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FIRST_POSTS = 3; // 投稿は最初は新しい3件だけ。ページの下が投稿で埋まらないように
 
 // 公開ページ。App Store の作品ページのように、タブで隠さず1枚に並べる（仕事を頼む側が切り替えずに全部見られる）
-export default function PublicPage() {
+export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
   const { name } = useParams<{ name: string }>();
+  // searchParams で読むとサーバーの HTML の時点で分かるので、プレビューでヘッダーが一瞬出てから消えることがない
+  const preview = use(searchParams).preview !== undefined;
   const router = useRouter();
   const user = useUser();
   const legacy = uuid.test(name);
@@ -25,7 +28,19 @@ export default function PublicPage() {
     if (legacy && data) router.replace(`/@${data.profile.username}`);
   }, [legacy, data, router]);
 
-  if (data === undefined) return <PublicSkeleton />;
+  // 「公開ページを見る」から来たプレビュー。見る人と同じ見た目にするため、ヘッダー（design.css の data-preview）と
+  // 「編集する」を出さず、戻るだけを置く。スクロールしても戻れるよう sticky で左上に残す。
+  // ヘッダーが無い分、上の余白（main の py-10）に少し食い込ませ、下の間隔も詰めて、見る人の画面との差を小さくする
+  const back = isPreview(preview, user, data) && (
+    <button type="button" aria-label="戻る" data-preview
+      // ponytail: 履歴の有無は history.length で見るだけ。プレビューの URL を直接開いたときはポートフォリオへ
+      onClick={() => (window.history.length > 1 ? router.back() : router.push("/me"))}
+      className="sticky top-[max(0.75rem,env(safe-area-inset-top))] z-20 -mt-6 mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-fg shadow-sm transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+      <Icon name="arrow" className="h-5 w-5 rotate-180" />
+    </button>
+  );
+
+  if (data === undefined) return <div className="space-y-12">{back}<PublicSkeleton /></div>;
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
 
   const { profile: p, works, gear, careers, posts } = data;
@@ -35,9 +50,9 @@ export default function PublicPage() {
 
   return (
     <div className="space-y-12">
-      {user?.id === data.id && (
+      {back || (user?.id === data.id && (
         <div className="flex justify-end"><Link href="/me" className="btn">編集する</Link></div>
-      )}
+      ))}
 
       <div className="space-y-6">
         <ProfileHero p={p} />

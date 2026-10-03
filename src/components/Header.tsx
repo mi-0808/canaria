@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "@/components/Icon";
+import { isPublicPage } from "@/lib/nav.mjs";
 import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
@@ -63,21 +64,22 @@ export default function Header() {
 }
 
 /** スマホの画面下に固定するタブバー（HIG の Tab bars）。ログイン中だけ出す。
- *  浮かせた丸いバーは中身の上に被って大きく見えたので、画面の下辺いっぱいに敷く */
+ *  浮かせた丸いバーは中身の上に被って大きく見えたので、画面の下辺いっぱいに敷く。
+ *  公開ページは見る人のためのページなので出さない（戻るのはヘッダーのロゴか、プレビューなら左上の戻るボタン） */
 export function TabBar() {
   const path = usePathname();
   const user = useUser();
-  if (!user) return null;
+  if (!user || isPublicPage(path)) return null;
   return (
     <>
       {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
-      <div aria-hidden className="h-[calc(3.5rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
+      <div aria-hidden className="h-[calc(3.125rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
       <nav aria-label="メインメニュー"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
         {nav.map(([href, label, icon]) => (
           <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-            className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
-            <Icon name={icon} className="h-5 w-5" />
+            className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
+            <Icon name={icon} className="h-4.5 w-4.5" />
             {label}
           </Link>
         ))}
