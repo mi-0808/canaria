@@ -5,7 +5,10 @@ import FilePicker from "@/components/FilePicker";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
-import { workStatuses, gearCategories, missingProfile, newId, useData, type Gear, type Post, type Profile, type Work } from "@/lib/store";
+import {
+  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, remove, saveGear as putGear, saveProfile as putProfile, saveWork as putWork,
+  useAuthedUser, useLoad, workStatuses, type Gear, type Post, type Profile, type Work,
+} from "@/lib/store";
 
 const profileFields: [keyof Profile, string][] = [
   ["name", "名前 *"],
@@ -37,33 +40,44 @@ const upsert = <T extends { id: string }>(list: T[], item: T) =>
   list.some((x) => x.id === item.id) ? list.map((x) => (x.id === item.id ? item : x)) : [item, ...list];
 
 export default function MyPage() {
-  const { data, save, ready } = useData();
+  const user = useAuthedUser();
+  const [data, setData] = useLoad(() => user && ensureProfile(user.id).then(() => loadPortfolio(user.id, user.id)), [user]);
   // 編集中のものだけ非null
   const [profile, setProfile] = useState<Profile | null>(null);
   const [work, setWork] = useState<Work | null>(null);
   const [gear, setGear] = useState<Gear | null>(null);
 
-  if (!ready) return null;
+  if (!user || !data) return null;
 
   const missing = missingProfile(data.profile);
   // 色付きボタンは1つだけ: 編集中は「保存」、それ以外は表示中タブの「追加」
   const editing = profile || work || gear;
 
-  const saveProfile = () => {
-    save({ ...data, profile: profile! });
+  const saveProfile = async () => {
+    await putProfile(user.id, profile!);
+    setData({ ...data, profile: profile! });
     setProfile(null);
   };
-  const saveWork = () => {
-    save({ ...data, works: upsert(data.works, work!) });
+  const saveWork = async () => {
+    await putWork(work!);
+    setData({ ...data, works: upsert(data.works, work!) });
     setWork(null);
   };
-  const saveGear = () => {
-    save({ ...data, gear: upsert(data.gear, gear!) });
+  const saveGear = async () => {
+    await putGear(gear!);
+    setData({ ...data, gear: upsert(data.gear, gear!) });
     setGear(null);
   };
-  const removeWork = (id: string) => confirm("この作品を削除しますか？") && save({ ...data, works: data.works.filter((w) => w.id !== id) });
-  const removeGear = (id: string) => save({ ...data, gear: data.gear.filter((g) => g.id !== id) });
-  const updatePost = (p: Post) => save({ ...data, posts: data.posts.map((x) => (x.id === p.id ? p : x)) });
+  const removeWork = async (id: string) => {
+    if (!confirm("この作品を削除しますか？")) return;
+    await remove("works", id);
+    setData({ ...data, works: data.works.filter((w) => w.id !== id) });
+  };
+  const removeGear = async (id: string) => {
+    await remove("gear", id);
+    setData({ ...data, gear: data.gear.filter((g) => g.id !== id) });
+  };
+  const updatePost = (p: Post) => setData({ ...data, posts: data.posts.map((x) => (x.id === p.id ? p : x)) });
 
   const worksTab = (
     <div className="space-y-5">
@@ -177,7 +191,7 @@ export default function MyPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex justify-end"><Link href="/timeline" className="btn">タイムラインで投稿する →</Link></div>
       {data.posts.length === 0 && <Empty text="制作の過程を発信してみよう" />}
-      {data.posts.map((p) => <PostItem key={p.id} post={p} author={data.profile} onChange={updatePost} />)}
+      {data.posts.map((p) => <PostItem key={p.id} post={p} uid={user.id} onChange={updatePost} />)}
     </div>
   );
 
@@ -200,7 +214,7 @@ export default function MyPage() {
             <h2 className="text-2xl font-bold tracking-tight">プロフィール</h2>
           </div>
           <div className="flex gap-2">
-            <Link href="/u" className="btn">公開ページを見る ↗</Link>
+            <Link href={`/u/${user.id}`} className="btn">公開ページを見る ↗</Link>
             {!editing && <button className="btn" onClick={() => setProfile(data.profile)}>編集</button>}
           </div>
         </div>

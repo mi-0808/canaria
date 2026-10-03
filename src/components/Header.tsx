@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   return (
@@ -18,6 +19,12 @@ const nav = [
 
 export default function Header() {
   const path = usePathname();
+  const router = useRouter();
+  const user = useUser();
+  const logout = async () => {
+    await signOut();
+    router.push("/");
+  };
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200/60 bg-white/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -32,6 +39,8 @@ export default function Header() {
               {label}
             </Link>
           ))}
+          {user && <button className="text-zinc-500 transition hover:text-black" onClick={logout}>ログアウト</button>}
+          {user === null && <Link href="/login" className="text-zinc-500 transition hover:text-black">ログイン</Link>}
         </nav>
       </div>
     </header>

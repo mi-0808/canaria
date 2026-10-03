@@ -1,14 +1,17 @@
 "use client";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Empty, GearRow, ProfileView, WorkCard } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Tabs from "@/components/Tabs";
-import { useData } from "@/lib/store";
+import { loadPortfolio, useLoad } from "@/lib/store";
 
-// ponytail: 自分のデータのプレビューのみ。Supabase導入後に /u/[username] へ
+// ponytail: URL は uid。見せたい URL にするなら profiles に username を足して /u/[username] へ
 export default function PublicPage() {
-  const { data, ready } = useData();
-  if (!ready) return null;
+  const { id } = useParams<{ id: string }>();
+  const [data] = useLoad(() => loadPortfolio(id), [id]);
+  if (data === undefined) return null;
+  if (data === null) return <p className="text-sm text-zinc-500">ユーザーが見つかりません。</p>;
   return (
     <div className="space-y-10">
       <ProfileView p={data.profile} />
@@ -32,7 +35,7 @@ export default function PublicPage() {
             label: "タイムライン",
             count: data.posts.length,
             content: data.posts.length ? (
-              <div className="mx-auto max-w-2xl space-y-4">{data.posts.map((p) => <PostItem key={p.id} post={p} author={data.profile} />)}</div>
+              <div className="mx-auto max-w-2xl space-y-4">{data.posts.map((p) => <PostItem key={p.id} post={p} />)}</div>
             ) : <Empty text="まだ投稿がありません" />,
           },
         ]}
