@@ -69,9 +69,9 @@ export function TabBar() {
   return (
     <>
       {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
-      <div aria-hidden className="h-[calc(3rem+env(safe-area-inset-bottom))] sm:hidden" />
+      <div aria-hidden className="h-[calc(3.5rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
       <nav aria-label="メインメニュー"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] sm:hidden">
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
         {nav.map(([href, label, icon]) => (
           <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
             className="flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
