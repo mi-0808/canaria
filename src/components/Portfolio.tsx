@@ -8,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・入手ボタン（メールと SNS）→ 数字の行 → スクリーンショットの棚 → 説明 → 情報
+// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ スクリーンショットの棚 → 説明 → 情報
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -19,7 +19,7 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 }
 
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
-export function ProfileHero({ p }: { p: Profile }) {
+export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
   // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
   const links = p.links.filter((u) => u.startsWith("https://"));
   // DB でも形を絞っているが、mailto: に入れる直前にも確かめる
@@ -41,6 +41,7 @@ export function ProfileHero({ p }: { p: Profile }) {
             </div>
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
           </div>
+          <StatsRow p={p} works={works} />
           {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
               SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
           {(email || links.length > 0) && (
@@ -61,10 +62,10 @@ export function ProfileHero({ p }: { p: Profile }) {
 
 /** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
  *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
- *  PC では右に寄せる。頭の名前・ボタンが左に寄っていて、右側が空いて寂しく見えるため */
-export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
+ *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった */
+function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
   return (
-    <dl className="flex flex-wrap items-baseline gap-x-7 gap-y-2 sm:justify-end">
+    <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
       {statItems(p, works).map((it) => (
         <div key={it.label} className="flex items-baseline gap-1.5">
           <dt className="text-sm text-fg-3">{it.label}</dt>
@@ -78,7 +79,7 @@ export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
   );
 }
 
-/** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
+/** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。ページの頭の下に2枚のカードで */
 export function NowNext({ p }: { p: Profile }) {
   const cards: [label: string, text: string, icon: IconName, tone: string][] = [
     ["いまやっていること", p.doing_now, "tool", "bg-primary-container text-on-primary-container"],

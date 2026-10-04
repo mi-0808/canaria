@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import Icon from "@/components/Icon";
-import { CareerTimeline, Empty, GearRow, NowNext, ProfileHero, StatsRow, WorkShelf } from "@/components/Portfolio";
+import { CareerTimeline, Empty, GearRow, NowNext, ProfileHero, WorkShelf } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { isPreview } from "@/lib/nav.mjs";
@@ -55,8 +55,7 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
       ))}
 
       <div className="space-y-6">
-        <ProfileHero p={p} />
-        <StatsRow p={p} works={works} />
+        <ProfileHero p={p} works={works} />
         <NowNext p={p} />
       </div>
 
