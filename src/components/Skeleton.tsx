@@ -27,8 +27,10 @@ export function PublicSkeleton() {
   const pulse = "animate-pulse bg-surface-2";
   return (
     <div role="status" aria-label="読み込み中" className="space-y-6">
+      {/* ProfileHero と同じく、カバーの帯にアイコンを重ねた形（読み込み後に頭がずれないように） */}
+      <div className={`aspect-3/1 w-full rounded-2xl ${pulse}`} />
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
-        <div className={`h-24 w-24 rounded-full sm:h-36 sm:w-36 ${pulse}`} />
+        <div className={`relative -mt-17 ml-4 h-24 w-24 rounded-full ring-4 ring-surface sm:-mt-23 sm:ml-6 sm:h-36 sm:w-36 ${pulse}`} />
         <div className="space-y-3">
           <div className={`h-9 w-48 rounded-lg ${pulse}`} />
           <div className={`h-6 w-64 max-w-full rounded-lg ${pulse}`} />
