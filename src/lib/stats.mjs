@@ -1,4 +1,4 @@
-// 公開ページの「数字の行」（App Store の評価・ランキングの行にあたる）。値が無い項目は出さない。
+// 公開ページの「数字の行」（作品数・拠点・MBTI などを「ラベル 値」で横に並べる）。値が無い項目は出さない。
 // .mjs にしてあるのは、scripts/check-stats.mjs から Node でそのまま読んで検査するため（Node 20 は TS を直接読めない）
 
 /**
@@ -33,17 +33,18 @@ export function topTech(works) {
 }
 
 /**
- * 「24」「24歳」のような入力は、数字を大きく出して単位を補足に回す。「20代」のような書き方はそのまま
+ * 「24」「24 歳」のような入力は「24歳」にそろえる。「20代」のような書き方はそのまま
  * @param {string} input
  * @param {string} unit
  */
 function withUnit(input, unit) {
   const m = input.trim().match(new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*${unit}?$`));
-  return m ? { value: m[1], sub: unit } : { value: input.trim(), sub: "" };
+  return m ? `${m[1]}${unit}` : input.trim();
 }
 
 /**
- * 数字の行の項目。性別は出さない（数字の行に並べるものではないため。編集画面では入力できる）。
+ * 数字の行の項目。value は単位まで含めた表示（「3件」「24歳」）、sub は値の横に小さく添える補足（無ければ空）。
+ * 性別は出さない（数字の行に並べるものではないため。編集画面では入力できる）。
  * 勤務先は数字の行ではなく「経歴」に並べる
  * @param {{ location: string, mbti: string, age: string }} p
  * @param {{ status: string, techs: string }[]} works
@@ -54,11 +55,11 @@ export function statItems(p, works) {
   const tech = topTech(works);
   /** @type {({ label: string, value: string, sub: string } | false)[]} */
   const items = [
-    { label: "作品", value: String(works.length), sub: live ? `うち運用中 ${live}` : "件" },
+    { label: "作品", value: `${works.length}件`, sub: live ? `うち運用中 ${live}` : "" },
     !!tech && { label: "よく使う技術", value: tech.name, sub: `${tech.count}作品で使用` },
     !!p.location.trim() && { label: "拠点", value: p.location.trim(), sub: "" },
     !!p.mbti.trim() && { label: "MBTI", value: p.mbti.trim().toUpperCase(), sub: "" },
-    !!p.age.trim() && { label: "年齢", ...withUnit(p.age, "歳") },
+    !!p.age.trim() && { label: "年齢", value: withUnit(p.age, "歳"), sub: "" },
   ];
   return items.filter((x) => !!x);
 }

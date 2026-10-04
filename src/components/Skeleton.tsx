@@ -37,7 +37,7 @@ export function PublicSkeleton() {
           <div className={`h-11 w-40 rounded-xl ${pulse}`} />
         </div>
       </div>
-      <div className={`h-24 rounded-lg ${pulse}`} />
+      <div className={`h-6 w-80 max-w-full rounded-lg ${pulse}`} />
       <div className="flex gap-4 overflow-hidden">
         {[0, 1, 2].map((i) => <div key={i} className={`aspect-[4/3] w-[85%] shrink-0 rounded-3xl sm:w-96 ${pulse}`} />)}
       </div>

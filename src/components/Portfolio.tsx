@@ -59,25 +59,21 @@ export function ProfileHero({ p }: { p: Profile }) {
   );
 }
 
-/** 数字の行（App Store の評価・ランキングの行にあたる）。
- *  スマホで横スクロールにすると端の項目が見切れて気付かれないので、2行に折り返して1画面に収める（5件なら 3+2、4件なら 2+2）。
- *  区切り線は各項目の左に引き、行頭の線だけ -ml-px と overflow-hidden で隠す（折り返し位置が変わっても崩れない） */
+/** 数字の行。帯や区切り線で囲まず、左寄せで「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
+ *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘） */
 export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
-  const items = statItems(p, works);
-  const basis = items.length === 4 ? "basis-1/2" : "basis-1/3";
   return (
-    <div className="-mx-4 overflow-hidden border-y border-line py-4 sm:mx-0">
-      <dl className="-ml-px flex flex-wrap gap-y-5">
-        {items.map((it) => (
-          <div key={it.label} className={`flex ${basis} grow flex-col items-center gap-1 border-l border-line px-2 text-center sm:basis-0 sm:px-4`}>
-            <dt className="text-sm text-fg-3">{it.label}</dt>
-            {/* 数字は大きく、文字（技術名・会社名など）は2行までに収まる大きさで */}
-            <dd className={`line-clamp-2 font-bold wrap-anywhere text-fg-2 ${/^\d/.test(it.value) ? "text-2xl" : "text-lg leading-snug"}`}>{it.value}</dd>
-            <dd className="min-h-5 text-sm text-fg-3">{it.sub}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+    <dl className="flex flex-wrap items-baseline gap-x-7 gap-y-2">
+      {statItems(p, works).map((it) => (
+        <div key={it.label} className="flex items-baseline gap-1.5">
+          <dt className="text-sm text-fg-3">{it.label}</dt>
+          <dd className="font-bold wrap-anywhere">
+            {it.value}
+            {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
