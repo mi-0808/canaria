@@ -8,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・入手ボタン（メールと SNS）→ 数字の行 → スクリーンショットの棚 → 説明 → 情報
+// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ スクリーンショットの棚 → 説明 → 情報
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -19,7 +19,7 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 }
 
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
-export function ProfileHero({ p }: { p: Profile }) {
+export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
   // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
   const links = p.links.filter((u) => u.startsWith("https://"));
   // DB でも形を絞っているが、mailto: に入れる直前にも確かめる
@@ -41,6 +41,7 @@ export function ProfileHero({ p }: { p: Profile }) {
             </div>
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
           </div>
+          <StatsRow p={p} works={works} />
           {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
               SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
           {(email || links.length > 0) && (
@@ -59,29 +60,26 @@ export function ProfileHero({ p }: { p: Profile }) {
   );
 }
 
-/** 数字の行（App Store の評価・ランキングの行にあたる）。
- *  スマホで横スクロールにすると端の項目が見切れて気付かれないので、2行に折り返して1画面に収める（5件なら 3+2、4件なら 2+2）。
- *  区切り線は各項目の左に引き、行頭の線だけ -ml-px と overflow-hidden で隠す（折り返し位置が変わっても崩れない） */
-export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
-  const items = statItems(p, works);
-  const basis = items.length === 4 ? "basis-1/2" : "basis-1/3";
+/** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
+ *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
+ *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった */
+function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
   return (
-    <div className="-mx-4 overflow-hidden border-y border-line py-4 sm:mx-0">
-      <dl className="-ml-px flex flex-wrap gap-y-5">
-        {items.map((it) => (
-          <div key={it.label} className={`flex ${basis} grow flex-col items-center gap-1 border-l border-line px-2 text-center sm:basis-0 sm:px-4`}>
-            <dt className="text-sm text-fg-3">{it.label}</dt>
-            {/* 数字は大きく、文字（技術名・会社名など）は2行までに収まる大きさで */}
-            <dd className={`line-clamp-2 font-bold wrap-anywhere text-fg-2 ${/^\d/.test(it.value) ? "text-2xl" : "text-lg leading-snug"}`}>{it.value}</dd>
-            <dd className="min-h-5 text-sm text-fg-3">{it.sub}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+    <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {statItems(p, works).map((it) => (
+        <div key={it.label} className="flex items-baseline gap-1.5">
+          <dt className="text-sm text-fg-3">{it.label}</dt>
+          <dd className="font-bold wrap-anywhere">
+            {it.value}
+            {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
-/** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
+/** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。ページの頭の下に2枚のカードで */
 export function NowNext({ p }: { p: Profile }) {
   const cards: [label: string, text: string, tone: string][] = [
     ["いまやっていること", p.doing_now, "bg-primary-container text-on-primary-container"],
