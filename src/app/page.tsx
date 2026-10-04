@@ -170,7 +170,7 @@ export default function Home() {
       <section className="space-y-10 md:pt-8">
         <div className="space-y-3 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <Phrases text="「ポートフォリオは、|あとでいいや」|と思っていませんか？" />
+            <Phrases text="スマートに、|あなたの実績を|ポートフォリオで|共有しよう。" />
           </h2>
           <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
         </div>
