@@ -119,11 +119,20 @@ export function CareerTimeline({ careers }: { careers: Career[] }) {
   );
 }
 
-/** 作品のステータス。運用中だけ緑＋「●」（色だけで伝えない） */
+// ステータスは段階ごとに色を分ける（灰 → カナリア → 藍 → 緑）。開発中・ベータ公開・企画中が同じ灰色で見分けにくかったため。
+// 橙は「注意」の意味に取っておくので使わない。値は DB の check 制約でこの4つに絞ってある
+const statusTones: Record<Work["status"], string> = {
+  企画中: "bg-surface-2 text-fg-2",
+  開発中: "bg-primary-container text-on-primary-container",
+  ベータ公開: "bg-tertiary-container text-on-tertiary-container",
+  "リリース・運用中": "bg-success-container text-on-success-container",
+};
+
+/** 作品のステータス。運用中だけ「●」も付ける（色だけで伝えない） */
 export function StatusBadge({ status = "開発中" }: { status?: Work["status"] }) {
   const live = status === "リリース・運用中";
   return (
-    <span className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>
+    <span className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-bold ${statusTones[status]}`}>
       {live ? "● " : ""}{status}
     </span>
   );
