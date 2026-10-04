@@ -76,7 +76,7 @@ export default function GearEditor({ gear, setGear, uploading, runUpload }: {
           </div>
         ) : (
           <>
-            <input type="url" inputMode="url" aria-label="見つけた商品のリンク" className="input" placeholder="見つけた商品のリンクを貼る"
+            <input type="url" inputMode="url" aria-label="商品のリンク" className="input" placeholder="自分でリンクを貼る"
               value={link} aria-invalid={!!error} onChange={(e) => paste(e.target.value)} />
             {resolving ? <p className="text-sm text-fg-3">商品を確かめています…</p>
               : error ? <p role="alert" className="text-sm text-error">{error}</p>
