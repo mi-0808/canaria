@@ -66,10 +66,10 @@ export type Post = {
   replies: Reply[];
 };
 
-// 開発環境（仕事場）のアイテム。url は表示のときに gearLink（src/lib/links.mjs）でアソシエイトリンクにする
-export const gearCategories = { machine: "パソコン", keyboard: "キーボード", display: "ディスプレイ", mouse: "マウス", audio: "オーディオ", other: "その他" } as const;
-// comment は「これいいよ」のひとこと。購入のきっかけになる部分
-export type Gear = { id: string; category: keyof typeof gearCategories; name: string; comment: string; url: string };
+// 開発環境（仕事場）のアイテム。Amazon の商品だけ登録できる。
+// url は amazonProductUrl（src/lib/links.mjs）でそろえた /dp/ASIN（DB の check も同じ形だけ通す）。表示のときに gearLink でアソシエイトリンクにする。
+// comment は「これいいよ」のひとこと（購入のきっかけになる部分）。image は自分で撮った写真（任意）
+export type Gear = { id: string; name: string; comment: string; url: string; image: string };
 
 // 経歴（勤務先・学校など）。started / ended は DB の date（"2024-04-01"）。ended が null なら「現在」
 export type Career = { id: string; company: string; role: string; started: string; ended: string | null; summary: string };

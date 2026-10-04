@@ -1,6 +1,6 @@
 // src/lib/links.mjs の自己チェック。URL の正規化は「危ないリンクを描画させない」守りなので、壊れたら npm run check で止める
 import assert from "node:assert/strict";
-import { AMAZON_TAG, amazonSearchUrl, contactEmailPattern, gearLink, linkName, normalizeLink } from "../src/lib/links.mjs";
+import { AMAZON_TAG, amazonProductUrl, amazonSearchUrl, amazonShortLink, contactEmailPattern, gearLink, linkName, normalizeLink } from "../src/lib/links.mjs";
 
 // スキームが無ければ https を補う。http は https に上げる
 assert.equal(normalizeLink("github.com/you"), "https://github.com/you");
@@ -36,14 +36,36 @@ assert.ok(!contactEmailPattern.test("kana@example.com&cc=x@y.z"));
 assert.ok(!contactEmailPattern.test("kana @example.com"));
 assert.ok(!contactEmailPattern.test("kana@example.com\nbcc:x@y.z"));
 
-// Amazon の商品 URL は /dp/ASIN にそろえる。他人の tag や追跡用パラメータは残さない
+// Amazon の商品は /dp/ASIN にそろえて保存する。他人の tag や追跡用パラメータは残さない
+const dp = "https://www.amazon.co.jp/dp/B0DLHBM5C9";
+assert.equal(amazonProductUrl("https://www.amazon.co.jp/Apple-MacBook/dp/B0DLHBM5C9/ref=sr_1_1?crid=X&tag=other-22"), dp);
+assert.equal(amazonProductUrl("amazon.co.jp/gp/product/b0dlhbm5c9"), dp);
+assert.equal(amazonProductUrl("https://amazon.co.jp/dp/B0DLHBM5C9?th=1"), dp);
+// 短縮リンクの転送先（amzn.asia の Location の実例）
+assert.equal(amazonProductUrl("https://www.amazon.co.jp/dp/B0DLHBM5C9?ref=cm_sw_r_cso_cp_mwn_dp_X&social_share=cm_sw_r_cso_cp_mwn_dp_X"), dp);
+// 共有で商品名が前後に付いた文章からも読む
+assert.equal(amazonProductUrl("Apple MacBook Prohttps://www.amazon.co.jp/dp/B0DLHBM5C9 をチェック"), dp);
+// 商品ページでない・Amazon でない・似た名前の別ドメインは保存させない
+assert.equal(amazonProductUrl("https://www.amazon.co.jp/s?k=keyboard"), null);
+assert.equal(amazonProductUrl("https://www.amazon.com/dp/B0DLHBM5C9"), null);
+assert.equal(amazonProductUrl("https://evilamazon.co.jp/dp/B0DLHBM5C9"), null);
+assert.equal(amazonProductUrl("https://amazon.co.jp.evil.com/dp/B0DLHBM5C9"), null);
+assert.equal(amazonProductUrl("https://rakuten.co.jp/dp/B0DLHBM5C9"), null);
+assert.equal(amazonProductUrl("https://amzn.asia/d/025IYpMN"), null);
+assert.equal(amazonProductUrl("javascript:alert(1)"), null);
+
+// 短縮リンクだけを /api/amazon に渡す。ホスト名で絞るので、@ や似た名前で別のサーバーを叩かせない
+assert.equal(amazonShortLink("https://amzn.asia/d/025IYpMN"), "https://amzn.asia/d/025IYpMN");
+assert.equal(amazonShortLink("HHKB Professional https://amzn.asia/d/025IYpMN"), "https://amzn.asia/d/025IYpMN");
+assert.equal(amazonShortLink("https://amzn.to/3abcdef"), "https://amzn.to/3abcdef");
+assert.equal(amazonShortLink("https://amzn.asia@evil.com/d/025IYpMN"), null);
+assert.equal(amazonShortLink("https://evil.com/?u=amzn.asia"), null);
+assert.equal(amazonShortLink("https://notamzn.asia/d/025IYpMN"), null);
+assert.equal(amazonShortLink(dp), null);
+
+// 表示するときは必ず運営のタグを付ける。商品でなければリンクにしない
 const tag = AMAZON_TAG ? `?tag=${AMAZON_TAG}` : "";
-assert.equal(gearLink("https://www.amazon.co.jp/Apple-MacBook/dp/B0DLHBM5C9/ref=sr_1_1?crid=X&tag=other-22"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
-assert.equal(gearLink("amazon.co.jp/gp/product/b0dlhbm5c9"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
-assert.equal(gearLink("https://amazon.co.jp/dp/B0DLHBM5C9?th=1"), `https://www.amazon.co.jp/dp/B0DLHBM5C9${tag}`);
-// ASIN が読めない・Amazon でない・似た名前の別ドメインは触らない
-assert.equal(gearLink("https://www.amazon.co.jp/s?k=keyboard"), "https://www.amazon.co.jp/s?k=keyboard");
-assert.equal(gearLink("https://amzn.to/3abcdef"), "https://amzn.to/3abcdef");
-assert.equal(gearLink("https://evilamazon.co.jp/dp/B0DLHBM5C9"), "https://evilamazon.co.jp/dp/B0DLHBM5C9");
-assert.equal(gearLink("javascript:alert(1)"), null);
+assert.equal(gearLink(dp), `${dp}${tag}`);
+assert.equal(gearLink(`${dp}?tag=other-22`), `${dp}${tag}`);
+assert.equal(gearLink("https://example.com/"), null);
 assert.ok(amazonSearchUrl(" HHKB 静音 ").startsWith("https://www.amazon.co.jp/s?k=HHKB%20%E9%9D%99%E9%9F%B3"));

@@ -48,10 +48,12 @@ create table public.works (
 create table public.gear (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  category text not null check (category in ('machine', 'keyboard', 'display', 'mouse', 'audio', 'other')),
   name text not null check (char_length(name) > 0),
   comment text not null default '' check (char_length(comment) <= 80),
-  url text not null default '',
+  -- Amazon の商品だけ。ASIN だけ残した形（src/lib/links.mjs の amazonProductUrl）で保存し、表示のときに運営のタグを付ける。
+  -- 画面で弾くだけだと API から直接書けるので、他人のタグ付きリンクや別サイトの URL はここで止める
+  url text not null check (url ~ '^https://www\.amazon\.co\.jp/dp/[A-Z0-9]{10}$'),
+  image text not null default '', -- 自分で撮った写真（任意）
   created_at timestamptz not null default now()
 );
 
@@ -186,3 +188,9 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- alter table public.profiles drop column company, drop column years;
 -- 2026-10-03 カバー画像（マージ前に流す）
 -- alter table public.profiles add column cover text not null default '';
+-- 2026-10-04 開発環境のアイテムは Amazon の商品だけ・写真・カテゴリをなくす（本番の gear は0件だったので移し替えなし）
+-- ① マージ前に流す（足すだけなので、本番で動いている古いコードは壊れない。新しいコードは category を送らないので既定値を入れておく）
+-- alter table public.gear add column image text not null default '', alter column category set default 'other';
+-- ② マージして本番が新しいコードになってから流す（古いコードはまだ category や Amazon 以外の URL を保存しようとするため）
+-- alter table public.gear drop column category, alter column url drop default,
+--   add constraint gear_url_check check (url ~ '^https://www\.amazon\.co\.jp/dp/[A-Z0-9]{10}$');

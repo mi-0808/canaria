@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { AttachButtons, RemoveAttachment } from "@/components/FilePicker";
 import Icon from "@/components/Icon";
 import { Avatar } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
@@ -71,29 +72,14 @@ export default function Home() {
                 {media.kind === "video"
                   ? <video controls src={media.src} className="max-h-80 rounded-xl bg-secondary" />
                   : <img src={media.src} alt="添付した画像" className="max-h-80 rounded-xl" />}
-                {/* 見た目 32px、当たり判定は ::before で 44px */}
-                <button aria-label="添付を外す" onClick={() => setMedia(undefined)}
-                  className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-on-secondary before:absolute before:-inset-1.5 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-                  <Icon name="x" className="h-4 w-4" />
-                </button>
+                <RemoveAttachment onClick={() => setMedia(undefined)} />
               </div>
             )}
             {mediaError && <p role="alert" className="text-sm text-error">{mediaError}</p>}
           </div>
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
-          {/* capture なし = カメラロール（写真ライブラリ）から選ぶ。capture あり = OS 標準のカメラを直接立ち上げる。
-              PC の capture はファイル選択と同じになるので、カメラは指で操作する端末（pointer: coarse）にだけ出す。
-              キーボードで来たら枠に focus を出す */}
-          <div className="-ml-2.5 flex gap-2">
-            {([["image", "写真・動画を選ぶ", undefined, "inline-flex"], ["camera", "カメラで撮る", "environment", "hidden pointer-coarse:inline-flex"]] as const).map(([icon, label, capture, display]) => (
-              <label key={icon} className={`${display} min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg text-tertiary transition hover:bg-tertiary-container has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-fg ${uploading ? "pointer-events-none opacity-40" : ""}`}>
-                <input type="file" accept="image/*,video/*" capture={capture} className="sr-only" disabled={uploading}
-                  onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
-                <Icon name={icon} className="h-6 w-6" /><span className="sr-only">{label}</span>
-              </label>
-            ))}
-          </div>
+          <AttachButtons accept="image/*,video/*" label="写真・動画を選ぶ" disabled={uploading} onPick={pick} />
           <button className="btn-primary" disabled={!canPost || posting} onClick={post}>{posting ? "投稿中…" : "投稿する"}</button>
         </div>
       </div>

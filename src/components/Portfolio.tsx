@@ -5,12 +5,10 @@ import Icon, { type IconName } from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, gearLink, linkName, normalizeLink } from "@/lib/links.mjs";
 import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
-import { gearCategories, type Career, type Gear, type Profile, type Work } from "@/lib/store";
+import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
 // アイコン・名前・入手ボタン（メールと SNS）→ 数字の行 → スクリーンショットの棚 → 説明 → 情報
-
-export const gearIcons: Record<Gear["category"], IconName> = { machine: "laptop", keyboard: "keyboard", display: "monitor", mouse: "mouse", audio: "headphones", other: "box" };
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -225,20 +223,29 @@ function SocialLink({ url }: { url: string }) {
   );
 }
 
+/** アイテムの写真。無ければ箱のアイコン */
+export function GearThumb({ g, className }: { g: Gear; className: string }) {
+  return g.image ? (
+    <img src={g.image} alt="" className={`${className} shrink-0 rounded-xl object-cover`} />
+  ) : (
+    <span className={`${className} flex shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container`}><Icon name="box" /></span>
+  );
+}
+
 export function GearRow({ g }: { g: Gear }) {
-  // 商品 URL も https に絞ってから href に入れる（javascript: などを踏ませない）。Amazon ならアソシエイトリンクにする
-  const url = g.url ? gearLink(g.url) : null;
+  // 表示のたびに /dp/ASIN に作り直して運営のタグを付ける（他人のタグは残らない）。Amazon の商品でなければ href にしない
+  const url = gearLink(g.url);
   const body = (
     <>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container"><Icon name={gearIcons[g.category]} /></span>
+      <GearThumb g={g} className="h-14 w-14" />
       <div className="min-w-0">
         <p className="truncate font-medium">{g.name}</p>
-        {g.comment ? <p className="text-sm text-fg-2">“{g.comment}”</p> : <p className="text-sm text-fg-3">{gearCategories[g.category]}</p>}
+        {g.comment && <p className="text-sm text-fg-2">“{g.comment}”</p>}
       </div>
     </>
   );
   return (
-    <div className="card flex items-center gap-3 p-3 transition hover:shadow-md">
+    <div className="card flex min-w-0 items-center gap-3 p-3 transition hover:shadow-md">
       {url ? (
         <a href={url} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
           {body}

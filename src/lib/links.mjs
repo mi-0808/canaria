@@ -59,26 +59,55 @@ export function linkName(url) {
 }
 
 // --- Amazon アソシエイト ---
-// 開発環境のアイテムは、誰が登録したものでも運営のトラッキングID を付ける（公開ページに開示文を出す）。
-// ponytail: 商品検索 API（Creators API）は直近30日で適格販売10件が条件なので、今は Amazon の検索ページを開いて URL を貼ってもらう。
-// 条件を満たしたらアプリ内検索に切り替える
+// 開発環境のアイテムは Amazon の商品だけ。誰が登録したものでも運営のトラッキングID を付ける（公開ページに開示文を出す）。
+// ponytail: アプリ内の商品検索（Creators API）は直近30日で適格販売10件が条件なので、今は Amazon の検索ページを開いてリンクを貼ってもらう。
+// 条件を満たしたらアプリ内検索に切り替える（保存する形 /dp/ASIN は変わらない）
 export const AMAZON_TAG = "genki0315-22";
 const tagParam = AMAZON_TAG ? `tag=${AMAZON_TAG}` : "";
 
 /** @param {string} query アイテム名 */
 export const amazonSearchUrl = (query) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(query.trim())}${tagParam && `&${tagParam}`}`;
 
+// スマホの Amazon アプリの「共有」が出す短縮リンク。行き先はブラウザから読めない（CORS）ので /api/amazon で展開する
+const shortHosts = ["amzn.asia", "amzn.to"];
+
 /**
- * amazon.co.jp の商品 URL なら、ASIN だけ残した /dp/ の URL にしてタグを付ける（他人のタグや追跡用パラメータは捨てる）。
- * 表示のたびに通すので、登録済みのアイテムにも、ID を変えたときにも効く。Amazon 以外・ASIN が読めない URL は normalizeLink の結果のまま
- * @param {string} input
+ * 貼った文章の中の URL。共有で商品名が前後に付いていても URL の部分だけ取り出す（[!-~] は ASCII なので日本語で切れる）
+ * @param {string} text
+ */
+const pastedLink = (text) => normalizeLink(text.match(/https?:\/\/[!-~]+/)?.[0] ?? text);
+
+/**
+ * 貼った文章から amazon.co.jp の商品を読み、ASIN だけ残した https://www.amazon.co.jp/dp/ASIN にする。
+ * 他人のタグや追跡用パラメータはここで捨てる。DB の check もこの形しか通さない。商品でなければ null
+ * @param {string} text
  * @returns {string | null}
  */
-export function gearLink(input) {
-  const href = normalizeLink(input);
+export function amazonProductUrl(text) {
+  const href = pastedLink(text);
   if (!href) return null;
   const url = new URL(href);
-  if (!/(^|\.)amazon\.co\.jp$/.test(url.hostname)) return href;
-  const asin = url.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d|o|exec\/obidos\/ASIN)\/([A-Z0-9]{10})(?=\/|$)/i)?.[1];
-  return asin ? `https://www.amazon.co.jp/dp/${asin.toUpperCase()}${tagParam && `?${tagParam}`}` : href;
+  if (!/(^|\.)amazon\.co\.jp$/.test(url.hostname)) return null;
+  const asin = url.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d|o|exec\/obidos\/ASIN)\/([A-Z0-9]{10})(?![A-Z0-9])/i)?.[1];
+  return asin ? `https://www.amazon.co.jp/dp/${asin.toUpperCase()}` : null;
+}
+
+/**
+ * 貼った文章が Amazon の短縮リンクなら、その URL。/api/amazon が取りに行ってよい先をここで絞る（任意の URL を叩かせない）
+ * @param {string} text
+ * @returns {string | null}
+ */
+export function amazonShortLink(text) {
+  const href = pastedLink(text);
+  return href && shortHosts.includes(new URL(href).hostname) ? href : null;
+}
+
+/**
+ * 表示するリンク。保存済みの URL を毎回 /dp/ASIN に作り直してタグを付けるので、あとから ID を変えても全部に効く。
+ * Amazon の商品でなければ null（href にしない）
+ * @param {string} url
+ */
+export function gearLink(url) {
+  const href = amazonProductUrl(url);
+  return href && `${href}${tagParam && `?${tagParam}`}`;
 }
