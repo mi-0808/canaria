@@ -166,9 +166,7 @@ export function WorkList({ works }: { works: Work[] }) {
             <li key={w.id} className="group card flex flex-col overflow-hidden">
               {/* 画像が無い作品は、空の枠を出さずに文字から始める */}
               {w.image && (
-                <div className="aspect-video overflow-hidden border-b border-line">
-                  <img src={w.image} alt="" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.02]" />
-                </div>
+                <WorkImage src={w.image} className="aspect-video border-b border-line" />
               )}
               <div className="flex flex-1 flex-col p-6 md:p-8">
                 <div className="flex flex-wrap items-center gap-3">
@@ -217,6 +215,20 @@ export function WorkList({ works }: { works: Work[] }) {
   );
 }
 
+/** 作品の画像。縦が横より長ければスマホの画面とみなし、薄い灰色の台の真ん中にスマホの形で立てる。
+ *  横長（PC の画面）は枠いっぱいに敷く。向きは DB に持たず、読み込んだ画像の縦横で決める（入力で選ぶ手間を増やさないため）。
+ *  ponytail: PC のページ全体を縦長に撮った画像もスマホ扱いになる。入力欄のプレビューで気づける前提で、向きの指定はしない */
+export function WorkImage({ src, className }: { src: string; className: string }) {
+  const [phone, setPhone] = useState(false);
+  return (
+    <div className={`overflow-hidden ${phone ? "flex justify-center bg-surface-2 py-4 sm:py-6" : ""} ${className}`}>
+      {/* スマホのスクショは機種で縦横比が少しずつ違うので、iPhone の 9:19.5 にそろえて上から見せる */}
+      <img src={src} alt="" onLoad={(e) => setPhone(e.currentTarget.naturalHeight > e.currentTarget.naturalWidth)}
+        className={`object-cover object-top transition duration-500 group-hover:scale-[1.02] ${phone ? "aspect-[9/19.5] h-full rounded-xl border border-line shadow-md" : "h-full w-full"}`} />
+    </div>
+  );
+}
+
 /** 技術タグ。色は付けず枠線だけ（参考サイトと同じ形）。ステータスやボタンと同じ色がカードに並ばないように。
  *  等幅の 12px は読みにくかったので、普通の書体の text-sm にする */
 function TechTags({ techs, className = "" }: { techs: string; className?: string }) {
@@ -232,7 +244,7 @@ function TechTags({ techs, className = "" }: { techs: string; className?: string
 function WorkDetail({ w }: { w: Work }) {
   return (
     <>
-      {w.image && <img src={w.image} alt="" className="aspect-[16/10] w-full rounded-xl border border-line object-cover object-top" />}
+      {w.image && <WorkImage src={w.image} className="aspect-[16/10] rounded-xl border border-line" />}
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge status={w.status} />
         {w.period && <span className="text-sm text-fg-3">{w.period}</span>}

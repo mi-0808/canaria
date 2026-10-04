@@ -294,6 +294,7 @@ export default function MyPage() {
             <div className="space-y-1.5">
               <span className="label">トップ画像</span>
               <FilePicker value={work.image} onChange={(image) => setWork({ ...work, image })} />
+              <span className="block text-sm text-fg-3">スマホのアプリは、スクリーンショットを縦長のまま選ぶと、スマホの形で表示されます</span>
             </div>
             <Field label="タイトル *">
               <input className="input" value={work.title} onChange={(e) => setWork({ ...work, title: e.target.value })} />

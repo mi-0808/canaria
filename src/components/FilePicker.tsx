@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Icon from "@/components/Icon";
+import { WorkImage } from "@/components/Portfolio";
 import { upload } from "@/lib/store";
 
 // ネイティブのファイル入力を隠し、プレビュー付きのドロップゾーン風UIにする。
@@ -59,7 +60,8 @@ export default function FilePicker({
           <span className="text-sm text-fg-3">送信中…</span>
         ) : value && isImage ? (
           <>
-            <img src={value} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            {/* 横長の画像の入力欄は作品のトップ画像だけなので、公開ページと同じ見せ方（縦長ならスマホの形）にする */}
+            <WorkImage src={value} className="absolute inset-0" />
             <span className="absolute right-2 bottom-2 inline-flex items-center gap-1.5 rounded-lg bg-surface px-2.5 py-1 text-sm text-fg shadow-sm">
               <Icon name="upload" className="h-4 w-4" />変更
             </span>
