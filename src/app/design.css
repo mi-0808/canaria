@@ -15,9 +15,10 @@
  *    - 藍（tertiary）= 押せるもの・つながり。2番目のボタン（btn-tonal）・リンク・発信
  *    - グレー（secondary）= 締め。LP の最後の帯のような濃い面
  *    1枚のカードの中で、同じ色を別の意味に2回使わない（見分けがつかない）。作品カードはステータスを色分けし、
- *    ボタンは藍、技術タグは色を付けず枠線だけ
+ *    ボタンは薄いカナリア、技術タグは色を付けず枠線だけ
  * 3. カナリアは面にだけ使う。白地の上の文字色にはしない（グレーの面・ダークの暗い面の上は可）
  * 4. 濃いカナリアの塗り（bg-primary / btn-primary）は1画面（同時に見える範囲）に1つ、メインボタンだけ
+ *    カードごとに並ぶ主な行動（作品の「実際に触ってみる」）は、薄いカナリアの btn-primary-tonal にする
  * 5. 状態色は意味でだけ使う。赤=エラー・削除、緑=成功・公開中、橙=注意。リンク・情報は藍
  * 6. グラデーション・発光する影は使わない。奥行きは面の段階（surface → surface-3）で出す
  * 7. 文字色は fg / fg-2 / fg-3・藍・状態色だけ。text-fg-3/60 のように薄めない（コントラストが崩れる）。
@@ -195,6 +196,11 @@ h1, h2, h3 {
 /* hover は M3 の state layer（面に文字色を 8% 重ねる）。min-h-11 で押せる高さ 44px を確保する */
 @utility btn-primary {
   @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-[color-mix(in_srgb,var(--color-primary),var(--color-on-primary)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
+}
+/* カードごとに並ぶ主な行動。薄いカナリアの面。濃いカナリア（btn-primary）は1画面に1つなので、
+   同じボタンがいくつも並ぶ場所ではこちらを使う */
+@utility btn-primary-tonal {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary-container px-5 py-2.5 text-sm font-semibold text-on-primary-container transition hover:bg-[color-mix(in_srgb,var(--color-primary-container),var(--color-on-primary-container)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg;
 }
 /* 2番目に大事な行動。薄い藍の面（M3 の filled tonal button）。主役は btn-primary に任せる */
 @utility btn-tonal {
