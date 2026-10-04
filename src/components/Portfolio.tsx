@@ -85,17 +85,18 @@ export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
 
 /** 「いまやっていること」「これからやりたいこと」（MyHood の一言のような短い近況）。数字の行の下に2枚のカードで */
 export function NowNext({ p }: { p: Profile }) {
-  const cards: [label: string, text: string, icon: IconName, tone: string][] = [
-    ["いまやっていること", p.doing_now, "tool", "bg-primary-container text-on-primary-container"],
-    ["これからやりたいこと", p.want_next, "seedling", "bg-tertiary-container text-on-tertiary-container"],
+  const cards: [label: string, text: string, tone: string][] = [
+    ["いまやっていること", p.doing_now, "bg-primary-container text-on-primary-container"],
+    ["これからやりたいこと", p.want_next, "bg-tertiary-container text-on-tertiary-container"],
   ];
   const filled = cards.filter(([, text]) => text.trim());
   if (!filled.length) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {filled.map(([label, text, icon, tone]) => (
+      {filled.map(([label, text, tone]) => (
         <section key={label} className={`space-y-2 rounded-2xl p-5 ${tone}`}>
-          <h2 className="flex items-center gap-2 text-sm font-bold"><Icon name={icon} className="h-4 w-4" />{label}</h2>
+          {/* 見出しにアイコンは付けない（時計・矢印、スパナ・芽と試したが野暮ったかった）。2枚の違いはカードの色と見出しの文字で伝わる */}
+          <h2 className="text-sm font-bold">{label}</h2>
           <p className="leading-relaxed whitespace-pre-wrap">{text}</p>
         </section>
       ))}
