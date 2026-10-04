@@ -24,7 +24,8 @@ export type Profile = {
 
 export type Work = {
   id: string;
-  image: string;
+  image: string; // トップ画像（カードに出す1枚）
+  shots: string[]; // 2枚目以降の画像（9枚まで）。詳細シートでトップ画像に続けて並べる
   title: string;
   period: string;
   role: string;

@@ -152,12 +152,11 @@ export function WorkList({ works }: { works: Work[] }) {
         {works.map((w) => {
           // 成果物 URL は https に絞ってから href に入れる（javascript: などを踏ませない）
           const url = w.url ? normalizeLink(w.url) : null;
+          const top = workImages(w)[0];
           return (
             <li key={w.id} className="group card flex flex-col overflow-hidden">
               {/* 画像が無い作品は、空の枠を出さずに文字から始める */}
-              {w.image && (
-                <WorkImage src={w.image} className="aspect-video border-b border-line" />
-              )}
+              {top && <WorkImage src={top} className="aspect-video border-b border-line" />}
               <div className="flex flex-1 flex-col p-6 md:p-8">
                 <div className="flex flex-wrap items-center gap-3">
                   <StatusBadge status={w.status} />
@@ -231,10 +230,25 @@ function TechTags({ techs, className = "" }: { techs: string; className?: string
   );
 }
 
+/** トップ画像と2枚目以降。トップ画像が空でも、2枚目以降があればそれを先頭にする */
+const workImages = (w: Work) => [w.image, ...w.shots].filter(Boolean);
+
 function WorkDetail({ w }: { w: Work }) {
+  const images = workImages(w);
   return (
     <>
-      {w.image && <WorkImage src={w.image} className="aspect-[16/10] rounded-xl border border-line" />}
+      {/* 2枚以上は横に並べてスワイプで送る（App Store のスクリーンショットの並び）。次の1枚の端を覗かせて続きがあると分かるようにし、
+          シートの余白の外まで広げる。キーボードでも送れるよう、並びにフォーカスを当てられるようにする */}
+      {images.length > 0 && (
+        <ul tabIndex={images.length > 1 ? 0 : undefined} aria-label="作品の画像"
+          className="-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg sm:-mx-8 sm:scroll-px-8 sm:px-8">
+          {images.map((src) => (
+            <li key={src} className={`shrink-0 snap-start ${images.length > 1 ? "w-[85%]" : "w-full"}`}>
+              <WorkImage src={src} className="aspect-[16/10] rounded-xl border border-line" />
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge status={w.status} />
         {w.period && <span className="text-sm text-fg-3">{w.period}</span>}
