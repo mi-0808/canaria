@@ -47,8 +47,8 @@ export default function DeviceShowcase() {
     <section className="relative -mx-4 overflow-hidden px-4">
       <div className="relative space-y-12">
         <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl"><Phrases text="PCでもスマホでも、|そのまま名刺に。" /></h2>
-          <p className="text-fg-2">URLを送るだけ。どの画面で開かれても、あなたの作品がきれいに並ぶ。</p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl"><Phrases text="あなたの作品を、|綺麗に並べます。" /></h2>
+          <p className="text-fg-2">URLを送るだけで、相手に成果や実績を認めてもらいやすくなります。</p>
         </div>
 
         {/* 端末の見本は絵（中の文字は 10px 以下の飾り）。読み上げでは飛ばす */}

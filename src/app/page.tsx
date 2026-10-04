@@ -8,16 +8,16 @@ import Phrases from "@/components/Phrases";
 const worries = [
   ["まだ人に見せられる作品じゃない", "完成していなくても大丈夫。ステータスを「開発中」にして公開できます。見る人が知りたいのは完成度より、あなたが何をどう作ろうとしているか。"],
   ["作るのに時間がかかりそう", "デザインもコードもいりません。決まった項目を埋めるだけ。自分でサイトを一から作る時間を、次の作品づくりに使えます。"],
-  ["作っても、誰にも見られない", "URLを応募文やSNSに貼れば、それが名刺になります。制作過程をタイムラインで発信すれば、プロの目にも留まります。"],
-  ["無料って、なにか裏がありそう", "初期費用は0円。まだ結果が出ていない人こそ、コストをかけずに始められるように作りました。"],
+  ["作っても、誰にも見られない", "URLを応募文やSNSに貼れば、それが名刺になります。制作過程をタイムラインで発信すれば、作品を見つけてもらうきっかけが増えます。"],
+  ["無料って、なにか裏がありそう", "まだ結果が出ていない人こそ、コストをかけずに始められるように作りました。制作や運営は最小コストで抑えることで提供しています。"],
 ];
 
 // 機能ごとに色の役割を分ける: 作品=カナリア（主役）、発信=藍（つながり）、仕事場=グレー
 const features = [
   {
     panel: "bg-primary-container",
-    title: "簡単に、|作品を並べる",
-    desc: "つくった作品を、決まった型に打ち込むだけ。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
+    title: "つくった作品を、|決まった型に|打ち込むだけ",
+    desc: "簡単に、作品を並べる。WixやSTUDIOでデザインに悩む時間はもういらない。見る側にとっても、同じフォーマットだから比べやすい。",
     visual: (
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[["Todoアプリ", "運用中"], ["家計簿SaaS", "ベータ公開"], ["個人ブログ", "開発中"]].map(([t, st]) => (
@@ -35,8 +35,8 @@ const features = [
   },
   {
     panel: "bg-tertiary-container",
-    title: "つくりながら|発信して、|プロに教わる",
-    desc: "まだ世に出ていない作品の裏側を、テキスト・画像・動画で発信。詰まったところにはプロから助言が届き、積み重ねた過程そのものが、あなたの信頼になる。",
+    title: "制作過程を|発信する",
+    desc: "自分の今つくっている作品の裏側を、テキスト・画像・動画で発信。プロフィールに投稿が掲載されるので、足跡として残り、見せることができます。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
     visual: (
       <div className="space-y-3 text-sm">
         <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">
@@ -53,20 +53,58 @@ const features = [
   },
   {
     panel: "bg-secondary-container",
-    title: "できる人の|仕事場から、|次の相棒を|見つける",
-    desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
+    title: "使っている|マシンや|ガジェットを|紹介しよう",
+    desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。自分のお気に入りを紹介して、仲間を広げよう。信頼にもつながります。",
+    // カードを並べるだけだと無機質で、吹き出しのやりとりは機能2の見本と重なる。
+    // 持ち主の顔と机の写真で「人」を見せ、勧められて買った話は持ち主のひとこと（おすすめポイント）に入れる
     visual: (
-      <div className="space-y-2">
-        <p className="text-xs text-on-secondary-container">@senior_dev の仕事場</p>
-        {[["27インチ 4Kモニター", "作業領域が倍。もう戻れない"], ["HHKB Studio", "手首がラクになった"], ["MacBook Pro M4", "ビルドが一瞬"]].map(([t, c]) => (
-          <div key={t} className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">{t}</p>
-              <p className="text-xs text-fg-2">{c}</p>
-            </div>
-            <Icon name="external" className="ml-auto h-4 w-4 text-tertiary" />
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-on-secondary-container">
+          <span className="h-8 w-8 shrink-0 rounded-full bg-primary" />
+          <div>
+            <p className="text-sm font-bold">山田 カナ の仕事場</p>
+            <p className="text-xs">フロントエンド</p>
           </div>
-        ))}
+        </div>
+        <div className="overflow-hidden rounded-2xl bg-surface">
+          {/* 持ち主が撮った机の写真のつもりの絵（実在の製品写真は使わない） */}
+          <svg viewBox="0 0 320 150" className="block w-full">
+            <rect width="320" height="150" className="fill-surface-2" />
+            <rect y="116" width="320" height="34" className="fill-line" />
+            <rect x="96" y="18" width="128" height="78" rx="5" className="fill-secondary" />
+            <rect x="101" y="23" width="118" height="68" rx="2" className="fill-tertiary-container" />
+            <rect x="110" y="34" width="34" height="6" rx="3" className="fill-tertiary" />
+            <rect x="110" y="47" width="64" height="6" rx="3" className="fill-outline" />
+            <rect x="110" y="60" width="48" height="6" rx="3" className="fill-outline" />
+            <rect x="110" y="73" width="26" height="6" rx="3" className="fill-primary" />
+            <rect x="153" y="96" width="14" height="14" className="fill-secondary" />
+            <rect x="138" y="108" width="44" height="8" rx="3" className="fill-secondary" />
+            <rect x="112" y="124" width="96" height="14" rx="3" className="fill-secondary" />
+            <line x1="118" y1="131" x2="202" y2="131" strokeWidth="4" strokeDasharray="6 3" className="stroke-outline" />
+            <rect x="38" y="111" width="48" height="6" rx="1" className="fill-outline" />
+            <rect x="40" y="104" width="44" height="7" rx="1" className="fill-tertiary" />
+            <rect x="44" y="97" width="38" height="7" rx="1" className="fill-primary" />
+            <rect x="244" y="92" width="22" height="24" rx="4" className="fill-primary" />
+            <path d="M266 98h4a5 5 0 0 1 0 10h-4" fill="none" strokeWidth="4" className="stroke-primary" />
+            <path d="M250 86q4-5 0-10M259 86q4-5 0-10" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-outline" />
+          </svg>
+          <div className="space-y-1 p-4">
+            <p className="flex items-center gap-2 text-sm font-medium">27インチ 4Kモニター<Icon name="external" className="ml-auto h-4 w-4 text-tertiary" /></p>
+            <p className="text-sm leading-relaxed text-fg-2">“先輩に勧められて、つい買った。作業領域が倍で、もう戻れない”</p>
+          </div>
+        </div>
+        {/* md は機能紹介が2列になりパネルが細く、ひとことが切れるので縦に積む */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-1 lg:grid-cols-2">
+          {([["HHKB", "手首がラクに", "keyboard", "bg-primary-container text-on-primary-container"], ["MacBook", "ビルドが一瞬", "laptop", "bg-tertiary-container text-on-tertiary-container"]] as const).map(([t, c, icon, tile]) => (
+            <div key={t} className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-2">
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tile}`}><Icon name={icon} className="h-5 w-5" /></span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{t}</p>
+                <p className="truncate text-xs text-fg-2">“{c}”</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     ),
   },
@@ -132,20 +170,21 @@ export default function Home() {
       <section className="space-y-10 md:pt-8">
         <div className="space-y-3 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <Phrases text="「ポートフォリオは、|あとでいいや」|と思っていませんか？" />
+            <Phrases text="スマートに、|あなたの実績を|ポートフォリオで|共有しよう。" />
           </h2>
-          <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
+          <p className="text-fg-2">自作ホームページ以上の価値を、Canariaのテンプレートを使って作成しよう。</p>
         </div>
 
-        {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる。箱で囲むのは Canaria 側だけ */}
-        <div className="grid items-start gap-10 md:grid-cols-2 md:gap-8">
+        {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる。箱で囲むのは Canaria 側だけ。
+            PC では左右の高さをそろえ、結論の1行（mt-auto）を同じ高さに並べて比べられるようにする */}
+        <div className="grid gap-10 md:grid-cols-2 md:gap-8">
           <div className="flex flex-col gap-3 md:p-6">
             <p className="text-sm font-bold text-fg-2">ポートフォリオがない場合</p>
             <p className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-secondary-container px-4 py-3 text-sm leading-relaxed text-on-secondary-container">
               未経験ですが、やる気はあります。GitHubを見てください。
             </p>
             <p className="-mt-1 self-end text-xs text-fg-3">既読</p>
-            <p className="pt-2 text-sm text-fg-2">返事は来ない。何ができる人なのか、相手が探すことになる</p>
+            <p className="mt-auto pt-2 text-sm text-fg-2">返事は来ない。何ができる人なのか、相手が探すことになる</p>
           </div>
           <div className="flex flex-col gap-3 rounded-3xl bg-primary-container p-6 text-on-primary-container">
             <p className="text-sm font-bold">Canariaがある場合</p>
@@ -163,7 +202,7 @@ export default function Home() {
             <p className="max-w-[85%] self-start rounded-2xl rounded-bl-md bg-secondary px-4 py-3 text-sm leading-relaxed text-on-secondary">
               家計簿アプリ、触ってみました。一度お話ししませんか？
             </p>
-            <p className="pt-2 text-sm font-bold">作品・役割・使った技術が、1ページで伝わる</p>
+            <p className="mt-auto pt-2 text-sm font-bold">作品・役割・使った技術が、1ページで伝わる</p>
           </div>
         </div>
 
