@@ -34,7 +34,8 @@ create table public.profiles (
 create table public.works (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  image text not null default '',
+  image text not null default '', -- トップ画像（カードに出す1枚）
+  shots text[] not null default '{}' check (cardinality(shots) <= 9), -- 2枚目以降の画像。詳細シートでトップ画像に続けて並べる
   title text not null check (char_length(title) > 0),
   period text not null default '',
   role text not null default '',
@@ -194,3 +195,5 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- ② マージして本番が新しいコードになってから流す（古いコードはまだ category や Amazon 以外の URL を保存しようとするため）
 -- alter table public.gear drop column category, alter column url drop default,
 --   add constraint gear_url_check check (url ~ '^https://www\.amazon\.co\.jp/dp/[A-Z0-9]{10}$');
+-- 2026-10-04 作品の2枚目以降の画像（マージ前に流す。足すだけなので、本番で動いている古いコードは壊れない）
+-- alter table public.works add column shots text[] not null default '{}' check (cardinality(shots) <= 9);

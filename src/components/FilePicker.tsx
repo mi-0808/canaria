@@ -81,6 +81,42 @@ export default function FilePicker({
   );
 }
 
+/** 作品の2枚目以降の画像。まとめて選べる。並べ替えは付けない（順番を変えたいときは外して入れ直す）。
+ *  onChange には「今の一覧をどう変えるか」を渡す。アップロード中に外した画像や、ほかの欄の入力を古い値で上書きしないため */
+export function ShotsPicker({ value, max, onChange }: { value: string[]; max: number; onChange: (update: (shots: string[]) => string[]) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const pick = async (files: File[]) => {
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      // 上限を超える分は上げない（Storage に使われないファイルを残さない）
+      const urls = await Promise.all(files.slice(0, max - value.length).map(upload));
+      onChange((shots) => [...shots, ...urls].slice(0, max));
+    } finally {
+      setUploading(false);
+    }
+  };
+  return (
+    <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      {value.map((src) => (
+        <li key={src} className="relative aspect-square overflow-hidden rounded-xl border border-line bg-surface-2">
+          <img src={src} alt="" className="h-full w-full object-cover object-top" />
+          <RemoveAttachment onClick={() => onChange((shots) => shots.filter((s) => s !== src))} />
+        </li>
+      ))}
+      {value.length < max && (
+        <li>
+          <label className={`flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-outline bg-surface-1 text-sm text-fg-2 transition hover:border-primary hover:bg-primary-container/50 ${focus}`}>
+            <input type="file" accept="image/*" multiple className="sr-only" disabled={uploading}
+              onChange={(e) => { pick([...(e.target.files ?? [])]); e.target.value = ""; }} />
+            {uploading ? <span className="text-fg-3">送信中…</span> : <><Icon name="plus" className="h-6 w-6 text-fg-3" />追加</>}
+          </label>
+        </li>
+      )}
+    </ul>
+  );
+}
+
 /**
  * 投稿欄の「カメラロール・カメラ」のアイコンボタン（トップの投稿と開発環境のアイテムで使う）。
  * capture なし = カメラロール（写真ライブラリ）から選ぶ。capture あり = OS 標準のカメラを直接立ち上げる。

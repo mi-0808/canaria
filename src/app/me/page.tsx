@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import CareersEditor from "@/components/CareersEditor";
 import Field from "@/components/Field";
-import FilePicker from "@/components/FilePicker";
+import FilePicker, { ShotsPicker } from "@/components/FilePicker";
 import GearEditor from "@/components/GearEditor";
 import Icon from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
@@ -29,7 +29,7 @@ const profileSelects: [keyof typeof profileChoices, string][] = [
   ["mbti", "MBTI"],
 ];
 
-const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
+const blankWork = (): Work => ({ id: newId(), image: "", shots: [], title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
 const blankGear = (): Gear => ({ id: newId(), name: "", comment: "", url: "", image: "" });
 const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
 
@@ -216,11 +216,11 @@ export default function MyPage() {
           <>
             <div className="space-y-1.5">
               <span className="label">アイコン *</span>
-              <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile({ ...profile, icon })} />
+              <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile((p) => p && { ...p, icon })} />
             </div>
             <div className="space-y-1.5">
               <span className="label">カバー画像</span>
-              <FilePicker shape="cover" value={profile.cover} onChange={(cover) => setProfile({ ...profile, cover })} />
+              <FilePicker shape="cover" value={profile.cover} onChange={(cover) => setProfile((p) => p && { ...p, cover })} />
               {/* 任意の項目なので、入れたあとで外せるようにする */}
               {profile.cover && <button className="btn" onClick={() => setProfile({ ...profile, cover: "" })}>カバー画像を外す</button>}
             </div>
@@ -293,8 +293,13 @@ export default function MyPage() {
           <>
             <div className="space-y-1.5">
               <span className="label">トップ画像</span>
-              <FilePicker value={work.image} onChange={(image) => setWork({ ...work, image })} />
+              <FilePicker value={work.image} onChange={(image) => setWork((w) => w && { ...w, image })} />
               <span className="block text-sm text-fg-3">スマホのアプリは、スクリーンショットを縦長のまま選ぶと、スマホの形で表示されます</span>
+            </div>
+            <div className="space-y-1.5">
+              <span className="label">ほかの画像（9枚まで）</span>
+              <ShotsPicker value={work.shots} max={9} onChange={(f) => setWork((w) => w && { ...w, shots: f(w.shots) })} />
+              <span className="block text-sm text-fg-3">「詳細を見る」で、トップ画像に続けて横に並びます</span>
             </div>
             <Field label="タイトル *">
               <input className="input" value={work.title} onChange={(e) => setWork({ ...work, title: e.target.value })} />
