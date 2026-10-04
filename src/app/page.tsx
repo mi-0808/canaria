@@ -36,7 +36,7 @@ const features = [
   {
     panel: "bg-tertiary-container",
     title: "制作過程を|発信する",
-    desc: "まだ世に出ていない作品の裏側を、テキスト・画像・動画で発信。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
+    desc: "自分の今つくっている作品の裏側を、テキスト・画像・動画で発信。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
     visual: (
       <div className="space-y-3 text-sm">
         <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">
@@ -54,7 +54,7 @@ const features = [
   {
     panel: "bg-secondary-container",
     title: "使ってる|マシンや|ガジェットを|紹介しよう",
-    desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。上級エンジニアの仕事場をのぞけば「こんなの使ってるんだ」という発見があり、気になったアイテムはそのままチェックできる。",
+    desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。自分のお気に入りを紹介して、仲間を広げよう。信頼にもつながります。",
     visual: (
       <div className="space-y-2">
         <p className="text-xs text-on-secondary-container">@senior_dev の仕事場</p>
