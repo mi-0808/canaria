@@ -119,12 +119,14 @@ export function CareerTimeline({ careers }: { careers: Career[] }) {
   );
 }
 
-// ステータスは段階ごとに色を分ける（灰 → カナリア → 藍 → 緑）。開発中・ベータ公開・企画中が同じ灰色で見分けにくかったため。
-// 橙は「注意」の意味に取っておくので使わない。値は DB の check 制約でこの4つに絞ってある
+// ステータスの色。公開前（企画中・開発中）は灰、ベータ公開はカナリア（一部に先に出す canary リリースから）、運用中は緑。
+// 開発中とベータ公開が同じ灰色で見分けにくかったため分けた。藍はボタンが使うので使わない（1枚のカードに同じ色を
+// 2回出さない。開発中をカナリア・ベータ公開を藍にしたら、技術タグやボタンと同じ色になると指摘された）。
+// 橙は「注意」の意味に取っておく。値は DB の check 制約でこの4つに絞ってある
 const statusTones: Record<Work["status"], string> = {
   企画中: "bg-surface-2 text-fg-2",
-  開発中: "bg-primary-container text-on-primary-container",
-  ベータ公開: "bg-tertiary-container text-on-tertiary-container",
+  開発中: "bg-surface-2 text-fg-2",
+  ベータ公開: "bg-primary-container text-on-primary-container",
   "リリース・運用中": "bg-success-container text-on-success-container",
 };
 
@@ -168,7 +170,7 @@ export function WorkList({ works }: { works: Work[] }) {
                 {w.role && <p className="mt-4 text-sm font-bold">役割：{w.role}</p>}
                 <TechTags techs={w.techs} className="mt-4" />
                 {/* mt-auto で下端に寄せ、隣のカードと高さが違ってもボタンの位置をそろえる。
-                    ボタンは藍、技術タグはカナリアにして、カードにカナリアと藍の両方を入れる（どちらも藍だと単調だった） */}
+                    ボタンは藍。ステータス（灰・カナリア・緑）とも技術タグ（色なし）とも色を重ねない */}
                 <div className="mt-auto flex flex-wrap items-center gap-4 pt-6">
                   {url && (
                     <a href={url} target="_blank" rel="noopener noreferrer" className="btn-tonal">
@@ -191,8 +193,9 @@ export function WorkList({ works }: { works: Work[] }) {
         footer={
           <div className="flex gap-2">
             <button className="btn flex-1" onClick={() => setOpen(null)}>閉じる</button>
+            {/* カードと同じ藍。濃いカナリアにすると、ベータ公開のバッジ（カナリア）と同じ色が並ぶ */}
             {openUrl && (
-              <a href={openUrl} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1">
+              <a href={openUrl} target="_blank" rel="noopener noreferrer" className="btn-tonal flex-1">
                 実際に触ってみる<Icon name="external" className="h-4 w-4" />
               </a>
             )}
@@ -204,13 +207,14 @@ export function WorkList({ works }: { works: Work[] }) {
   );
 }
 
-/** 技術タグ。等幅の 12px は読みにくかったので、普通の書体の text-sm にする */
+/** 技術タグ。色は付けず枠線だけ（参考サイトと同じ形）。ステータスやボタンと同じ色がカードに並ばないように。
+ *  等幅の 12px は読みにくかったので、普通の書体の text-sm にする */
 function TechTags({ techs, className = "" }: { techs: string; className?: string }) {
   const list = [...new Set(splitTechs(techs))];
   if (!list.length) return null;
   return (
     <ul className={`flex flex-wrap gap-2 ${className}`} aria-label="使用技術">
-      {list.map((t) => <li key={t} className="rounded-full bg-primary-container px-3 py-1 text-sm font-medium text-on-primary-container">{t}</li>)}
+      {list.map((t) => <li key={t} className="rounded-full border border-line px-3 py-1 text-sm font-medium text-fg-2">{t}</li>)}
     </ul>
   );
 }
