@@ -60,22 +60,33 @@ export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
   );
 }
 
+// 作品の数字。人の情報（拠点・MBTI・年齢）とは別のまとまりにする
+const workStats = new Set(["作品", "よく使う技術"]);
+
 /** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
  *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
- *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった */
+ *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった。
+ *  作品の数字と人の情報は別の dl にし、入らなければまとまりごと次の行へ送る。全部を1列に詰めて折り返すと、
+ *  スマホで「作品」だけが1行目に残り「拠点」が技術の行に付くなど、区切りが幅しだいでばらばらだった（ユーザーの指摘） */
 function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
+  const items = statItems(p, works);
+  const groups = [items.filter((it) => workStats.has(it.label)), items.filter((it) => !workStats.has(it.label))];
   return (
-    <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-      {statItems(p, works).map((it) => (
-        <div key={it.label} className="flex items-baseline gap-1.5">
-          <dt className="text-sm text-fg-3">{it.label}</dt>
-          <dd className="font-bold wrap-anywhere">
-            {it.value}
-            {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
-          </dd>
-        </div>
+    <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {groups.map((g, i) => g.length > 0 && (
+        <dl key={i} className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+          {g.map((it) => (
+            <div key={it.label} className="flex items-baseline gap-1.5">
+              <dt className="text-sm text-fg-3">{it.label}</dt>
+              <dd className="font-bold wrap-anywhere">
+                {it.value}
+                {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
       ))}
-    </dl>
+    </div>
   );
 }
 
