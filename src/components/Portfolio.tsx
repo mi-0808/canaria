@@ -8,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ スクリーンショットの棚 → 説明 → 情報
+// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ 作品の一覧 → 説明 → 情報
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -129,45 +129,52 @@ export function StatusBadge({ status = "開発中" }: { status?: Work["status"] 
   );
 }
 
-// 棚の作品は、カナリアと藍の面を交互に敷く（App Store のスクリーンショットの色付きの台紙）
-const tones = ["bg-primary-container text-on-primary-container", "bg-tertiary-container text-on-tertiary-container"];
-
-/** 作品の棚（App Store のスクリーンショットの列にあたる）。横にスクロールし、押すと詳しい情報がシートで出る */
-export function WorkShelf({ works }: { works: Work[] }) {
+/** 作品の一覧。スマホは1列、PC は2列で下へ並べる（参考: neowritehp.vercel.app の Works）。
+ *  横スクロールの棚だと1作品ずつしか見えず、2つ目以降に気づかれにくかったため。
+ *  情報はカードに全部出し、「詳細を見る」で同じ内容をシートでも開ける */
+export function WorkList({ works }: { works: Work[] }) {
   const [open, setOpen] = useState<Work | null>(null);
-  // 成果物 URL は https に絞ってから href に入れる（javascript: などを踏ませない）
-  const url = open?.url ? normalizeLink(open.url) : null;
+  const openUrl = open?.url ? normalizeLink(open.url) : null;
   return (
     <>
-      <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0">
-        {works.map((w, i) => (
-          <li key={w.id} className="group relative w-[85%] shrink-0 snap-start sm:w-96">
-            <div className={`space-y-4 rounded-3xl p-5 ${tones[i % 2]}`}>
-              {w.summary && <p className="line-clamp-2 text-center text-sm leading-relaxed font-medium">{w.summary}</p>}
-              <div className="aspect-[16/10] overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
-                {w.image ? (
+      <ul className="grid gap-6 md:grid-cols-2">
+        {works.map((w) => {
+          // 成果物 URL は https に絞ってから href に入れる（javascript: などを踏ませない）
+          const url = w.url ? normalizeLink(w.url) : null;
+          return (
+            <li key={w.id} className="group card flex flex-col overflow-hidden">
+              {/* 画像が無い作品は、空の枠を出さずに文字から始める */}
+              {w.image && (
+                <div className="aspect-video overflow-hidden border-b border-line">
                   <img src={w.image} alt="" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.02]" />
-                ) : (
-                  <span className="flex h-full items-center justify-center text-fg-3"><Icon name="image" className="h-8 w-8" /></span>
-                )}
-              </div>
-            </div>
-            <div className="mt-3 flex items-start justify-between gap-3 px-1">
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-bold">
-                  {/* カード全体を押せるよう、ボタンの当たり判定（::after）をカードいっぱいに広げる。
-                      ボタンの中には見出しや段落を入れられないので、ボタンは作品名だけを包む */}
-                  <button className="text-left after:absolute after:inset-0 after:rounded-3xl after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4 focus-visible:after:outline-fg"
-                    onClick={() => setOpen(w)}>
-                    {w.title}
+                </div>
+              )}
+              <div className="flex flex-1 flex-col p-6 md:p-8">
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusBadge status={w.status} />
+                  {w.period && <span className="text-sm text-fg-3">{w.period}</span>}
+                </div>
+                <h3 className="mt-4 text-2xl leading-tight font-bold">{w.title}</h3>
+                {w.summary && <p className="mt-3 leading-relaxed whitespace-pre-wrap text-fg-2">{w.summary}</p>}
+                {w.role && <p className="mt-4 text-sm font-bold">役割：{w.role}</p>}
+                <TechTags techs={w.techs} className="mt-4" />
+                {/* mt-auto で下端に寄せ、隣のカードと高さが違ってもボタンの位置をそろえる。
+                    ボタンは藍、技術タグはカナリアにして、カードにカナリアと藍の両方を入れる（どちらも藍だと単調だった） */}
+                <div className="mt-auto flex flex-wrap items-center gap-4 pt-6">
+                  {url && (
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="btn-tonal">
+                      実際に触ってみる<Icon name="external" className="h-4 w-4" />
+                    </a>
+                  )}
+                  <button onClick={() => setOpen(w)}
+                    className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-fg-2 transition hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+                    詳細を見る<Icon name="arrow" className="h-4 w-4" />
                   </button>
-                </h3>
-                {(w.period || w.role) && <p className="truncate text-sm text-fg-3">{[w.period, w.role].filter(Boolean).join(" · ")}</p>}
+                </div>
               </div>
-              <StatusBadge status={w.status} />
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
 
       {/* 見るだけのシートなので、背景のタップや Esc でも閉じる */}
@@ -175,8 +182,8 @@ export function WorkShelf({ works }: { works: Work[] }) {
         footer={
           <div className="flex gap-2">
             <button className="btn flex-1" onClick={() => setOpen(null)}>閉じる</button>
-            {url && (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1">
+            {openUrl && (
+              <a href={openUrl} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1">
                 実際に触ってみる<Icon name="external" className="h-4 w-4" />
               </a>
             )}
@@ -188,8 +195,18 @@ export function WorkShelf({ works }: { works: Work[] }) {
   );
 }
 
+/** 技術タグ。等幅の 12px は読みにくかったので、普通の書体の text-sm にする */
+function TechTags({ techs, className = "" }: { techs: string; className?: string }) {
+  const list = [...new Set(splitTechs(techs))];
+  if (!list.length) return null;
+  return (
+    <ul className={`flex flex-wrap gap-2 ${className}`} aria-label="使用技術">
+      {list.map((t) => <li key={t} className="rounded-full bg-primary-container px-3 py-1 text-sm font-medium text-on-primary-container">{t}</li>)}
+    </ul>
+  );
+}
+
 function WorkDetail({ w }: { w: Work }) {
-  const techs = [...new Set(splitTechs(w.techs))];
   return (
     <>
       {w.image && <img src={w.image} alt="" className="aspect-[16/10] w-full rounded-xl border border-line object-cover object-top" />}
@@ -199,11 +216,7 @@ function WorkDetail({ w }: { w: Work }) {
       </div>
       {w.summary && <p className="leading-relaxed whitespace-pre-wrap text-fg-2">{w.summary}</p>}
       {w.role && <p className="text-sm font-bold">役割：{w.role}</p>}
-      {techs.length > 0 && (
-        <ul className="flex flex-wrap gap-2" aria-label="使用技術">
-          {techs.map((t) => <li key={t} className="rounded-full bg-tertiary-container px-3 py-1 font-mono text-xs text-on-tertiary-container">{t}</li>)}
-        </ul>
-      )}
+      <TechTags techs={w.techs} />
     </>
   );
 }
