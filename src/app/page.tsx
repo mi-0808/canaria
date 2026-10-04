@@ -36,7 +36,7 @@ const features = [
   {
     panel: "bg-tertiary-container",
     title: "制作過程を|発信する",
-    desc: "自分の今つくっている作品の裏側を、テキスト・画像・動画で発信。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
+    desc: "自分の今つくっている作品の裏側を、テキスト・画像・動画で発信。プロフィールに投稿が掲載されるので、足跡として残り、見せることができます。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
     visual: (
       <div className="space-y-3 text-sm">
         <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">
