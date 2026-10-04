@@ -172,7 +172,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             <Phrases text="スマートに、|あなたの実績を|ポートフォリオで|共有しよう。" />
           </h2>
-          <p className="text-fg-2">仕事を頼む側は、あなたのことを何も知りません。判断材料は、見せたものだけです。</p>
+          <p className="text-fg-2">自作ホームページ以上の価値を、Canariaのテンプレートを使って作成しよう。</p>
         </div>
 
         {/* ある/なしの比較: 同じ応募でも、相手の返事が変わるところまで見せる。箱で囲むのは Canaria 側だけ。
