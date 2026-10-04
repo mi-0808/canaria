@@ -59,11 +59,12 @@ export function ProfileHero({ p }: { p: Profile }) {
   );
 }
 
-/** 数字の行。帯や区切り線で囲まず、左寄せで「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
- *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘） */
+/** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
+ *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
+ *  PC では右に寄せる。頭の名前・ボタンが左に寄っていて、右側が空いて寂しく見えるため */
 export function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
   return (
-    <dl className="flex flex-wrap items-baseline gap-x-7 gap-y-2">
+    <dl className="flex flex-wrap items-baseline gap-x-7 gap-y-2 sm:justify-end">
       {statItems(p, works).map((it) => (
         <div key={it.label} className="flex items-baseline gap-1.5">
           <dt className="text-sm text-fg-3">{it.label}</dt>
