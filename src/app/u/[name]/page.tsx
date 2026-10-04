@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import Icon from "@/components/Icon";
-import { CareerTimeline, Empty, GearRow, NowNext, ProfileHero, WorkShelf } from "@/components/Portfolio";
+import { CareerTimeline, Empty, GearRow, NowNext, ProfileHero, WorkList } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { isPreview } from "@/lib/nav.mjs";
@@ -61,7 +61,7 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
 
       <section className="space-y-4">
         <h2 className={section}>作品</h2>
-        {works.length ? <WorkShelf works={works} /> : <Empty text="まだ作品がありません" />}
+        {works.length ? <WorkList works={works} /> : <Empty text="まだ作品がありません" />}
       </section>
 
       {careers.length > 0 && (

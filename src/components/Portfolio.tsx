@@ -8,7 +8,7 @@ import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
-// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ スクリーンショットの棚 → 説明 → 情報
+// アイコン・名前・数字の行・入手ボタン（メールと SNS）→ 作品の一覧 → 説明 → 情報
 
 export function Avatar({ src, className = "h-10 w-10" }: { src: string; className?: string }) {
   return src ? (
@@ -60,22 +60,33 @@ export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
   );
 }
 
+// 作品の数字。人の情報（拠点・MBTI・年齢）とは別のまとまりにする
+const workStats = new Set(["作品", "よく使う技術"]);
+
 /** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
  *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
- *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった */
+ *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった。
+ *  作品の数字と人の情報は別の dl にし、入らなければまとまりごと次の行へ送る。全部を1列に詰めて折り返すと、
+ *  スマホで「作品」だけが1行目に残り「拠点」が技術の行に付くなど、区切りが幅しだいでばらばらだった（ユーザーの指摘） */
 function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
+  const items = statItems(p, works);
+  const groups = [items.filter((it) => workStats.has(it.label)), items.filter((it) => !workStats.has(it.label))];
   return (
-    <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-      {statItems(p, works).map((it) => (
-        <div key={it.label} className="flex items-baseline gap-1.5">
-          <dt className="text-sm text-fg-3">{it.label}</dt>
-          <dd className="font-bold wrap-anywhere">
-            {it.value}
-            {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
-          </dd>
-        </div>
+    <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {groups.map((g, i) => g.length > 0 && (
+        <dl key={i} className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+          {g.map((it) => (
+            <div key={it.label} className="flex items-baseline gap-1.5">
+              <dt className="text-sm text-fg-3">{it.label}</dt>
+              <dd className="font-bold wrap-anywhere">
+                {it.value}
+                {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
       ))}
-    </dl>
+    </div>
   );
 }
 
@@ -119,55 +130,73 @@ export function CareerTimeline({ careers }: { careers: Career[] }) {
   );
 }
 
-/** 作品のステータス。運用中だけ緑＋「●」（色だけで伝えない） */
+// ステータスの色（ユーザーの指定）。公開前（企画中・開発中）は灰、ベータ公開は藍、運用中は緑。
+// 開発中とベータ公開が同じ灰色で見分けにくかったため分けた。カナリアはボタンが使うので使わない（1枚のカードに
+// 同じ色を2回出さない）。橙は「注意」の意味に取っておく。値は DB の check 制約でこの4つに絞ってある
+const statusTones: Record<Work["status"], string> = {
+  企画中: "bg-surface-2 text-fg-2",
+  開発中: "bg-surface-2 text-fg-2",
+  ベータ公開: "bg-tertiary-container text-on-tertiary-container",
+  "リリース・運用中": "bg-success-container text-on-success-container",
+};
+
+/** 作品のステータス。運用中だけ「●」も付ける（色だけで伝えない） */
 export function StatusBadge({ status = "開発中" }: { status?: Work["status"] }) {
   const live = status === "リリース・運用中";
   return (
-    <span className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-bold ${live ? "bg-success-container text-on-success-container" : "bg-surface-2 text-fg-2"}`}>
+    <span className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-bold ${statusTones[status]}`}>
       {live ? "● " : ""}{status}
     </span>
   );
 }
 
-// 棚の作品は、カナリアと藍の面を交互に敷く（App Store のスクリーンショットの色付きの台紙）
-const tones = ["bg-primary-container text-on-primary-container", "bg-tertiary-container text-on-tertiary-container"];
-
-/** 作品の棚（App Store のスクリーンショットの列にあたる）。横にスクロールし、押すと詳しい情報がシートで出る */
-export function WorkShelf({ works }: { works: Work[] }) {
+/** 作品の一覧。スマホは1列、PC は2列で下へ並べる（参考: neowritehp.vercel.app の Works）。
+ *  横スクロールの棚だと1作品ずつしか見えず、2つ目以降に気づかれにくかったため。
+ *  情報はカードに全部出し、「詳細を見る」で同じ内容をシートでも開ける */
+export function WorkList({ works }: { works: Work[] }) {
   const [open, setOpen] = useState<Work | null>(null);
-  // 成果物 URL は https に絞ってから href に入れる（javascript: などを踏ませない）
-  const url = open?.url ? normalizeLink(open.url) : null;
+  const openUrl = open?.url ? normalizeLink(open.url) : null;
   return (
     <>
-      <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0">
-        {works.map((w, i) => (
-          <li key={w.id} className="group relative w-[85%] shrink-0 snap-start sm:w-96">
-            <div className={`space-y-4 rounded-3xl p-5 ${tones[i % 2]}`}>
-              {w.summary && <p className="line-clamp-2 text-center text-sm leading-relaxed font-medium">{w.summary}</p>}
-              <div className="aspect-[16/10] overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
-                {w.image ? (
+      <ul className="grid gap-6 md:grid-cols-2">
+        {works.map((w) => {
+          // 成果物 URL は https に絞ってから href に入れる（javascript: などを踏ませない）
+          const url = w.url ? normalizeLink(w.url) : null;
+          return (
+            <li key={w.id} className="group card flex flex-col overflow-hidden">
+              {/* 画像が無い作品は、空の枠を出さずに文字から始める */}
+              {w.image && (
+                <div className="aspect-video overflow-hidden border-b border-line">
                   <img src={w.image} alt="" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.02]" />
-                ) : (
-                  <span className="flex h-full items-center justify-center text-fg-3"><Icon name="image" className="h-8 w-8" /></span>
-                )}
-              </div>
-            </div>
-            <div className="mt-3 flex items-start justify-between gap-3 px-1">
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-bold">
-                  {/* カード全体を押せるよう、ボタンの当たり判定（::after）をカードいっぱいに広げる。
-                      ボタンの中には見出しや段落を入れられないので、ボタンは作品名だけを包む */}
-                  <button className="text-left after:absolute after:inset-0 after:rounded-3xl after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4 focus-visible:after:outline-fg"
-                    onClick={() => setOpen(w)}>
-                    {w.title}
+                </div>
+              )}
+              <div className="flex flex-1 flex-col p-6 md:p-8">
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusBadge status={w.status} />
+                  {w.period && <span className="text-sm text-fg-3">{w.period}</span>}
+                </div>
+                <h3 className="mt-4 text-2xl leading-tight font-bold">{w.title}</h3>
+                {w.summary && <p className="mt-3 leading-relaxed whitespace-pre-wrap text-fg-2">{w.summary}</p>}
+                {w.role && <p className="mt-4 text-sm font-bold">役割：{w.role}</p>}
+                <TechTags techs={w.techs} className="mt-4" />
+                {/* mt-auto で下端に寄せ、隣のカードと高さが違ってもボタンの位置をそろえる。
+                    ボタンは薄いカナリア。ステータス（灰・藍・緑）とも技術タグ（色なし）とも色を重ねない。
+                    濃いカナリアは1画面に1つ（「メールで連絡」）なので、カードごとに並ぶここは薄いほう */}
+                <div className="mt-auto flex flex-wrap items-center gap-4 pt-6">
+                  {url && (
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="btn-primary-tonal">
+                      実際に触ってみる<Icon name="external" className="h-4 w-4" />
+                    </a>
+                  )}
+                  <button onClick={() => setOpen(w)}
+                    className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-fg-2 transition hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+                    詳細を見る<Icon name="arrow" className="h-4 w-4" />
                   </button>
-                </h3>
-                {(w.period || w.role) && <p className="truncate text-sm text-fg-3">{[w.period, w.role].filter(Boolean).join(" · ")}</p>}
+                </div>
               </div>
-              <StatusBadge status={w.status} />
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
 
       {/* 見るだけのシートなので、背景のタップや Esc でも閉じる */}
@@ -175,8 +204,8 @@ export function WorkShelf({ works }: { works: Work[] }) {
         footer={
           <div className="flex gap-2">
             <button className="btn flex-1" onClick={() => setOpen(null)}>閉じる</button>
-            {url && (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1">
+            {openUrl && (
+              <a href={openUrl} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1">
                 実際に触ってみる<Icon name="external" className="h-4 w-4" />
               </a>
             )}
@@ -188,8 +217,19 @@ export function WorkShelf({ works }: { works: Work[] }) {
   );
 }
 
+/** 技術タグ。色は付けず枠線だけ（参考サイトと同じ形）。ステータスやボタンと同じ色がカードに並ばないように。
+ *  等幅の 12px は読みにくかったので、普通の書体の text-sm にする */
+function TechTags({ techs, className = "" }: { techs: string; className?: string }) {
+  const list = [...new Set(splitTechs(techs))];
+  if (!list.length) return null;
+  return (
+    <ul className={`flex flex-wrap gap-2 ${className}`} aria-label="使用技術">
+      {list.map((t) => <li key={t} className="rounded-full border border-line px-3 py-1 text-sm font-medium text-fg-2">{t}</li>)}
+    </ul>
+  );
+}
+
 function WorkDetail({ w }: { w: Work }) {
-  const techs = [...new Set(splitTechs(w.techs))];
   return (
     <>
       {w.image && <img src={w.image} alt="" className="aspect-[16/10] w-full rounded-xl border border-line object-cover object-top" />}
@@ -199,11 +239,7 @@ function WorkDetail({ w }: { w: Work }) {
       </div>
       {w.summary && <p className="leading-relaxed whitespace-pre-wrap text-fg-2">{w.summary}</p>}
       {w.role && <p className="text-sm font-bold">役割：{w.role}</p>}
-      {techs.length > 0 && (
-        <ul className="flex flex-wrap gap-2" aria-label="使用技術">
-          {techs.map((t) => <li key={t} className="rounded-full bg-tertiary-container px-3 py-1 font-mono text-xs text-on-tertiary-container">{t}</li>)}
-        </ul>
-      )}
+      <TechTags techs={w.techs} />
     </>
   );
 }

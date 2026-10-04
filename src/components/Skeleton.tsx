@@ -22,7 +22,7 @@ export function ProfileSkeleton() {
   );
 }
 
-/** 公開ページ（頭・数字の行・作品の棚） */
+/** 公開ページ（頭・数字の行・作品の一覧） */
 export function PublicSkeleton() {
   const pulse = "animate-pulse bg-surface-2";
   return (
@@ -38,8 +38,8 @@ export function PublicSkeleton() {
           <div className={`h-11 w-40 rounded-xl ${pulse}`} />
         </div>
       </div>
-      <div className="flex gap-4 overflow-hidden">
-        {[0, 1, 2].map((i) => <div key={i} className={`aspect-[4/3] w-[85%] shrink-0 rounded-3xl sm:w-96 ${pulse}`} />)}
+      <div className="grid gap-6 md:grid-cols-2">
+        {[0, 1].map((i) => <div key={i} className={`aspect-[4/3] rounded-2xl ${pulse}`} />)}
       </div>
     </div>
   );
