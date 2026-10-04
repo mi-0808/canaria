@@ -4,17 +4,18 @@ import { useState } from "react";
 import CareersEditor from "@/components/CareersEditor";
 import Field from "@/components/Field";
 import FilePicker from "@/components/FilePicker";
+import GearEditor from "@/components/GearEditor";
 import Icon from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
-import { Avatar, Empty, StatusBadge, gearIcons } from "@/components/Portfolio";
+import { Avatar, Empty, GearThumb, StatusBadge } from "@/components/Portfolio";
 import PostItem from "@/components/PostItem";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
 import Tabs from "@/components/Tabs";
-import { amazonSearchUrl, contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
+import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
-  ensureProfile, gearCategories, loadPortfolio, missingProfile, newId, profileChoices, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
+  ensureProfile, loadPortfolio, missingProfile, newId, profileChoices, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
   saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
 } from "@/lib/store";
 
@@ -29,7 +30,7 @@ const profileSelects: [keyof typeof profileChoices, string][] = [
 ];
 
 const blankWork = (): Work => ({ id: newId(), image: "", title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
-const blankGear = (): Gear => ({ id: newId(), category: "machine", name: "", comment: "", url: "" });
+const blankGear = (): Gear => ({ id: newId(), name: "", comment: "", url: "", image: "" });
 const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
 
 /** シートの下に固定する「キャンセル・保存」 */
@@ -61,6 +62,7 @@ export default function MyPage() {
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
   const [deleting, setDeleting] = useState<{ table: "works" | "gear"; id: string; name: string } | null>(null);
   const [saving, run] = useBusy();
+  const [uploading, runUpload] = useBusy(); // アイテムの写真
 
   if (!user || !data) return <ProfileSkeleton />;
 
@@ -150,12 +152,10 @@ export default function MyPage() {
           {data.gear.map((g) => (
             <li key={g.id}>
               <button className={row} onClick={() => setGear(g)}>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container">
-                  <Icon name={gearIcons[g.category]} />
-                </span>
+                <GearThumb g={g} className="h-10 w-10" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-bold">{g.name}</span>
-                  <span className="block truncate text-sm text-fg-2">{g.comment || gearCategories[g.category]}</span>
+                  {g.comment && <span className="block truncate text-sm text-fg-2">{g.comment}</span>}
                 </span>
                 <span className="sr-only">を編集</span>
                 <Icon name="chevron" className="h-5 w-5 text-fg-3" />
@@ -330,33 +330,10 @@ export default function MyPage() {
       </Sheet>
 
       <Sheet open={!!gear} onClose={() => setGear(null)} dismissible={false} title={isNewGear ? "アイテムを追加" : "アイテムを編集"}
-        footer={<SaveBar onCancel={() => setGear(null)} onSave={saveGear} disabled={!gear?.name.trim()} saving={saving} />}>
+        footer={<SaveBar onCancel={() => setGear(null)} onSave={saveGear} disabled={!gear?.name.trim() || !gear.url || uploading} saving={saving} />}>
         {gear && (
           <>
-            {/* 名前で Amazon を探し、商品ページの URL を貼ってもらう（アプリ内検索は API の条件待ち。src/lib/links.mjs） */}
-            <div className="space-y-2">
-              <Field label="アイテム名 *">
-                <input type="search" className="input" placeholder="MacBook Pro M4" value={gear.name} onChange={(e) => setGear({ ...gear, name: e.target.value })} />
-              </Field>
-              {gear.name.trim() ? (
-                <a href={amazonSearchUrl(gear.name)} target="_blank" rel="noopener noreferrer sponsored" className="btn w-full">
-                  Amazonで探す <Icon name="external" className="h-4 w-4" />
-                </a>
-              ) : (
-                <button className="btn w-full" disabled>Amazonで探す</button>
-              )}
-            </div>
-            <Field label="商品URL" hint="Amazonの商品ページのURL">
-              <input type="url" className="input font-mono" placeholder="https://www.amazon.co.jp/dp/…" value={gear.url} onChange={(e) => setGear({ ...gear, url: e.target.value })} />
-            </Field>
-            <Field label="カテゴリ">
-              <select className="input" value={gear.category} onChange={(e) => setGear({ ...gear, category: e.target.value as Gear["category"] })}>
-                {Object.entries(gearCategories).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
-              </select>
-            </Field>
-            <Field label="おすすめポイント" hint={`${gear.comment.length}/80`}>
-              <input className="input" maxLength={80} placeholder="作業領域が倍になって、もう戻れない" value={gear.comment} onChange={(e) => setGear({ ...gear, comment: e.target.value })} />
-            </Field>
+            <GearEditor gear={gear} setGear={setGear} uploading={uploading} runUpload={runUpload} />
             {!isNewGear && (
               <button className="btn w-full text-error" onClick={() => setDeleting({ table: "gear", id: gear.id, name: gear.name })}>
                 <Icon name="trash" />このアイテムを削除
