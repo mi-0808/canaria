@@ -47,7 +47,7 @@ create table public.works (
 );
 
 -- やってきたこと。はたらいたこと（work）・まなんだこと（learn）・すきなこと（like）を1つの表に持つ（項目がほぼ同じで、読み込みも1回で済むため）。
--- 期間は年だけで、どちらも任意。current は「いまも続けている」で、ended と同時には持たない
+-- 期間は年と月（どちらも任意。月は年があるときだけ）。current は「いまも続けている」で、ended と同時には持たない
 create table public.entries (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
@@ -57,12 +57,18 @@ create table public.entries (
   place text not null default '' check (char_length(place) <= 100), -- まなんだこと（身につけたこと）の「どこで・だれに」
   note text not null default '' check (char_length(note) <= 300), -- やったこと・ひとこと
   started smallint check (started between 1900 and 2100),
+  started_month smallint check (started_month between 1 and 12),
   ended smallint check (ended between 1900 and 2100),
+  ended_month smallint check (ended_month between 1 and 12),
   current boolean not null default false,
   image text not null default '', -- すきなことの写真
   created_at timestamptz not null default now(),
-  check (ended is null or started is null or ended >= started),
-  check (not (current and ended is not null))
+  check (not (current and ended is not null)),
+  constraint entries_started_month_needs_year check (started_month is null or started is not null),
+  constraint entries_ended_month_needs_year check (ended_month is null or ended is not null),
+  -- 月が無いときは、はじめは1月・おわりは12月とみなして前後を比べる（画面側は src/lib/entries.mjs の entryProblem）
+  constraint entries_period_order check (ended is null or started is null
+    or ended * 100 + coalesce(ended_month, 12) >= started * 100 + coalesce(started_month, 1))
 );
 
 create index on public.works (user_id);
@@ -160,5 +166,19 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 --   case when company in ('星槎名古屋中学校', 'N高等学校') then 'school' when company = 'Leap Up!' then 'skill' else role end,
 --   company, summary, extract(year from started)::smallint, extract(year from ended)::smallint, ended is null, created_at
 -- from public.careers;
+-- ①-2 2026-10-12 期間を年と月に（マージ前に流す。entries はまだ本番のコードが使っていないので安全）。careers から月を戻す（id が同じ）
+-- alter table public.entries
+--   add column started_month smallint check (started_month between 1 and 12),
+--   add column ended_month smallint check (ended_month between 1 and 12),
+--   add constraint entries_started_month_needs_year check (started_month is null or started is not null),
+--   add constraint entries_ended_month_needs_year check (ended_month is null or ended is not null),
+--   add constraint entries_period_order check (ended is null or started is null
+--     or ended * 100 + coalesce(ended_month, 12) >= started * 100 + coalesce(started_month, 1)),
+--   drop constraint entries_check;
+-- update public.entries e
+--   set started_month = extract(month from c.started)::smallint,
+--       ended_month = case when e.ended is not null then extract(month from c.ended)::smallint end
+--   from public.careers c
+--   where c.id = e.id and e.started = extract(year from c.started) and (e.ended is null or e.ended = extract(year from c.ended));
 -- ② マージして本番が新しいコードになってから流す（古いコードはまだ careers を読み書きするため）
 -- drop table public.careers;

@@ -7,15 +7,42 @@ import { entryProblem, sectionInfo, workKinds, yearChoices } from "@/lib/entries
 import type { Entry } from "@/lib/store";
 
 const years = yearChoices(new Date().getFullYear());
+const months = Array.from({ length: 12 }, (_, i) => i + 1);
+const select = "min-h-11 rounded-lg bg-surface-2 px-3 text-base disabled:opacity-40";
 
-/** 年だけを選ぶ。iOS では押すとホイールが出る。「なし」も選べる（期間は任意） */
-function YearSelect({ value, onChange, extra }: { value: string; onChange: (v: string) => void; extra?: [value: string, label: string] }) {
+/**
+ * 期間の1行。年と月を別々に選ぶ（どちらも任意。月は年を選んでから）。iOS では押すとホイールが出る。
+ * end: おわりの側。still: 学校の「出た」だけ、年の選択肢に「まだ（在学中）」を足し、「いまも」と1つの欄にまとめる
+ */
+function YearMonthRow({ label, e, set, end = false, still }: {
+  label: string; e: Entry; set: (patch: Partial<Entry>) => void; end?: boolean; still?: string;
+}) {
+  const year = end ? e.ended : e.started;
+  const month = end ? e.ended_month : e.started_month;
+  const isStill = !!still && e.current;
+  // 年を外したら月も外す（DB は「月だけ」を通さない）
+  const setYear = (v: string) => {
+    if (v === "now") return set({ current: true, ended: null, ended_month: null });
+    const y = v ? Number(v) : null;
+    set(end ? { current: false, ended: y, ended_month: y ? e.ended_month : null } : { started: y, started_month: y ? e.started_month : null });
+  };
+  const setMonth = (v: string) => {
+    const m = v ? Number(v) : null;
+    set(end ? { ended_month: m } : { started_month: m });
+  };
   return (
-    <select className="min-h-11 rounded-lg bg-surface-2 px-3 text-base" value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">なし</option>
-      {extra && <option value={extra[0]}>{extra[1]}</option>}
-      {years.map((y) => <option key={y} value={y}>{y}年</option>)}
-    </select>
+    <div className="group-row row-field">
+      <span className="flex-1">{label}</span>
+      <select aria-label={`${label}の年`} className={select} value={isStill ? "now" : year ?? ""} onChange={(ev) => setYear(ev.target.value)}>
+        <option value="">なし</option>
+        {still && <option value="now">{still}</option>}
+        {years.map((y) => <option key={y} value={y}>{y}年</option>)}
+      </select>
+      <select aria-label={`${label}の月`} className={select} disabled={!year || isStill} value={month ?? ""} onChange={(ev) => setMonth(ev.target.value)}>
+        <option value="">月</option>
+        {months.map((m) => <option key={m} value={m}>{m}月</option>)}
+      </select>
+    </div>
   );
 }
 
@@ -28,9 +55,6 @@ function Switch({ on, onChange, labelledBy }: { on: boolean; onChange: (on: bool
     </button>
   );
 }
-
-const year = (n: number | null) => (n ? String(n) : "");
-const toYear = (v: string) => (v ? Number(v) : null);
 
 /**
  * やってきたこと1件を足す・直すシート。必須は名前だけで、ほかは後からでいい（入力の手間を最初にかけない）。
@@ -111,8 +135,8 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
             {([["skill", "身につけたこと"], ["school", "学校"]] as const).map(([k, label]) => (
               <label key={k} className="segment">
                 <input type="radio" name="learn-kind" className="sr-only" checked={(e.kind || "skill") === k}
-                  // 学校の「出た年・在学中」は身につけたことでは聞かないので、切り替えたら消す（見えない値を残さない）
-                  onChange={() => set(k === "skill" ? { kind: k, ended: null, current: false } : { kind: k })} />
+                  // 学校の「出た・在学中」は身につけたことでは聞かないので、切り替えたら消す（見えない値を残さない）
+                  onChange={() => set(k === "skill" ? { kind: k, ended: null, ended_month: null, current: false } : { kind: k })} />
                 {label}
               </label>
             ))}
@@ -120,16 +144,9 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
           {e.kind === "school" ? (
             <div className="group-box">
               {titleRow("学校名", "〇〇高校 吹奏楽部")}
-              <label className="group-row row-field">
-                <span className="flex-1">入った年</span>
-                <YearSelect value={year(e.started)} onChange={(v) => set({ started: toYear(v) })} />
-              </label>
-              {/* 在学中は「まだ」。おわりの年と「いまも」を1つの欄にまとめる（学校はどちらか一方なので） */}
-              <label className="group-row row-field">
-                <span className="flex-1">出た年</span>
-                <YearSelect value={e.current ? "now" : year(e.ended)} extra={["now", "まだ（在学中）"]}
-                  onChange={(v) => set(v === "now" ? { current: true, ended: null } : { current: false, ended: toYear(v) })} />
-              </label>
+              <YearMonthRow label="入った" e={e} set={set} />
+              {/* 在学中は「まだ」。おわりと「いまも」を1つの欄にまとめる（学校はどちらか一方なので） */}
+              <YearMonthRow label="出た" e={e} set={set} end still="まだ（在学中）" />
             </div>
           ) : (
             <div className="group-box">
@@ -142,10 +159,7 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
                 <span className="w-24 shrink-0">ひとこと</span>
                 <input className="row-input" maxLength={300} placeholder="マッチなしで火がつく（任意）" value={e.note} onChange={(ev) => set({ note: ev.target.value })} />
               </label>
-              <label className="group-row row-field">
-                <span className="flex-1">いつ</span>
-                <YearSelect value={year(e.started)} onChange={(v) => set({ started: toYear(v) })} />
-              </label>
+              <YearMonthRow label="いつ" e={e} set={set} />
             </div>
           )}
         </>
@@ -165,10 +179,7 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
               <input className="row-input" maxLength={300} placeholder="文化祭でギターを弾いた（任意）" value={e.note} onChange={(ev) => set({ note: ev.target.value })} />
             </label>
             {/* すきなことは「おわり」を聞かない。続いているかどうかは問わない */}
-            <label className="group-row row-field">
-              <span className="flex-1">いつから</span>
-              <YearSelect value={year(e.started)} onChange={(v) => set({ started: toYear(v) })} />
-            </label>
+            <YearMonthRow label="いつから" e={e} set={set} />
           </div>
         </>
       )}
@@ -187,22 +198,14 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
 function Period({ e, set }: { e: Entry; set: (patch: Partial<Entry>) => void }) {
   return (
     <section className="space-y-2">
-      <h3 className="group-label">いつ（任意・年だけ）</h3>
+      <h3 className="group-label">いつ（任意。月は年を選んでから）</h3>
       <div className="group-box">
-        <label className="group-row row-field">
-          <span className="flex-1">はじめ</span>
-          <YearSelect value={year(e.started)} onChange={(v) => set({ started: toYear(v) })} />
-        </label>
+        <YearMonthRow label="はじめ" e={e} set={set} />
         <div className="group-row">
           <span id="entry-current" className="flex-1">いまも続けている</span>
-          <Switch on={e.current} labelledBy="entry-current" onChange={(on) => set(on ? { current: true, ended: null } : { current: false })} />
+          <Switch on={e.current} labelledBy="entry-current" onChange={(on) => set(on ? { current: true, ended: null, ended_month: null } : { current: false })} />
         </div>
-        {!e.current && (
-          <label className="group-row row-field">
-            <span className="flex-1">おわり</span>
-            <YearSelect value={year(e.ended)} onChange={(v) => set({ ended: toYear(v) })} />
-          </label>
-        )}
+        {!e.current && <YearMonthRow label="おわり" e={e} set={set} end />}
       </div>
     </section>
   );

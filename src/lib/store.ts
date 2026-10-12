@@ -64,8 +64,10 @@ export type Entry = {
   title: string; // どこで／なにを／学校名／なにが
   place: string; // まなんだこと（身につけたこと）の「どこで・だれに」
   note: string; // やったこと・ひとこと
-  started: number | null; // 年だけ
+  started: number | null; // 年
+  started_month: number | null; // 月（任意。年があるときだけ）
   ended: number | null;
+  ended_month: number | null;
   current: boolean; // いまも続けている（ended と同時には持たない）
   image: string; // すきなことの写真
   created_at?: string;
@@ -194,9 +196,10 @@ export async function loadPortfolio(uid: string): Promise<Portfolio | null> {
   const [profile, works, entries] = await Promise.all([
     loadProfile(uid),
     db().from("works").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
-    // 始めた年の新しい順（年の無いものは下）。3つの欄を合わせて 1人で 150 件を超えることはまず無いが、青天井にしない
+    // 始めた年月の新しい順（年や月の無いものは下。entries.mjs の byNewest と同じ）。1つの欄は50件までなので、3つ合わせて150件
     db().from("entries").select("*").eq("user_id", uid)
-      .order("started", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(150).then(must),
+      .order("started", { ascending: false, nullsFirst: false }).order("started_month", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false }).limit(150).then(must),
   ]);
   if (!profile) return null;
   return { profile, works: works as Work[], entries: entries as Entry[] };

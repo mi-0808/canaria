@@ -13,7 +13,8 @@ const isSection = (s: string): s is Section => (sections as readonly string[]).i
 
 // まなんだことは「身につけたこと」から聞く（学校より当てはまる人が多い）
 const blank = (section: Section): Entry => ({
-  id: newId(), section, kind: section === "learn" ? "skill" : "", title: "", place: "", note: "", started: null, ended: null, current: false, image: "",
+  id: newId(), section, kind: section === "learn" ? "skill" : "", title: "", place: "", note: "",
+  started: null, started_month: null, ended: null, ended_month: null, current: false, image: "",
 });
 
 // /me/work・/me/learn・/me/like。3つの欄は同じ形の一覧なので、1つの画面を使い回す
