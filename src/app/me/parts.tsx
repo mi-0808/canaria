@@ -29,22 +29,23 @@ export function SaveBar({ onCancel, onSave, disabled, saving }: { onCancel: () =
   );
 }
 
-/** 一覧の画面の頭。左上に「‹ プロフィール」、右上に丸い「＋」（iOS の一覧と同じ置き方） */
+/** 一覧の画面の頭。上に「‹ プロフィール」、見出しの行の右端に丸い「＋」。
+ *  「＋」を戻るの行（見出しの右上）に置くと、何を足すボタンなのかが見出しから離れて見えたので、見出しと同じ行にする（ユーザーの指示） */
 export function ListHeader({ title, hint, addLabel, onAdd }: { title: string; hint: string; addLabel: string; onAdd?: () => void }) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Link href="/me" className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary">
-          <Icon name="arrow" className="h-4 w-4 rotate-180" />プロフィール
-        </Link>
+      <Link href="/me" className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary">
+        <Icon name="arrow" className="h-4 w-4 rotate-180" />プロフィール
+      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         {/* この画面の主な行動なので濃いカナリア（1画面に1つ）。上限まで足したら出さない（理由は hint に出す） */}
         {onAdd && (
-          <button aria-label={addLabel} onClick={onAdd} className="btn-primary w-11 rounded-full px-0">
+          <button aria-label={addLabel} onClick={onAdd} className="btn-primary w-11 shrink-0 rounded-full px-0">
             <Icon name="plus" className="h-6 w-6" />
           </button>
         )}
       </div>
-      <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
       <p className="text-sm text-fg-3">{hint}</p>
     </div>
   );

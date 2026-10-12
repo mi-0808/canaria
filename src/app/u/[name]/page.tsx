@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { use, useEffect } from "react";
 import Icon from "@/components/Icon";
 import { Empty, EntrySections, NowNext, ProfileHero, WorkList } from "@/components/Portfolio";
+import ShareButton from "@/components/ShareButton";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { isPreview } from "@/lib/nav.mjs";
 import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
@@ -26,16 +27,17 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
   }, [legacy, data, router]);
 
   // 「公開ページを見る」から来たプレビュー。見る人と同じ見た目にするため、ヘッダー（design.css の data-preview）と
-  // 「編集する」を出さず、戻るだけを置く。スクロールしても戻れるよう sticky で左上に残す。
-  // 場所を取るとカバーの上に空きができるので、高さ 0 の入れ物に入れてカバーの左上に重ねる（mb-0 で space-y の間隔も消す）
+  // 「編集する」を出さず、左上に戻る・右上に共有だけを置く（共有しやすくするため。ユーザーの指示）。スクロールしても使えるよう sticky で残す。
+  // 場所を取るとカバーの上に空きができるので、高さ 0 の入れ物に入れてカバーの角に重ねる（mb-0 で space-y の間隔も消す）
   const back = isPreview(preview, user, data) && (
-    <div className="sticky top-[env(safe-area-inset-top)] z-20 mb-0 h-0">
+    <div className="sticky top-[env(safe-area-inset-top)] z-20 mb-0 flex h-0 justify-between">
       <button type="button" aria-label="戻る" data-preview
         // ponytail: 履歴の有無は history.length で見るだけ。プレビューの URL を直接開いたときはプロフィールへ
         onClick={() => (window.history.length > 1 ? router.back() : router.push("/me"))}
         className="flex h-11 w-11 translate-3 items-center justify-center rounded-full border border-line bg-surface text-fg shadow-sm transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
         <Icon name="arrow" className="h-5 w-5 rotate-180" />
       </button>
+      {data && <ShareButton variant="icon" username={data.profile.username} name={data.profile.name} className="-translate-x-3 translate-y-3" />}
     </div>
   );
 
@@ -47,8 +49,12 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
 
   return (
     <div className="space-y-12">
+      {/* 共有ボタンは自分のページを見ているときだけ（ユーザーの指示） */}
       {back || (user?.id === data.id && (
-        <div className="flex justify-end"><Link href="/me" className="btn">編集する</Link></div>
+        <div className="flex justify-end gap-2">
+          <ShareButton variant="icon" username={p.username} name={p.name} />
+          <Link href="/me" className="btn">編集する</Link>
+        </div>
       ))}
 
       <div className="space-y-6">

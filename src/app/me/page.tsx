@@ -6,6 +6,7 @@ import FilePicker from "@/components/FilePicker";
 import Icon, { type IconName } from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
 import { Avatar } from "@/components/Portfolio";
+import ShareButton from "@/components/ShareButton";
 import Sheet from "@/components/Sheet";
 import { ListSkeleton } from "@/components/Skeleton";
 import { sectionInfo } from "@/lib/entries.mjs";
@@ -76,8 +77,12 @@ export default function MyPage() {
           <Icon name="chevron" className="h-5 w-5 text-fg-3" />
         </button>
       </div>
-      {/* ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
-      <Link href={`/@${p.username}?preview`} className="btn-tonal w-full">公開ページを見る</Link>
+      {/* 共有はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。見る方は薄い藍で並べる。
+          ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href={`/@${p.username}?preview`} className="btn-tonal">公開ページを見る</Link>
+        <ShareButton variant="label" username={p.username} name={p.name} />
+      </div>
 
       <section className="space-y-2">
         <h2 className="group-label">やってきたこと</h2>
