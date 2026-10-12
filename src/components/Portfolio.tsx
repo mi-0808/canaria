@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
 import { brandIcon } from "@/components/BrandIcon";
-import Icon, { type IconName } from "@/components/Icon";
+import Icon from "@/components/Icon";
 import Sheet from "@/components/Sheet";
-import { contactEmailPattern, gearLink, linkName, normalizeLink } from "@/lib/links.mjs";
+import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
 import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
-import { type Career, type Gear, type Profile, type Work } from "@/lib/store";
+import { type Career, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
 // アイコン・名前・数字の行・入手ボタン（メールと SNS）→ 作品の一覧 → 説明 → 情報
@@ -281,41 +281,6 @@ function SocialLink({ url }: { url: string }) {
       className={`btn rounded-full ${logo ? "w-11 px-0" : ""}`}>
       {logo ?? <><Icon name="link" className="h-4 w-4" />{name}</>}
     </a>
-  );
-}
-
-/** アイテムの写真。無ければ箱のアイコン */
-export function GearThumb({ g, className }: { g: Gear; className: string }) {
-  return g.image ? (
-    <img src={g.image} alt="" className={`${className} shrink-0 rounded-xl object-cover`} />
-  ) : (
-    <span className={`${className} flex shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary-container`}><Icon name="box" /></span>
-  );
-}
-
-export function GearRow({ g }: { g: Gear }) {
-  // 表示のたびに /dp/ASIN に作り直して運営のタグを付ける（他人のタグは残らない）。Amazon の商品でなければ href にしない
-  const url = gearLink(g.url);
-  const body = (
-    <>
-      <GearThumb g={g} className="h-14 w-14" />
-      <div className="min-w-0">
-        <p className="truncate font-medium">{g.name}</p>
-        {g.comment && <p className="text-sm text-fg-2">“{g.comment}”</p>}
-      </div>
-    </>
-  );
-  return (
-    <div className="card flex min-w-0 items-center gap-3 p-3 transition hover:shadow-md">
-      {url ? (
-        <a href={url} target="_blank" rel="noopener noreferrer sponsored" className="flex min-w-0 flex-1 items-center gap-3">
-          {body}
-          <Icon name="external" className="ml-auto h-4 w-4 text-tertiary" />
-        </a>
-      ) : (
-        <div className="flex min-w-0 flex-1 items-center gap-3">{body}</div>
-      )}
-    </div>
   );
 }
 

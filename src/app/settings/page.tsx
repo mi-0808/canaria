@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import Icon, { type IconName } from "@/components/Icon";
 import { signOut, useUser } from "@/lib/store";
@@ -32,8 +33,8 @@ export default function Settings() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- 上の理由で、初回だけブラウザの状態を読み直す
   useEffect(() => setTheme((document.documentElement.dataset.theme as Theme) ?? "auto"), []);
 
-  // `/` の中身（LP かホームか）はログイン状態で変わる。画面ごと読み直して proxy に判定し直させる。
-  // router.push だと、Next のクライアントキャッシュに残ったホームが出ることがある（router.refresh は今のページ分しか消さない）
+  // `/` の行き先（LP かプロフィールか）はログイン状態で変わる。画面ごと読み直して proxy に判定し直させる。
+  // router.push だと、Next のクライアントキャッシュに残った転送先が出ることがある（router.refresh は今のページ分しか消さない）
   const logout = async () => {
     await signOut();
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 上の理由で意図的に再読み込みする
@@ -42,7 +43,13 @@ export default function Settings() {
 
   return (
     <div className="mx-auto max-w-xl space-y-10">
-      <h1 className="text-3xl font-bold tracking-tight">設定</h1>
+      <div className="space-y-2">
+        {/* タブバーやメニューが無いので、来たプロフィールへ戻る道をここに置く（iOS の設定と同じ左上） */}
+        <Link href="/me" className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary">
+          <Icon name="arrow" className="h-4 w-4 rotate-180" />プロフィール
+        </Link>
+        <h1 className="text-3xl font-bold tracking-tight">設定</h1>
+      </div>
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold">表示</h2>

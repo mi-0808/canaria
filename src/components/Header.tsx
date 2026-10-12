@@ -1,8 +1,5 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Icon, { type IconName } from "@/components/Icon";
-import { isPublicPage } from "@/lib/nav.mjs";
 import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
@@ -15,44 +12,22 @@ export function Logo({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
-// ログイン中の行き先。PC はヘッダーに、スマホは画面下のタブバーに並べる（HIG: 最上位の行き先は隠さない）
-const nav: [href: string, label: string, icon: IconName][] = [
-  ["/", "トップ", "home"],
-  ["/me", "ポートフォリオ", "easel"],
-  ["/settings", "設定", "settings"],
-];
-// `/` は前方一致だと全部に当たるので完全一致
-const isCurrent = (path: string, href: string) => (href === "/" ? path === "/" : path.startsWith(href));
-
 // 押せる高さを 44px 確保する（design.css のアクセシビリティ規約）
 const item = "inline-flex min-h-11 items-center px-2 transition";
 
 export default function Header() {
-  const path = usePathname();
   const user = useUser();
 
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-1.5">
-        {/* ロゴはトップへ。ログイン中ならホーム、未ログインなら LP が出る */}
+        {/* ロゴはトップへ。ログイン中ならプロフィール（proxy.ts が /me に送る）、未ログインなら LP が出る */}
         <Link href="/" className={`${item} -ml-2 gap-2 text-lg font-bold tracking-tight`}>
           <Logo /> Canaria
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
 
-        {/* ログイン中: PC だけヘッダーに並べる。スマホは下のタブバーに任せる。
-            アイコンと選択中の色（藍）はタブバーとそろえ、幅が変わっても同じメニューに見えるようにする */}
-        {user && (
-          <nav aria-label="メインメニュー" className="-mr-2 hidden gap-4 text-sm whitespace-nowrap sm:flex">
-            {nav.map(([href, label, icon]) => (
-              <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-                className={`${item} gap-1.5 text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-tertiary`}>
-                <Icon name={icon} className="h-4.5 w-4.5" />
-                {label}
-              </Link>
-            ))}
-          </nav>
-        )}
+        {/* ログイン中は行き先がプロフィールだけなので、メニューを出さない。設定はプロフィールの右上の歯車から */}
         {user === null && (
           <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
             <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
@@ -61,30 +36,5 @@ export default function Header() {
         )}
       </div>
     </header>
-  );
-}
-
-/** スマホの画面下に固定するタブバー（HIG の Tab bars）。ログイン中だけ出す。
- *  浮かせた丸いバーは中身の上に被って大きく見えたので、画面の下辺いっぱいに敷く。
- *  公開ページは見る人のためのページなので出さない（戻るのはヘッダーのロゴか、プレビューなら左上の戻るボタン） */
-export function TabBar() {
-  const path = usePathname();
-  const user = useUser();
-  if (!user || isPublicPage(path)) return null;
-  return (
-    <>
-      {/* 固定したバーが最後のコンテンツに被らないよう、同じ高さの余白を流れの中に置く */}
-      <div aria-hidden className="h-[calc(3.125rem+max(0.25rem,env(safe-area-inset-bottom)))] sm:hidden" />
-      <nav aria-label="メインメニュー"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface pt-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:hidden">
-        {nav.map(([href, label, icon]) => (
-          <Link key={href} href={href} aria-current={isCurrent(path, href) ? "page" : undefined}
-            className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs text-fg-2 transition aria-[current=page]:font-bold aria-[current=page]:text-tertiary">
-            <Icon name={icon} className="h-4.5 w-4.5" />
-            {label}
-          </Link>
-        ))}
-      </nav>
-    </>
   );
 }

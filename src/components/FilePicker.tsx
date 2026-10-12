@@ -117,26 +117,6 @@ export function ShotsPicker({ value, max, onChange }: { value: string[]; max: nu
   );
 }
 
-/**
- * 投稿欄の「カメラロール・カメラ」のアイコンボタン（トップの投稿と開発環境のアイテムで使う）。
- * capture なし = カメラロール（写真ライブラリ）から選ぶ。capture あり = OS 標準のカメラを直接立ち上げる。
- * PC の capture はファイル選択と同じになるので、カメラは指で操作する端末（pointer: coarse）にだけ出す。
- * キーボードで来たら枠に focus を出す
- */
-export function AttachButtons({ accept, label, disabled, onPick }: { accept: string; label: string; disabled: boolean; onPick: (file?: File) => void }) {
-  return (
-    <div className="-ml-2.5 flex gap-2">
-      {([["image", label, undefined, "inline-flex"], ["camera", "カメラで撮る", "environment", "hidden pointer-coarse:inline-flex"]] as const).map(([icon, text, capture, display]) => (
-        <label key={icon} className={`${display} min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg text-tertiary transition hover:bg-tertiary-container ${focus} ${disabled ? "pointer-events-none opacity-40" : ""}`}>
-          <input type="file" accept={accept} capture={capture} className="sr-only" disabled={disabled}
-            onChange={(e) => { onPick(e.target.files?.[0]); e.target.value = ""; }} />
-          <Icon name={icon} className="h-6 w-6" /><span className="sr-only">{text}</span>
-        </label>
-      ))}
-    </div>
-  );
-}
-
 /** 添付した画像・動画の右上の「外す」。見た目 32px、当たり判定は ::before で 44px */
 export function RemoveAttachment({ onClick }: { onClick: () => void }) {
   return (

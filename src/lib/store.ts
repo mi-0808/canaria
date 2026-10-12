@@ -54,32 +54,10 @@ export const profileChoices = {
   ],
 } as const;
 
-type Author = Profile & { id: string };
-export type Reply = { id: string; body: string; created_at: string; author: Pick<Profile, "name" | "icon"> };
-export type Post = {
-  id: string;
-  body: string;
-  media?: { kind: "audio" | "video" | "image"; src: string };
-  created_at: string;
-  author: Author;
-  reacted: boolean; // 閲覧中のユーザーが
-  saved: boolean; // 閲覧中のユーザーが
-  replies: Reply[];
-};
-
-// 開発環境（仕事場）のアイテム。Amazon の商品だけ登録できる。
-// url は amazonProductUrl（src/lib/links.mjs）でそろえた /dp/ASIN（DB の check も同じ形だけ通す）。表示のときに gearLink でアソシエイトリンクにする。
-// comment は「これいいよ」のひとこと（購入のきっかけになる部分）。image は自分で撮った写真（任意）
-export type Gear = { id: string; name: string; comment: string; url: string; image: string };
-
 // 経歴（勤務先・学校など）。started / ended は DB の date（"2024-04-01"）。ended が null なら「現在」
 export type Career = { id: string; company: string; role: string; started: string; ended: string | null; summary: string };
 
-export type Portfolio = { profile: Profile; works: Work[]; gear: Gear[]; careers: Career[]; posts: Post[] };
-
-// タイムラインを見るのに必要なプロフィール項目
-export const requiredProfile: [keyof Profile, string][] = [["name", "名前"], ["icon", "アイコン"], ["tagline", "ひとこと"]];
-export const missingProfile = (p: Profile) => requiredProfile.filter(([k]) => !p[k]).map(([, label]) => label);
+export type Portfolio = { profile: Profile; works: Work[]; careers: Career[] };
 
 export const newId = () => crypto.randomUUID();
 
@@ -175,7 +153,7 @@ export function useLoad<T>(fn: () => Promise<T> | undefined, deps: DependencyLis
   return [data, setData];
 }
 
-/** 書き込み中かどうかと、書き込みを包む関数。終わるまで同じ操作を受け付けない（二度押しで二重に保存・投稿されるのを防ぐ）。
+/** 書き込み中かどうかと、書き込みを包む関数。終わるまで同じ操作を受け付けない（二度押しで二重に保存されるのを防ぐ）。
  *  state だけだと連打が再描画より速いと両方通るので、ref で止める */
 export function useBusy(): [boolean, (fn: () => Promise<unknown>) => Promise<void>] {
   const [busy, setBusy] = useState(false);
@@ -194,40 +172,19 @@ export function useBusy(): [boolean, (fn: () => Promise<unknown>) => Promise<voi
   return [busy, run];
 }
 
-const postSelect = "*, author:profiles!posts_user_id_fkey(*), replies(*, author:profiles!replies_user_id_fkey(name, icon)), reactions(user_id), saves(user_id)";
-
-type PostRow = {
-  id: string; body: string; media_kind: "audio" | "video" | "image" | null; media_src: string | null; created_at: string;
-  author: Author; replies: Reply[]; reactions: { user_id: string }[]; saves: { user_id: string }[];
-};
-const toPost = (r: PostRow, viewer?: string): Post => ({
-  id: r.id,
-  body: r.body,
-  media: r.media_kind && r.media_src ? { kind: r.media_kind, src: r.media_src } : undefined,
-  created_at: r.created_at,
-  author: r.author,
-  reacted: r.reactions.some((x) => x.user_id === viewer),
-  saved: r.saves.some((x) => x.user_id === viewer), // RLS で自分の分しか返らない
-  replies: r.replies.toSorted((a, b) => a.created_at.localeCompare(b.created_at)),
-});
-
-const posts = () => db().from("posts").select(postSelect).order("created_at", { ascending: false });
-
 export const loadProfile = async (uid: string) =>
   must(await db().from("profiles").select("*").eq("id", uid).maybeSingle()) as Profile | null;
 
-/** 公開ページ・/me（ポートフォリオを作る）用。プロフィールが無ければ null */
-export async function loadPortfolio(uid: string, viewer?: string): Promise<Portfolio | null> {
-  const [profile, works, gear, careers, ps] = await Promise.all([
+/** 公開ページ・/me（プロフィールを作る）用。プロフィールが無ければ null */
+export async function loadPortfolio(uid: string): Promise<Portfolio | null> {
+  const [profile, works, careers] = await Promise.all([
     loadProfile(uid),
     db().from("works").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
-    db().from("gear").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
     // 経歴は始まりの新しい順。1人で 50 件を超えることはまず無いが、青天井にしない
     db().from("careers").select("*").eq("user_id", uid).order("started", { ascending: false }).limit(50).then(must),
-    posts().eq("user_id", uid).then(must),
   ]);
   if (!profile) return null;
-  return { profile, works: works as Work[], gear: gear as Gear[], careers: careers as Career[], posts: (ps as unknown as PostRow[]).map((r) => toPost(r, viewer)) };
+  return { profile, works: works as Work[], careers: careers as Career[] };
 }
 
 /** 公開ページ用。/@username（旧 URL の /u/ユーザーID なら id）から引く。見つからなければ null */
@@ -235,14 +192,6 @@ export async function loadPublicPortfolio(key: "id" | "username", value: string)
   const p = must(await db().from("profiles").select("id").eq(key, value).maybeSingle()) as { id: string } | null;
   const portfolio = p && (await loadPortfolio(p.id));
   return portfolio && { id: p!.id, ...portfolio };
-}
-
-// ponytail: 全件取得。投稿が増えたら range() でページング
-export const loadTimeline = async (viewer: string) => (must(await posts()) as unknown as PostRow[]).map((r) => toPost(r, viewer));
-
-export async function loadPost(id: string, viewer?: string) {
-  const r = must(await db().from("posts").select(postSelect).eq("id", id).maybeSingle()) as unknown as PostRow | null;
-  return r && toPost(r, viewer);
 }
 
 // --- write ---
@@ -258,19 +207,8 @@ export async function saveProfile(uid: string, p: Profile) {
   must({ data: null, error });
 }
 export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
-export const saveGear = async (g: Gear) => must(await db().from("gear").upsert(g));
 export const saveCareer = async (c: Career) => must(await db().from("careers").upsert(c));
-export const remove = async (table: "works" | "gear" | "careers", id: string) => must(await db().from(table).delete().eq("id", id));
-
-export const createPost = async (body: string, media?: Post["media"]) =>
-  must(await db().from("posts").insert({ body, media_kind: media?.kind ?? null, media_src: media?.src ?? null }));
-export const addReply = async (postId: string, body: string) => must(await db().from("replies").insert({ post_id: postId, body }));
-
-export async function toggle(table: "reactions" | "saves", post: Post, on: boolean) {
-  const q = db().from(table);
-  // 削除は RLS で自分の行だけに絞られる
-  must(await (on ? q.insert({ post_id: post.id }) : q.delete().eq("post_id", post.id)));
-}
+export const remove = async (table: "works" | "careers", id: string) => must(await db().from(table).delete().eq("id", id));
 
 /** media バケットの自分のフォルダに上げて公開URLを返す */
 export async function upload(file: File) {

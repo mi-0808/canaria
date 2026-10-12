@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header, { TabBar } from "@/components/Header";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./design.css";
 
@@ -9,7 +9,7 @@ const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Canaria",
-  description: "駆け出しエンジニアのための、無料で使えるポートフォリオ",
+  description: "やってきたことを、見せたくなる形で並べるプロフィール帳",
   // ヘッダーの Logo を PNG に書き出したもの。Logo の形を変えたら書き出し直す
   icons: { icon: "/canaria_icons.png", apple: "/canaria_icons.png" },
 };
@@ -29,7 +29,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">{children}</main>
         <Footer />
-        <TabBar />
       </body>
     </html>
   );

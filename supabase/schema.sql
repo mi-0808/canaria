@@ -1,4 +1,4 @@
--- Canaria schema. 公開ポートフォリオなので読み取りは誰でも、書き込みは本人だけ（saves だけ本人のみ閲覧）。
+-- Canaria schema. 公開プロフィールなので読み取りは誰でも、書き込みは本人だけ。
 -- ponytail: 単一ファイルを手で流す運用。Supabase CLI を入れたら migrations に移す。
 
 -- プロフィールの SNS リンクの検査。https の URL だけ・6件まで・1件300文字まで。
@@ -46,18 +46,6 @@ create table public.works (
   created_at timestamptz not null default now()
 );
 
-create table public.gear (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  name text not null check (char_length(name) > 0),
-  comment text not null default '' check (char_length(comment) <= 80),
-  -- Amazon の商品だけ。ASIN だけ残した形（src/lib/links.mjs の amazonProductUrl）で保存し、表示のときに運営のタグを付ける。
-  -- 画面で弾くだけだと API から直接書けるので、他人のタグ付きリンクや別サイトの URL はここで止める
-  url text not null check (url ~ '^https://www\.amazon\.co\.jp/dp/[A-Z0-9]{10}$'),
-  image text not null default '', -- 自分で撮った写真（任意）
-  created_at timestamptz not null default now()
-);
-
 -- 経歴（勤務先・学校などと、そこでの実績）。公開ページでは始まりの新しい順に年表で並べる。
 -- 期間は年月で持つ（その月の1日）。ended が null なら「現在」
 create table public.careers (
@@ -71,75 +59,31 @@ create table public.careers (
   created_at timestamptz not null default now()
 );
 
-create table public.posts (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  body text not null default '',
-  media_kind text check (media_kind in ('audio', 'video', 'image')), -- audio は投稿画面から外した。過去の投稿のために残す
-  media_src text,
-  created_at timestamptz not null default now()
-);
-
-create table public.replies (
-  id uuid primary key default gen_random_uuid(),
-  post_id uuid not null references public.posts on delete cascade,
-  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  body text not null check (char_length(body) > 0),
-  created_at timestamptz not null default now()
-);
-
-create table public.reactions (
-  post_id uuid not null references public.posts on delete cascade,
-  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  primary key (post_id, user_id)
-);
-
-create table public.saves (
-  post_id uuid not null references public.posts on delete cascade,
-  user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  primary key (post_id, user_id)
-);
-
 create index on public.works (user_id);
-create index on public.gear (user_id);
-create index on public.posts (user_id, created_at desc);
-create index on public.replies (post_id);
-create index on public.replies (user_id);
-create index on public.reactions (user_id);
-create index on public.saves (user_id);
 
 -- RLS
 alter table public.profiles enable row level security;
 alter table public.works enable row level security;
-alter table public.gear enable row level security;
 alter table public.careers enable row level security;
-alter table public.posts enable row level security;
-alter table public.replies enable row level security;
-alter table public.reactions enable row level security;
-alter table public.saves enable row level security;
 
-grant select on public.profiles, public.works, public.gear, public.careers, public.posts, public.replies, public.reactions to anon, authenticated;
-grant select, insert, update, delete on public.profiles, public.works, public.gear, public.careers, public.posts, public.replies, public.reactions, public.saves to authenticated;
+grant select on public.profiles, public.works, public.careers to anon, authenticated;
+grant select, insert, update, delete on public.profiles, public.works, public.careers to authenticated;
 
 create policy "profiles: public read" on public.profiles for select to anon, authenticated using (true);
 create policy "profiles: own insert" on public.profiles for insert to authenticated with check ((select auth.uid()) = id);
 create policy "profiles: own update" on public.profiles for update to authenticated using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
 
--- works / gear / posts / replies / reactions: 誰でも読める、本人だけ書ける
+-- works / careers: 誰でも読める、本人だけ書ける
 do $$
 declare t text;
 begin
-  foreach t in array array['works', 'gear', 'careers', 'posts', 'replies', 'reactions'] loop
+  foreach t in array array['works', 'careers'] loop
     execute format('create policy "%1$s: public read" on public.%1$I for select to anon, authenticated using (true)', t);
     execute format('create policy "%1$s: own insert" on public.%1$I for insert to authenticated with check ((select auth.uid()) = user_id)', t);
     execute format('create policy "%1$s: own update" on public.%1$I for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id)', t);
     execute format('create policy "%1$s: own delete" on public.%1$I for delete to authenticated using ((select auth.uid()) = user_id)', t);
   end loop;
 end $$;
-
-create policy "saves: own read" on public.saves for select to authenticated using ((select auth.uid()) = user_id);
-create policy "saves: own insert" on public.saves for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy "saves: own delete" on public.saves for delete to authenticated using ((select auth.uid()) = user_id);
 
 -- Storage: 公開バケット。各ユーザーは自分の uid フォルダにだけアップロードできる
 -- ponytail: 差し替え前の古いファイルは消さない。容量が気になったら select+delete ポリシーと掃除処理を足す
@@ -197,3 +141,6 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 --   add constraint gear_url_check check (url ~ '^https://www\.amazon\.co\.jp/dp/[A-Z0-9]{10}$');
 -- 2026-10-04 作品の2枚目以降の画像（マージ前に流す。足すだけなので、本番で動いている古いコードは壊れない）
 -- alter table public.works add column shots text[] not null default '{}' check (cardinality(shots) <= 9);
+-- 2026-10-12 投稿（タイムライン）と開発環境をなくす。マージして本番が新しいコードになってから流す（古いコードはまだ読み書きするため）。
+-- 投稿で上げた画像・動画のファイルは media バケットに残る
+-- drop table public.saves, public.reactions, public.replies, public.posts, public.gear;
