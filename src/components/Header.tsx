@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
@@ -27,7 +28,12 @@ export default function Header() {
           <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
         </Link>
 
-        {/* ログイン中は行き先がプロフィールだけなので、メニューを出さない。設定はプロフィールの右上の歯車から */}
+        {/* ログイン中は行き先がプロフィールだけなので、メニューは出さない。設定だけは、どの画面からでも行けるよう右に歯車を置く */}
+        {user && (
+          <Link href="/settings" aria-label="設定" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+            <Icon name="settings" className="h-5.5 w-5.5" />
+          </Link>
+        )}
         {user === null && (
           <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
             <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>

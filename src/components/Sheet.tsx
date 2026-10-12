@@ -3,13 +3,16 @@ import { useId, useLayoutEffect, useRef } from "react";
 
 // 下からせり上がるシート（PC では中央）。<dialog> の showModal に任せると、フォーカスの閉じ込め・Esc で閉じる・
 // 背景を押せなくする、がブラウザ標準で付いてくる。自前で作ると漏れる所なので書かない
-export default function Sheet({ open, onClose, title, children, footer, dismissible = true }: {
+export default function Sheet({ open, onClose, title, children, footer, bar, dismissible = true }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   /** 下に固定するボタン（キャンセル・保存）。中身が長くても常に見える */
   footer?: React.ReactNode;
+  /** iOS のシートと同じく、上の段に「キャンセル（左）・見出し（中）・決定（右）」を置く。下までスクロールしなくても決められる。
+   *  付けると、地が灰色（surface-2）になり、中身は design.css の group-box で白いまとまりにする */
+  bar?: { left: React.ReactNode; right: React.ReactNode };
   /** false: 背景のタップと Esc では閉じない。入力の途中で誤って閉じ、書いたものが消えるのを防ぐ（フォーム用） */
   dismissible?: boolean;
 }) {
@@ -26,10 +29,17 @@ export default function Sheet({ open, onClose, title, children, footer, dismissi
     <dialog ref={ref} onClose={onClose} aria-labelledby={titleId}
       onCancel={(e) => !dismissible && e.preventDefault()}
       onClick={(e) => dismissible && e.target === ref.current && onClose()}
-      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden rounded-t-3xl bg-surface text-fg backdrop:bg-secondary/50 open:flex sm:m-auto sm:max-w-lg sm:rounded-3xl">
+      className={`m-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden rounded-t-3xl text-fg backdrop:bg-secondary/50 open:flex sm:m-auto sm:max-w-lg sm:rounded-3xl ${bar ? "bg-surface-2" : "bg-surface"}`}>
+      {bar && (
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 pt-3 pb-1 sm:px-6">
+          <div className="justify-self-start">{bar.left}</div>
+          <h2 id={titleId} className="text-base font-bold">{title}</h2>
+          <div className="justify-self-end">{bar.right}</div>
+        </div>
+      )}
       {/* 余白はパネル内の目安（スマホ 24px / PC 32px）。下に固定のボタンが無いときは、ホームバーを避ける */}
-      <div className={`space-y-6 overflow-y-auto p-6 sm:p-8 ${footer ? "" : "pb-[max(1.5rem,env(safe-area-inset-bottom))]"}`}>
-        <h2 id={titleId} className="text-lg font-bold leading-snug">{title}</h2>
+      <div className={`overflow-y-auto ${bar ? "space-y-5 px-4 pt-3 sm:px-6" : "space-y-6 p-6 sm:p-8"} ${footer ? "" : "pb-[max(1.5rem,env(safe-area-inset-bottom))]"}`}>
+        {!bar && <h2 id={titleId} className="text-lg font-bold leading-snug">{title}</h2>}
         {children}
       </div>
       {footer && <div className="border-t border-line px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8">{footer}</div>}

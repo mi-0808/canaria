@@ -1,23 +1,14 @@
 // 読み込み中は、届く画面と同じ形の灰色の箱を出す。真っ白のまま待たせると、壊れたのか待てばいいのか分からない（HIG: Loading）
 const box = "animate-pulse rounded-lg bg-surface-2";
 
-/** プロフィール＋タブ＋作品カード（/me・公開ページ） */
-export function ProfileSkeleton() {
+/** /me 以下（見出し＋白いまとまり）。地の灰色は data-grouped で、読み込み中から付けておく（読み込み後に背景が変わらないように） */
+export function ListSkeleton() {
   return (
-    <div role="status" aria-label="読み込み中" className="space-y-10">
-      <div className="card overflow-hidden">
-        <div className={`h-32 rounded-none ${box}`} />
-        <div className="-mt-12 space-y-4 px-6 pb-6">
-          <div className="h-24 w-24 rounded-full bg-surface-2 ring-4 ring-surface" />
-          <div className={`h-7 w-40 ${box}`} />
-          <div className={`h-5 w-64 max-w-full ${box}`} />
-        </div>
-      </div>
-      <div className={`h-13 ${box}`} />
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className={`aspect-video ${box}`} />
-        <div className={`aspect-video ${box}`} />
-      </div>
+    <div data-grouped role="status" aria-label="読み込み中" className="mx-auto max-w-xl space-y-6">
+      <div className={`h-9 w-48 ${box}`} />
+      <div className="h-20 rounded-2xl bg-surface-raised" />
+      <div className={`h-11 rounded-xl ${box}`} />
+      <div className="h-40 rounded-2xl bg-surface-raised" />
     </div>
   );
 }

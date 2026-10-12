@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { use, useEffect } from "react";
 import Icon from "@/components/Icon";
-import { CareerTimeline, Empty, NowNext, ProfileHero, WorkList } from "@/components/Portfolio";
+import { Empty, EntrySections, NowNext, ProfileHero, WorkList } from "@/components/Portfolio";
 import { PublicSkeleton } from "@/components/Skeleton";
 import { isPreview } from "@/lib/nav.mjs";
 import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
@@ -42,7 +42,7 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
   if (data === undefined) return <div className="space-y-12">{back}<PublicSkeleton /></div>;
   if (data === null) return <p className="text-sm text-fg-3">ユーザーが見つかりません。</p>;
 
-  const { profile: p, works, careers } = data;
+  const { profile: p, works, entries } = data;
   const section = "text-2xl font-bold tracking-tight";
 
   return (
@@ -56,17 +56,12 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
         <NowNext p={p} />
       </div>
 
+      <EntrySections entries={entries} heading={section} />
+
       <section className="space-y-4">
         <h2 className={section}>作品</h2>
         {works.length ? <WorkList works={works} /> : <Empty text="まだ作品がありません" />}
       </section>
-
-      {careers.length > 0 && (
-        <section className="space-y-4">
-          <h2 className={section}>経歴</h2>
-          <CareerTimeline careers={careers} />
-        </section>
-      )}
 
       {p.bio && (
         <section className="space-y-4">

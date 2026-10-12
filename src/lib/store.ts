@@ -54,10 +54,24 @@ export const profileChoices = {
   ],
 } as const;
 
-// 経歴（勤務先・学校など）。started / ended は DB の date（"2024-04-01"）。ended が null なら「現在」
-export type Career = { id: string; company: string; role: string; started: string; ended: string | null; summary: string };
+// やってきたこと。3つの欄を1つの表に持つ（項目がほぼ同じで、読み込みも1回で済むため）
+export const sections = ["work", "learn", "like"] as const;
+export type Section = (typeof sections)[number];
+export type Entry = {
+  id: string;
+  section: Section;
+  kind: string; // はたらいたこと: バイト・インターンなど（自由入力も可）／まなんだこと: school か skill／すきなこと: 空
+  title: string; // どこで／なにを／学校名／なにが
+  place: string; // まなんだこと（身につけたこと）の「どこで・だれに」
+  note: string; // やったこと・ひとこと
+  started: number | null; // 年だけ
+  ended: number | null;
+  current: boolean; // いまも続けている（ended と同時には持たない）
+  image: string; // すきなことの写真
+  created_at?: string;
+};
 
-export type Portfolio = { profile: Profile; works: Work[]; careers: Career[] };
+export type Portfolio = { profile: Profile; works: Work[]; entries: Entry[] };
 
 export const newId = () => crypto.randomUUID();
 
@@ -177,14 +191,15 @@ export const loadProfile = async (uid: string) =>
 
 /** 公開ページ・/me（プロフィールを作る）用。プロフィールが無ければ null */
 export async function loadPortfolio(uid: string): Promise<Portfolio | null> {
-  const [profile, works, careers] = await Promise.all([
+  const [profile, works, entries] = await Promise.all([
     loadProfile(uid),
     db().from("works").select("*").eq("user_id", uid).order("created_at", { ascending: false }).then(must),
-    // 経歴は始まりの新しい順。1人で 50 件を超えることはまず無いが、青天井にしない
-    db().from("careers").select("*").eq("user_id", uid).order("started", { ascending: false }).limit(50).then(must),
+    // 始めた年の新しい順（年の無いものは下）。3つの欄を合わせて 1人で 150 件を超えることはまず無いが、青天井にしない
+    db().from("entries").select("*").eq("user_id", uid)
+      .order("started", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(150).then(must),
   ]);
   if (!profile) return null;
-  return { profile, works: works as Work[], careers: careers as Career[] };
+  return { profile, works: works as Work[], entries: entries as Entry[] };
 }
 
 /** 公開ページ用。/@username（旧 URL の /u/ユーザーID なら id）から引く。見つからなければ null */
@@ -207,8 +222,9 @@ export async function saveProfile(uid: string, p: Profile) {
   must({ data: null, error });
 }
 export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
-export const saveCareer = async (c: Career) => must(await db().from("careers").upsert(c));
-export const remove = async (table: "works" | "careers", id: string) => must(await db().from(table).delete().eq("id", id));
+/** 保存した行（created_at など DB が決めた値も入る）を返す */
+export const saveEntry = async (e: Entry) => must(await db().from("entries").upsert(e).select().single()) as Entry;
+export const remove = async (table: "works" | "entries", id: string) => must(await db().from(table).delete().eq("id", id));
 
 /** media バケットの自分のフォルダに上げて公開URLを返す */
 export async function upload(file: File) {
