@@ -33,7 +33,7 @@ const pairs = [
   ["fg-3", "surface-raised", TEXT],
   ["fg-2", "surface-raised", TEXT], // まとまりの中の行（design.css の group-box）
   ["tertiary", "surface-raised", TEXT], // まとまりの中の「＋ やったことを書く」
-  ["fg-3", "surface-raised", EDGE], // スイッチのオフ（outline だとダークで 2.5 しかない）
+  ["tertiary", "surface-2", TEXT], // /me 以下の「‹ プロフィール」、シートの「キャンセル」（地が surface-2）
   ...["primary", "secondary", "tertiary", "success", "warning", "error"].flatMap((r) => [
     [`on-${r}`, r, TEXT],
     [`on-${r}-container`, `${r}-container`, TEXT],

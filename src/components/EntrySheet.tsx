@@ -48,6 +48,7 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
   // 「なにを」をチップに無い言葉で書くか。直すときは、保存済みの言葉がチップに無ければ最初から開いておく
   const [writing, setWriting] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [uploading, setUploading] = useState(false); // すきなことの写真。届く前に保存すると写真が捨てられるので、その間は保存を止める
   const e = entry;
   const problem = e && entryProblem(e);
   const set = (patch: Partial<Entry>) => setEntry((x) => ({ ...x, ...patch }));
@@ -67,7 +68,7 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
       bar={{
         left: <button className="-ml-1 min-h-11 px-1 text-tertiary" onClick={close}>キャンセル</button>,
         right: (
-          <button className="btn-primary min-h-9 rounded-full px-4 py-1.5" disabled={!!problem || saving} onClick={save}>
+          <button className="btn-primary rounded-full px-4" disabled={!!problem || saving || uploading} onClick={save}>
             {saving ? "保存中…" : isNew ? "足す" : "保存"}
           </button>
         ),
@@ -109,7 +110,9 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
           <div role="radiogroup" aria-label="種類" className="segmented">
             {([["skill", "身につけたこと"], ["school", "学校"]] as const).map(([k, label]) => (
               <label key={k} className="segment">
-                <input type="radio" name="learn-kind" className="sr-only" checked={(e.kind || "skill") === k} onChange={() => set({ kind: k })} />
+                <input type="radio" name="learn-kind" className="sr-only" checked={(e.kind || "skill") === k}
+                  // 学校の「出た年・在学中」は身につけたことでは聞かないので、切り替えたら消す（見えない値を残さない）
+                  onChange={() => set(k === "skill" ? { kind: k, ended: null, current: false } : { kind: k })} />
                 {label}
               </label>
             ))}
@@ -139,6 +142,10 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
                 <span className="w-24 shrink-0">ひとこと</span>
                 <input className="row-input" maxLength={300} placeholder="マッチなしで火がつく（任意）" value={e.note} onChange={(ev) => set({ note: ev.target.value })} />
               </label>
+              <label className="group-row row-field">
+                <span className="flex-1">いつ</span>
+                <YearSelect value={year(e.started)} onChange={(v) => set({ started: toYear(v) })} />
+              </label>
             </div>
           )}
         </>
@@ -148,7 +155,7 @@ export default function EntrySheet({ entry, setEntry, isNew, saving, onSave, onC
         <>
           <div className="space-y-2">
             <span className="group-label">写真（任意・1枚）</span>
-            <FilePicker value={e.image} onChange={(image) => set({ image })} />
+            <FilePicker value={e.image} onChange={(image) => set({ image })} onBusy={setUploading} />
             {e.image && <button className="btn w-full" onClick={() => set({ image: "" })}>写真を外す</button>}
           </div>
           <div className="group-box">
@@ -205,6 +212,7 @@ function Period({ e, set }: { e: Entry; set: (patch: Partial<Entry>) => void }) 
 function Note({ e, set, open, setOpen, label, addLabel, placeholder }: {
   e: Entry; set: (patch: Partial<Entry>) => void; open: boolean; setOpen: (o: boolean) => void; label: string; addLabel: string; placeholder: string;
 }) {
+  // 一度でも開いたら（書いてあった文を全部消しても）閉じない。消した途端に入力欄が消えると、書き直せない
   if (!open && !e.note) {
     return (
       <div className="group-box">
@@ -217,7 +225,7 @@ function Note({ e, set, open, setOpen, label, addLabel, placeholder }: {
       <span className="group-label flex justify-between"><span>{label}</span><span>{e.note.length}/300</span></span>
       <span className="group-box row-field block p-4">
         <textarea className="row-input block resize-none" rows={3} maxLength={300} autoFocus={open && !e.note} placeholder={placeholder}
-          value={e.note} onChange={(ev) => set({ note: ev.target.value })} />
+          value={e.note} onChange={(ev) => { setOpen(true); set({ note: ev.target.value }); }} />
       </span>
     </label>
   );

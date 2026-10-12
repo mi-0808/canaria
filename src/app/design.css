@@ -188,7 +188,8 @@ html[data-theme="dark"] {
 }
 /* プロフィールを作る画面（/me 以下）は、iOS の設定アプリのように灰色の地に白い「まとまり」を置く。
    一番外側に data-grouped を付けると、ページ全体の地が surface-2 になる（data-light-only と同じ仕組み） */
-:root:has([data-grouped]) body {
+:root:has([data-grouped]) body,
+:root:has([data-grouped]) body > header {
   background: var(--color-surface-2);
 }
 /* 見出しは行の長さをそろえ、最後の行に1〜2文字だけ残らないようにする */

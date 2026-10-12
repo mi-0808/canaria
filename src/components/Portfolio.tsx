@@ -4,7 +4,7 @@ import { brandIcon } from "@/components/BrandIcon";
 import Icon from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
-import { entryPeriod, sectionInfo } from "@/lib/entries.mjs";
+import { entryMeta, sectionInfo } from "@/lib/entries.mjs";
 import { splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Entry, type Profile, type Work } from "@/lib/store";
 
@@ -137,7 +137,7 @@ export function EntrySections({ entries, heading }: { entries: Entry[]; heading:
           <h2 className={heading}>{sectionInfo.work.label}</h2>
           <ul className="divide-y divide-line">
             {(allWork ? work : work.slice(0, FIRST_WORKS)).map((e) => (
-              <EntryLine key={e.id} title={e.title} meta={[e.kind, entryPeriod(e)].filter(Boolean).join(" · ")} />
+              <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />
             ))}
           </ul>
           {!allWork && work.length > FIRST_WORKS && (
@@ -151,8 +151,7 @@ export function EntrySections({ entries, heading }: { entries: Entry[]; heading:
         <section className="space-y-2">
           <h2 className={heading}>{sectionInfo.learn.label}</h2>
           <ul className="divide-y divide-line">
-            {/* 学校は「名前 年」、身につけたことは「名前 ひとこと」 */}
-            {learn.map((e) => <EntryLine key={e.id} title={e.title} meta={e.kind === "school" ? entryPeriod(e) : e.note || e.place} />)}
+            {learn.map((e) => <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />)}
           </ul>
         </section>
       )}
@@ -166,7 +165,7 @@ export function EntrySections({ entries, heading }: { entries: Entry[]; heading:
                 {e.image ? <img src={e.image} alt="" className="aspect-4/3 w-full object-cover" /> : <div className="aspect-4/3 bg-surface-2" />}
                 <div className="p-3">
                   <p className="font-bold">{e.title}</p>
-                  {(e.note || e.started) && <p className="text-sm text-fg-3">{e.note || entryPeriod(e)}</p>}
+                  {entryMeta(e) && <p className="text-sm text-fg-3">{entryMeta(e)}</p>}
                 </div>
               </li>
             ))}

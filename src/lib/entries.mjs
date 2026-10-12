@@ -16,6 +16,33 @@ export function entryPeriod(e) {
 }
 
 /**
+ * 一覧・公開ページの1行の下に出す補足。はたらいたこと＝「種類 · 期間」、学校＝期間、
+ * 身につけたこと・すきなこと＝ひとこと（無ければ「どこで」か期間）
+ * @param {EntryLike & { note: string, place: string }} e
+ */
+export function entryMeta(e) {
+  const period = entryPeriod(e);
+  if (e.section === "work") return [e.kind, period].filter(Boolean).join(" · ");
+  if (e.kind === "school") return period;
+  return e.note || e.place || period;
+}
+
+/**
+ * 保存する形にそろえる。名前と種類の前後の空白を取り、その欄で聞いていない「おわり」「いまも」を消す
+ * （すきなことと身につけたことは「いつから」だけ聞く。学校から切り替えたときなどに、見えない値が残らないように）
+ * @template {EntryLike} T
+ * @param {T} e
+ * @returns {T}
+ */
+export function cleanEntry(e) {
+  const onlyStart = e.section === "like" || (e.section === "learn" && e.kind !== "school");
+  return { ...e, title: e.title.trim(), kind: e.kind.trim(), ...(onlyStart && { ended: null, current: false }) };
+}
+
+/** 1つの欄に足せる数。読み込みは3つの欄の合計 150 件までなので、それを超えて見えなくならないように */
+export const MAX_PER_SECTION = 50;
+
+/**
  * 保存できない理由。無ければ null。DB の check 制約と同じ条件を、保存する前に画面で知らせる
  * @param {EntryLike} e
  */

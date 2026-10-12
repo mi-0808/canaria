@@ -5,7 +5,7 @@ import EntrySheet from "@/components/EntrySheet";
 import Icon from "@/components/Icon";
 import { Empty } from "@/components/Portfolio";
 import { ListSkeleton } from "@/components/Skeleton";
-import { byNewest, entryPeriod, sectionInfo } from "@/lib/entries.mjs";
+import { MAX_PER_SECTION, byNewest, cleanEntry, entryMeta, sectionInfo } from "@/lib/entries.mjs";
 import { newId, remove, saveEntry, sections, useBusy, type Entry, type Section } from "@/lib/store";
 import { ConfirmDelete, ListHeader, upsert, useMyPortfolio } from "../parts";
 
@@ -15,14 +15,6 @@ const isSection = (s: string): s is Section => (sections as readonly string[]).i
 const blank = (section: Section): Entry => ({
   id: newId(), section, kind: section === "learn" ? "skill" : "", title: "", place: "", note: "", started: null, ended: null, current: false, image: "",
 });
-
-/** 1行の下に出す補足。はたらいたこと＝種類 · 期間、まなんだこと（身につけたこと）＝ひとこと、ほか＝期間 */
-function rowMeta(e: Entry) {
-  const period = entryPeriod(e);
-  if (e.section === "work") return [e.kind, period].filter(Boolean).join(" · ");
-  if (e.section === "learn" && e.kind !== "school") return e.note || e.place || period;
-  return e.section === "like" ? e.note || period : period;
-}
 
 // /me/work・/me/learn・/me/like。3つの欄は同じ形の一覧なので、1つの画面を使い回す
 export default function SectionPage() {
@@ -40,7 +32,7 @@ export default function SectionPage() {
 
   const save = () =>
     run(async () => {
-      const saved = await saveEntry({ ...entry!, title: entry!.title.trim(), kind: entry!.kind.trim() });
+      const saved = await saveEntry(cleanEntry(entry!));
       setData({ ...data, entries: upsert(data.entries, saved).toSorted(byNewest) });
       setEntry(null);
     });
@@ -54,11 +46,12 @@ export default function SectionPage() {
 
   return (
     <div data-grouped className="mx-auto max-w-xl space-y-6">
-      <ListHeader title={info.label} hint={info.hint} addLabel={`${info.label}を足す`} onAdd={() => setEntry(blank(section))} />
+      <ListHeader title={info.label} hint={list.length < MAX_PER_SECTION ? info.hint : `${MAX_PER_SECTION}件まで足せます。足すときは、どれかを消してください`}
+        addLabel={`${info.label}を足す`} onAdd={list.length < MAX_PER_SECTION ? () => setEntry(blank(section)) : undefined} />
       {list.length === 0 ? <Empty text="右上の ＋ から足せます" /> : (
         <ul className="group-box">
           {list.map((e) => {
-            const meta = rowMeta(e);
+            const meta = entryMeta(e);
             return (
               <li key={e.id}>
                 <button className="group-row py-2.5" onClick={() => setEntry(e)}>

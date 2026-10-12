@@ -6,10 +6,13 @@ import { ensureProfile, loadPortfolio, useAuthedUser, useLoad } from "@/lib/stor
 
 // /me 以下の画面（プロフィール・やってきたこと・作品）で使い回す部品
 
-/** 自分のプロフィールを読む。初めて開いたときはプロフィールの行を作ってから（作品などの外部キー先） */
+/** 自分のプロフィールを読む。プロフィールの行が無いとき（登録した直後）だけ作ってから読み直す（作品などの外部キー先）。
+ *  毎回先に作りに行くと、画面を移るたびに書き込みが1回増えるため */
+const loadMine = async (uid: string) => (await loadPortfolio(uid)) ?? ensureProfile(uid).then(() => loadPortfolio(uid));
+
 export function useMyPortfolio() {
   const user = useAuthedUser();
-  const [data, setData] = useLoad(() => user && ensureProfile(user.id).then(() => loadPortfolio(user.id)), [user]);
+  const [data, setData] = useLoad(() => user && loadMine(user.id), [user]);
   return { user, data, setData };
 }
 
@@ -27,17 +30,19 @@ export function SaveBar({ onCancel, onSave, disabled, saving }: { onCancel: () =
 }
 
 /** 一覧の画面の頭。左上に「‹ プロフィール」、右上に丸い「＋」（iOS の一覧と同じ置き方） */
-export function ListHeader({ title, hint, addLabel, onAdd }: { title: string; hint: string; addLabel: string; onAdd: () => void }) {
+export function ListHeader({ title, hint, addLabel, onAdd }: { title: string; hint: string; addLabel: string; onAdd?: () => void }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Link href="/me" className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary">
           <Icon name="arrow" className="h-4 w-4 rotate-180" />プロフィール
         </Link>
-        {/* この画面の主な行動なので濃いカナリア（1画面に1つ） */}
-        <button aria-label={addLabel} onClick={onAdd} className="btn-primary w-11 rounded-full px-0">
-          <Icon name="plus" className="h-6 w-6" />
-        </button>
+        {/* この画面の主な行動なので濃いカナリア（1画面に1つ）。上限まで足したら出さない（理由は hint に出す） */}
+        {onAdd && (
+          <button aria-label={addLabel} onClick={onAdd} className="btn-primary w-11 rounded-full px-0">
+            <Icon name="plus" className="h-6 w-6" />
+          </button>
+        )}
       </div>
       <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
       <p className="text-sm text-fg-3">{hint}</p>

@@ -186,7 +186,7 @@ export function useBusy(): [boolean, (fn: () => Promise<unknown>) => Promise<voi
   return [busy, run];
 }
 
-export const loadProfile = async (uid: string) =>
+const loadProfile = async (uid: string) =>
   must(await db().from("profiles").select("*").eq("id", uid).maybeSingle()) as Profile | null;
 
 /** 公開ページ・/me（プロフィールを作る）用。プロフィールが無ければ null */
