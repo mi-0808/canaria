@@ -4,22 +4,19 @@ import { useState } from "react";
 import CareersEditor from "@/components/CareersEditor";
 import Field from "@/components/Field";
 import FilePicker, { ShotsPicker } from "@/components/FilePicker";
-import GearEditor from "@/components/GearEditor";
 import Icon from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
-import { Avatar, Empty, GearThumb, StatusBadge } from "@/components/Portfolio";
-import PostItem from "@/components/PostItem";
+import { Avatar, Empty, StatusBadge } from "@/components/Portfolio";
 import Sheet from "@/components/Sheet";
 import { ProfileSkeleton } from "@/components/Skeleton";
-import Tabs from "@/components/Tabs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
 import {
-  ensureProfile, loadPortfolio, missingProfile, newId, profileChoices, remove, saveCareer as putCareer, saveGear as putGear, saveProfile as putProfile,
-  saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Gear, type Post, type Profile, type Work,
+  ensureProfile, loadPortfolio, newId, profileChoices, remove, saveCareer as putCareer, saveProfile as putProfile,
+  saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Profile, type Work,
 } from "@/lib/store";
 
-// ポートフォリオを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
+// プロフィールを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
 // 一覧の位置がずれず、キャンセル・保存がいつも同じ場所にある
 
 const profileSelects: [keyof typeof profileChoices, string][] = [
@@ -30,7 +27,6 @@ const profileSelects: [keyof typeof profileChoices, string][] = [
 ];
 
 const blankWork = (): Work => ({ id: newId(), image: "", shots: [], title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
-const blankGear = (): Gear => ({ id: newId(), name: "", comment: "", url: "", image: "" });
 const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
 
 /** シートの下に固定する「キャンセル・保存」 */
@@ -52,24 +48,20 @@ const row = "flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transit
 
 export default function MyPage() {
   const user = useAuthedUser();
-  const [data, setData] = useLoad(() => user && ensureProfile(user.id).then(() => loadPortfolio(user.id, user.id)), [user]);
+  const [data, setData] = useLoad(() => user && ensureProfile(user.id).then(() => loadPortfolio(user.id)), [user]);
   // 編集中のものだけ非null。シートの開閉もこれで決まる
   const [profile, setProfile] = useState<Profile | null>(null);
   const [work, setWork] = useState<Work | null>(null);
-  const [gear, setGear] = useState<Gear | null>(null);
   // 経歴はプロフィールの編集の中で一緒に直す。編集中は started / ended を入力欄の値（"2024-04"）で持ち、保存するときに DB の date に直す
   const [careerDrafts, setCareerDrafts] = useState<Career[]>([]);
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
-  const [deleting, setDeleting] = useState<{ table: "works" | "gear"; id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
   const [saving, run] = useBusy();
-  const [uploading, runUpload] = useBusy(); // アイテムの写真
 
   if (!user || !data) return <ProfileSkeleton />;
 
   const p = data.profile;
-  const missing = missingProfile(p);
   const isNewWork = !!work && !data.works.some((w) => w.id === work.id);
-  const isNewGear = !!gear && !data.gear.some((g) => g.id === gear.id);
 
   const editProfile = () => {
     setUsernameError("");
@@ -100,27 +92,19 @@ export default function MyPage() {
       setData({ ...data, works: upsert(data.works, work!) });
       setWork(null);
     });
-  const saveGear = () =>
-    run(async () => {
-      await putGear(gear!);
-      setData({ ...data, gear: upsert(data.gear, gear!) });
-      setGear(null);
-    });
   // 削除は編集シートの一番下から。消す前に必ず確かめる（取り消せないので）
   const confirmRemove = () =>
     run(async () => {
-      const { table, id } = deleting!;
-      await remove(table, id);
-      if (table === "works") setData({ ...data, works: data.works.filter((w) => w.id !== id) });
-      else setData({ ...data, gear: data.gear.filter((g) => g.id !== id) });
+      const { id } = deleting!;
+      await remove("works", id);
+      setData({ ...data, works: data.works.filter((w) => w.id !== id) });
       setDeleting(null);
       setWork(null);
-      setGear(null);
     });
-  const updatePost = (post: Post) => setData({ ...data, posts: data.posts.map((x) => (x.id === post.id ? post : x)) });
 
-  const worksTab = (
-    <div className="space-y-4">
+  const worksSection = (
+    <section className="space-y-4">
+      <h2 className="text-2xl font-bold tracking-tight">作品</h2>
       <button className="btn-primary w-full sm:w-auto" onClick={() => setWork(blankWork())}><Icon name="plus" />作品を追加</button>
       {data.works.length === 0 ? <Empty text="最初の作品を追加してみよう" /> : (
         <ul className={rows}>
@@ -141,52 +125,17 @@ export default function MyPage() {
           ))}
         </ul>
       )}
-    </div>
-  );
-
-  const gearTab = (
-    <div className="space-y-4">
-      <button className="btn-primary w-full sm:w-auto" onClick={() => setGear(blankGear())}><Icon name="plus" />アイテムを追加</button>
-      {data.gear.length === 0 ? <Empty text="使っているマシンやガジェットを登録しよう" /> : (
-        <ul className={rows}>
-          {data.gear.map((g) => (
-            <li key={g.id}>
-              <button className={row} onClick={() => setGear(g)}>
-                <GearThumb g={g} className="h-10 w-10" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">{g.name}</span>
-                  {g.comment && <span className="block truncate text-sm text-fg-2">{g.comment}</span>}
-                </span>
-                <span className="sr-only">を編集</span>
-                <Icon name="chevron" className="h-5 w-5 text-fg-3" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-
-  const postsTab = (
-    <div className="space-y-4">
-      <Link href="/" className="btn w-full sm:w-auto">トップで投稿する</Link>
-      {data.posts.length === 0 && <Empty text="制作の過程を発信してみよう" />}
-      {data.posts.map((post) => <PostItem key={post.id} post={post} uid={user.id} onChange={updatePost} />)}
-    </div>
+    </section>
   );
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      {missing.length > 0 && (
-        <div className="flex items-start gap-3 rounded-2xl bg-warning-container p-4 text-sm text-on-warning-container">
-          <Icon name="info" />
-          <div className="flex-1">
-            <p>プロフィールを完成させると、タイムラインが見られるようになります。未入力: {missing.join(" / ")}</p>
-            <button className="-ml-1 inline-flex min-h-11 items-center px-1 font-bold underline underline-offset-4" onClick={editProfile}>入力する</button>
-          </div>
-        </div>
-      )}
-
+      {/* タブバーやメニューは置かないので、設定への入口はここだけ（iOS のアプリのように右上） */}
+      <div className="-mb-4 flex justify-end">
+        <Link href="/settings" aria-label="設定" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+          <Icon name="settings" className="h-5.5 w-5.5" />
+        </Link>
+      </div>
       {/* プロフィールは要約だけ。全部の項目は公開ページで見る */}
       <section className="card space-y-4 p-4 sm:p-6">
         <div className="flex items-center gap-4">
@@ -202,20 +151,14 @@ export default function MyPage() {
         <Link href={`/@${p.username}?preview`} className="btn-tonal w-full">公開ページを見る<Icon name="chevron" className="h-4 w-4" /></Link>
       </section>
 
-      <Tabs
-        tabs={[
-          { label: "作品", content: worksTab },
-          { label: "開発環境", content: gearTab },
-          { label: "投稿", content: postsTab },
-        ]}
-      />
+      {worksSection}
 
       <Sheet open={!!profile} onClose={() => setProfile(null)} dismissible={false} title="プロフィールを編集"
         footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid || careersInvalid} saving={saving} />}>
         {profile && (
           <>
             <div className="space-y-1.5">
-              <span className="label">アイコン *</span>
+              <span className="label">アイコン</span>
               <FilePicker shape="round" value={profile.icon} onChange={(icon) => setProfile((p) => p && { ...p, icon })} />
             </div>
             <div className="space-y-1.5">
@@ -239,10 +182,10 @@ export default function MyPage() {
               )}
             </Field>
             {/* 名前とひとことを横に並べると「姓・名」に見えるので縦に積み、幅も変える */}
-            <Field label="名前 *">
+            <Field label="名前">
               <input className="input max-w-60" autoComplete="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
             </Field>
-            <Field label="ひとこと *">
+            <Field label="ひとこと">
               <input className="input" value={profile.tagline} onChange={(e) => setProfile({ ...profile, tagline: e.target.value })} />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -327,22 +270,8 @@ export default function MyPage() {
               <input type="url" className="input font-mono" placeholder="https://" value={work.url} onChange={(e) => setWork({ ...work, url: e.target.value })} />
             </Field>
             {!isNewWork && (
-              <button className="btn w-full text-error" onClick={() => setDeleting({ table: "works", id: work.id, name: work.title })}>
+              <button className="btn w-full text-error" onClick={() => setDeleting({ id: work.id, name: work.title })}>
                 <Icon name="trash" />この作品を削除
-              </button>
-            )}
-          </>
-        )}
-      </Sheet>
-
-      <Sheet open={!!gear} onClose={() => setGear(null)} dismissible={false} title={isNewGear ? "アイテムを追加" : "アイテムを編集"}
-        footer={<SaveBar onCancel={() => setGear(null)} onSave={saveGear} disabled={!gear?.name.trim() || !gear.url || uploading} saving={saving} />}>
-        {gear && (
-          <>
-            <GearEditor gear={gear} setGear={setGear} uploading={uploading} runUpload={runUpload} />
-            {!isNewGear && (
-              <button className="btn w-full text-error" onClick={() => setDeleting({ table: "gear", id: gear.id, name: gear.name })}>
-                <Icon name="trash" />このアイテムを削除
               </button>
             )}
           </>

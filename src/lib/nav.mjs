@@ -1,8 +1,5 @@
-// ヘッダー・タブバーの出し分け。
+// 公開ページのプレビューの出し分け。
 // .mjs にしてあるのは、scripts/check-nav.mjs から Node でそのまま読んで検査するため（links.mjs と同じ）
-
-/** 公開ページ（/@名前。旧 URL の /u/ユーザーID も）。投稿1件のページ（/@名前/posts/ID）は含めない */
-export const isPublicPage = (/** @type {string} */ path) => /^\/(@|u\/)[^/]+$/.test(path);
 
 /**
  * 「公開ページを見る」から開いたプレビューか（URL に ?preview）。

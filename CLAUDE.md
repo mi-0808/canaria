@@ -10,7 +10,7 @@ MyHood 本番リポジトリの規約をもとに、Canaria 向けに書き直�
 
 ## このリポジトリについて
 
-エンジニア向けのポートフォリオ＋α。作品だけでなく「人」を見せる。
+やってきたことを、見せたくなる形で並べるプロフィール帳。作品だけでなく「人」を見せる。
 
 - 本番: https://canaria-seven.vercel.app
 - 戦略・MVP の範囲はコードに書かない（Claude のメモリにある）。迷ったら聞く
@@ -45,7 +45,7 @@ npm run build   # プロダクションビルド
 ```
 src/
 ├── app/            # ページ（URL ルート）と design.css
-├── proxy.ts        # ログイン中は `/` でホーム（app/home）を出す
+├── proxy.ts        # ログイン中は `/` から /me（プロフィール）へ送る
 ├── components/     # UI コンポーネント
 └── lib/
     ├── store.ts    # Supabase とのやりとり・型

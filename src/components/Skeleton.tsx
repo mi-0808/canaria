@@ -44,21 +44,3 @@ export function PublicSkeleton() {
     </div>
   );
 }
-
-/** 投稿の一覧（ホーム・共有された投稿） */
-export function FeedSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <div role="status" aria-label="読み込み中" className="mx-auto max-w-2xl space-y-4">
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="card space-y-3 p-5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-full bg-surface-2" />
-            <div className={`h-4 w-32 ${box}`} />
-          </div>
-          <div className={`h-4 w-full ${box}`} />
-          <div className={`h-4 w-2/3 ${box}`} />
-        </div>
-      ))}
-    </div>
-  );
-}

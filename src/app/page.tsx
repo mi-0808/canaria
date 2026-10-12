@@ -8,11 +8,11 @@ import Phrases from "@/components/Phrases";
 const worries = [
   ["まだ人に見せられる作品じゃない", "完成していなくても大丈夫。ステータスを「開発中」にして公開できます。見る人が知りたいのは完成度より、あなたが何をどう作ろうとしているか。"],
   ["作るのに時間がかかりそう", "デザインもコードもいりません。決まった項目を埋めるだけ。自分でサイトを一から作る時間を、次の作品づくりに使えます。"],
-  ["作っても、誰にも見られない", "URLを応募文やSNSに貼れば、それが名刺になります。制作過程をタイムラインで発信すれば、作品を見つけてもらうきっかけが増えます。"],
+  ["作っても、誰にも見られない", "URLを応募文やSNSに貼れば、それが名刺になります。"],
   ["無料って、なにか裏がありそう", "まだ結果が出ていない人こそ、コストをかけずに始められるように作りました。制作や運営は最小コストで抑えることで提供しています。"],
 ];
 
-// 機能ごとに色の役割を分ける: 作品=カナリア（主役）、発信=藍（つながり）、仕事場=グレー
+// 機能紹介。投稿（発信）と開発環境（仕事場）は外したので、今は作品の1つだけ。LP 全体は作り直す予定
 const features = [
   {
     panel: "bg-primary-container",
@@ -30,81 +30,6 @@ const features = [
             </div>
           </div>
         ))}
-      </div>
-    ),
-  },
-  {
-    panel: "bg-tertiary-container",
-    title: "制作過程を|発信する",
-    desc: "自分の今つくっている作品の裏側を、テキスト・画像・動画で発信。プロフィールに投稿が掲載されるので、足跡として残り、見せることができます。困りごとを解決する。成長したことをアピールする。積み重ねた過程そのものが、あなたの信頼になる。",
-    visual: (
-      <div className="space-y-3 text-sm">
-        <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface p-4">
-          <p className="text-xs text-fg-3">@you · 2時間前</p>
-          <p className="mt-1 leading-relaxed">認証まわりで詰まってます…どこでガードするのが正解？</p>
-        </div>
-        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-secondary p-4 text-on-secondary">
-          <p className="text-xs text-primary">@senior_dev · 1時間前</p>
-          <p className="mt-1 leading-relaxed">middlewareでまとめて守るのがおすすめ！</p>
-        </div>
-        <p className="flex items-center justify-end gap-1 text-xs text-on-tertiary-container"><Icon name="star" filled className="h-3.5 w-3.5" />リアクション 12</p>
-      </div>
-    ),
-  },
-  {
-    panel: "bg-secondary-container",
-    title: "使っている|マシンや|ガジェットを|紹介しよう",
-    desc: "先輩エンジニアに「このモニター、いいよ」と勧められて、つい買ってしまった。そんな体験をCanariaの中で。自分のお気に入りを紹介して、仲間を広げよう。信頼にもつながります。",
-    // カードを並べるだけだと無機質で、吹き出しのやりとりは機能2の見本と重なる。
-    // 持ち主の顔と机の写真で「人」を見せ、勧められて買った話は持ち主のひとこと（おすすめポイント）に入れる
-    visual: (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-on-secondary-container">
-          <span className="h-8 w-8 shrink-0 rounded-full bg-primary" />
-          <div>
-            <p className="text-sm font-bold">山田 カナ の仕事場</p>
-            <p className="text-xs">フロントエンド</p>
-          </div>
-        </div>
-        <div className="overflow-hidden rounded-2xl bg-surface">
-          {/* 持ち主が撮った机の写真のつもりの絵（実在の製品写真は使わない） */}
-          <svg viewBox="0 0 320 150" className="block w-full">
-            <rect width="320" height="150" className="fill-surface-2" />
-            <rect y="116" width="320" height="34" className="fill-line" />
-            <rect x="96" y="18" width="128" height="78" rx="5" className="fill-secondary" />
-            <rect x="101" y="23" width="118" height="68" rx="2" className="fill-tertiary-container" />
-            <rect x="110" y="34" width="34" height="6" rx="3" className="fill-tertiary" />
-            <rect x="110" y="47" width="64" height="6" rx="3" className="fill-outline" />
-            <rect x="110" y="60" width="48" height="6" rx="3" className="fill-outline" />
-            <rect x="110" y="73" width="26" height="6" rx="3" className="fill-primary" />
-            <rect x="153" y="96" width="14" height="14" className="fill-secondary" />
-            <rect x="138" y="108" width="44" height="8" rx="3" className="fill-secondary" />
-            <rect x="112" y="124" width="96" height="14" rx="3" className="fill-secondary" />
-            <line x1="118" y1="131" x2="202" y2="131" strokeWidth="4" strokeDasharray="6 3" className="stroke-outline" />
-            <rect x="38" y="111" width="48" height="6" rx="1" className="fill-outline" />
-            <rect x="40" y="104" width="44" height="7" rx="1" className="fill-tertiary" />
-            <rect x="44" y="97" width="38" height="7" rx="1" className="fill-primary" />
-            <rect x="244" y="92" width="22" height="24" rx="4" className="fill-primary" />
-            <path d="M266 98h4a5 5 0 0 1 0 10h-4" fill="none" strokeWidth="4" className="stroke-primary" />
-            <path d="M250 86q4-5 0-10M259 86q4-5 0-10" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-outline" />
-          </svg>
-          <div className="space-y-1 p-4">
-            <p className="flex items-center gap-2 text-sm font-medium">27インチ 4Kモニター<Icon name="external" className="ml-auto h-4 w-4 text-tertiary" /></p>
-            <p className="text-sm leading-relaxed text-fg-2">“先輩に勧められて、つい買った。作業領域が倍で、もう戻れない”</p>
-          </div>
-        </div>
-        {/* md は機能紹介が2列になりパネルが細く、ひとことが切れるので縦に積む */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-1 lg:grid-cols-2">
-          {([["HHKB", "手首がラクに", "keyboard", "bg-primary-container text-on-primary-container"], ["MacBook", "ビルドが一瞬", "laptop", "bg-tertiary-container text-on-tertiary-container"]] as const).map(([t, c, icon, tile]) => (
-            <div key={t} className="flex min-w-0 items-center gap-2 rounded-xl bg-surface p-2">
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tile}`}><Icon name={icon} className="h-5 w-5" /></span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{t}</p>
-                <p className="truncate text-xs text-fg-2">“{c}”</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     ),
   },
@@ -147,10 +72,10 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="scroll-mt-20 space-y-12">
-        {/* 倒置で言い切る。読み方が分かるよう Canaria にルビ。スマホでは文の切れ目で改行する */}
+        {/* 読み方が分かるよう Canaria にルビ。スマホでは文の切れ目で改行する */}
         <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-          <span className="inline-block">3つのことができます。</span>
-          <span className="inline-block"><ruby>Canaria<rt className="text-sm font-normal tracking-normal text-fg-3">カナリア</rt></ruby>なら。</span>
+          <span className="inline-block"><ruby>Canaria<rt className="text-sm font-normal tracking-normal text-fg-3">カナリア</rt></ruby>で</span>
+          <span className="inline-block">できること</span>
         </h2>
         <div className="space-y-16">
           {features.map((f, i) => (

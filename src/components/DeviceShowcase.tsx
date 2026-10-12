@@ -19,11 +19,7 @@ function MiniPage({ mobile = false }: { mobile?: boolean }) {
         <p className="text-[10px] font-bold">山田 カナ</p>
         <p className="text-fg-3">フロントエンド · INTJ · 東京</p>
       </div>
-      <div className="mt-2 flex gap-3 border-b border-line px-3">
-        <span className="border-b-2 border-primary pb-1 font-bold">ポートフォリオ</span>
-        <span className="pb-1 text-fg-3">開発環境</span>
-        {!mobile && <span className="pb-1 text-fg-3">タイムライン</span>}
-      </div>
+      <p className="mt-2 px-3 font-bold">作品</p>
       <div className={`grid gap-2 p-3 ${mobile ? "grid-cols-1" : "grid-cols-2"}`}>
         {works.map((w) => (
           <div key={w.title} className="overflow-hidden rounded-md border border-line">
