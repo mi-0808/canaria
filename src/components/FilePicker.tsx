@@ -9,13 +9,15 @@ import { upload } from "@/lib/store";
 const focus = "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-fg";
 
 export default function FilePicker({
-  value, onChange, accept = "image/*", shape = "wide", maxMB,
+  value, onChange, accept = "image/*", shape = "wide", maxMB, onBusy,
 }: {
   value: string;
   onChange: (url: string) => void;
   accept?: string;
   shape?: "wide" | "cover" | "round"; // cover: プロフィールのカバー画像（3:1）
   maxMB?: number;
+  /** アップロード中かどうか。届く前に保存されて、選んだ画像が捨てられないよう、親が保存ボタンを止めるのに使う */
+  onBusy?: (busy: boolean) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -25,10 +27,12 @@ export default function FilePicker({
     if (maxMB && file.size > maxMB * 1024 * 1024) return setError(`${maxMB}MB以下のファイルを選んでください`);
     setError("");
     setUploading(true);
+    onBusy?.(true);
     try {
       onChange(await upload(file));
     } finally {
       setUploading(false);
+      onBusy?.(false);
     }
   };
   const input = <input type="file" accept={accept} className="sr-only" disabled={uploading} onChange={(e) => pick(e.target.files?.[0])} />;

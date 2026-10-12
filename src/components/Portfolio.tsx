@@ -4,8 +4,9 @@ import { brandIcon } from "@/components/BrandIcon";
 import Icon from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
-import { careerPeriod, splitTechs, statItems } from "@/lib/stats.mjs";
-import { type Career, type Profile, type Work } from "@/lib/store";
+import { entryMeta, sectionInfo } from "@/lib/entries.mjs";
+import { splitTechs, statItems } from "@/lib/stats.mjs";
+import { type Entry, type Profile, type Work } from "@/lib/store";
 
 // 公開ページの部品。並びは App Store の作品ページにならう:
 // アイコン・名前・数字の行・入手ボタン（メールと SNS）→ 作品の一覧 → 説明 → 情報
@@ -111,22 +112,67 @@ export function NowNext({ p }: { p: Profile }) {
   );
 }
 
-/** 経歴の年表（始まりの新しい順）。左に縦線と点を引き、勤務先・役職・期間・実績を並べる */
-export function CareerTimeline({ careers }: { careers: Career[] }) {
+const FIRST_WORKS = 3; // はたらいたことは最初は新しい3件だけ。長い人のページがここで埋まらないように
+
+/** 1行。名前を太字で、下に補足（種類 · 期間、ひとことなど） */
+function EntryLine({ title, meta }: { title: string; meta: string }) {
   return (
-    <ol className="space-y-6 border-l-2 border-line pl-6">
-      {careers.map((c) => (
-        <li key={c.id} className="relative space-y-1">
-          {/* 年表の点。縦線（2px）の真ん中に 12px の点を置く: -(左の余白 24px + 線 2px) + 線の半分 1px - 点の半分 6px = -31px。
-              今も続いているものだけカナリア。色だけで伝えないよう、期間にも「現在」と出る */}
-          <span aria-hidden className={`absolute top-1.5 -left-[31px] h-3 w-3 rounded-full ring-4 ring-surface ${c.ended ? "bg-outline" : "bg-primary"}`} />
-          <h3 className="text-lg font-bold">{c.company}</h3>
-          {c.role && <p className="text-fg-2">{c.role}</p>}
-          <p className="text-sm text-fg-3">{careerPeriod(c.started, c.ended)}</p>
-          {c.summary && <p className="pt-1 leading-relaxed whitespace-pre-wrap text-fg-2">{c.summary}</p>}
-        </li>
-      ))}
-    </ol>
+    <li className="py-3">
+      <p className="font-bold">{title}</p>
+      {meta && <p className="text-sm text-fg-3">{meta}</p>}
+    </li>
+  );
+}
+
+/** やってきたこと（はたらいたこと・まなんだこと・すきなこと）。空の欄は出さない。entries は始めた年の新しい順 */
+export function EntrySections({ entries, heading }: { entries: Entry[]; heading: string }) {
+  const [allWork, setAllWork] = useState(false);
+  const work = entries.filter((e) => e.section === "work");
+  const learn = entries.filter((e) => e.section === "learn");
+  const like = entries.filter((e) => e.section === "like");
+  return (
+    <>
+      {work.length > 0 && (
+        <section className="space-y-2">
+          <h2 className={heading}>{sectionInfo.work.label}</h2>
+          <ul className="divide-y divide-line">
+            {(allWork ? work : work.slice(0, FIRST_WORKS)).map((e) => (
+              <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />
+            ))}
+          </ul>
+          {!allWork && work.length > FIRST_WORKS && (
+            <button className="-ml-1 inline-flex min-h-11 items-center px-1 text-tertiary" onClick={() => setAllWork(true)}>
+              ほか{work.length - FIRST_WORKS}件を見る
+            </button>
+          )}
+        </section>
+      )}
+      {learn.length > 0 && (
+        <section className="space-y-2">
+          <h2 className={heading}>{sectionInfo.learn.label}</h2>
+          <ul className="divide-y divide-line">
+            {learn.map((e) => <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />)}
+          </ul>
+        </section>
+      )}
+      {like.length > 0 && (
+        <section className="space-y-4">
+          <h2 className={heading}>{sectionInfo.like.label}</h2>
+          {/* 人柄が伝わる場所なので、写真つきのカードで。写真が無ければ灰色の面（カードの形をそろえる） */}
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            {like.map((e) => (
+              <li key={e.id} className="card overflow-hidden">
+                {e.image ? <img src={e.image} alt="" className="aspect-4/3 w-full object-cover" /> : <div className="aspect-4/3 bg-surface-2" />}
+                <div className="p-3">
+                  <p className="font-bold">{e.title}</p>
+                  {entryMeta(e) && <p className="text-sm text-fg-3">{entryMeta(e)}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   );
 }
 

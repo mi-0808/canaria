@@ -45,7 +45,7 @@ function withUnit(input, unit) {
 /**
  * 数字の行の項目。value は単位まで含めた表示（「3件」「24歳」）、sub は値の横に小さく添える補足（無ければ空）。
  * 性別は出さない（数字の行に並べるものではないため。編集画面では入力できる）。
- * 勤務先は数字の行ではなく「経歴」に並べる
+ * 勤務先は数字の行ではなく「はたらいたこと」に並べる
  * @param {{ location: string, mbti: string, age: string }} p
  * @param {{ status: string, techs: string }[]} works
  * @returns {{ label: string, value: string, sub: string }[]}
@@ -62,51 +62,4 @@ export function statItems(p, works) {
     !!p.age.trim() && { label: "年齢", value: withUnit(p.age, "歳"), sub: "" },
   ];
   return items.filter((x) => !!x);
-}
-
-// ---- 経歴の期間 ----
-// DB は date（その月の1日 "2024-04-01"）、入力欄は <input type="month"> の値（"2024-04"）。
-// month に対応していないブラウザ（PC の Safari・Firefox）では文字の入力欄になるので、手で打った文字もここで確かめる
-
-/**
- * 入力欄の値が「2024-04」の形か
- * @param {string} value
- */
-export const isMonth = (value) => /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
-
-/**
- * DB の date を入力欄の値に（"2024-04-01" → "2024-04"）
- * @param {string} date
- */
-export const toMonth = (date) => date.slice(0, 7);
-
-/**
- * 入力欄の値を DB の date に（"2024-04" → "2024-04-01"）。isMonth で確かめてから使う
- * @param {string} month
- */
-export const fromMonth = (month) => `${month}-01`;
-
-/**
- * 編集中の経歴の問題（started / ended は入力欄の値 "2024-04"、ended が null なら「いまも続けている」）。問題が無ければ null。
- * invalid は形や前後がおかしいもの（赤字で知らせる）、missing はまだ書いている途中かもしれない未入力（控えめに知らせる）
- * @param {{ company: string, started: string, ended: string | null }} c
- * @returns {{ level: "missing" | "invalid", text: string } | null}
- */
-export function careerProblem(c) {
-  if (c.started && !isMonth(c.started)) return { level: "invalid", text: "はじめは「2024-04」の形で入力してください" };
-  if (c.ended && !isMonth(c.ended)) return { level: "invalid", text: "おわりは「2024-04」の形で入力してください" };
-  if (c.ended && c.started && c.ended < c.started) return { level: "invalid", text: "おわりは、はじめより後にしてください" };
-  if (!c.company.trim() || !c.started) return { level: "missing", text: "勤務先・所属と、はじめの年月を入れると保存できます" };
-  if (c.ended === "") return { level: "missing", text: "おわりの年月を入れるか、「いまも続けている」にチェックしてください" };
-  return null;
-}
-
-/**
- * 公開ページに出す期間（"2024年4月 – 現在"）
- * @param {string} started DB の date
- * @param {string | null} ended DB の date。null なら現在
- */
-export function careerPeriod(started, ended) {
-  const label = (/** @type {string} */ d) => `${Number(d.slice(0, 4))}年${Number(d.slice(5, 7))}月`;
-  return `${label(started)} – ${ended ? label(ended) : "現在"}`;
 }

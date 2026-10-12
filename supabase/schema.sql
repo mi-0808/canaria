@@ -46,38 +46,51 @@ create table public.works (
   created_at timestamptz not null default now()
 );
 
--- 経歴（勤務先・学校などと、そこでの実績）。公開ページでは始まりの新しい順に年表で並べる。
--- 期間は年月で持つ（その月の1日）。ended が null なら「現在」
-create table public.careers (
+-- やってきたこと。はたらいたこと（work）・まなんだこと（learn）・すきなこと（like）を1つの表に持つ（項目がほぼ同じで、読み込みも1回で済むため）。
+-- 期間は年と月（どちらも任意。月は年があるときだけ）。current は「いまも続けている」で、ended と同時には持たない
+create table public.entries (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.profiles on delete cascade,
-  company text not null check (char_length(company) between 1 and 100),
-  role text not null default '' check (char_length(role) <= 100),
-  started date not null,
-  ended date check (ended is null or ended >= started),
-  summary text not null default '' check (char_length(summary) <= 300),
-  created_at timestamptz not null default now()
+  section text not null check (section in ('work', 'learn', 'like')),
+  kind text not null default '' check (char_length(kind) <= 100), -- はたらいたこと: バイトなど／まなんだこと: school か skill
+  title text not null check (char_length(title) between 1 and 100), -- どこで／なにを／学校名／なにが
+  place text not null default '' check (char_length(place) <= 100), -- まなんだこと（身につけたこと）の「どこで・だれに」
+  note text not null default '' check (char_length(note) <= 300), -- やったこと・ひとこと
+  started smallint check (started between 1900 and 2100),
+  started_month smallint check (started_month between 1 and 12),
+  ended smallint check (ended between 1900 and 2100),
+  ended_month smallint check (ended_month between 1 and 12),
+  current boolean not null default false,
+  image text not null default '', -- すきなことの写真
+  created_at timestamptz not null default now(),
+  check (not (current and ended is not null)),
+  constraint entries_started_month_needs_year check (started_month is null or started is not null),
+  constraint entries_ended_month_needs_year check (ended_month is null or ended is not null),
+  -- 月が無いときは、はじめは1月・おわりは12月とみなして前後を比べる（画面側は src/lib/entries.mjs の entryProblem）
+  constraint entries_period_order check (ended is null or started is null
+    or ended * 100 + coalesce(ended_month, 12) >= started * 100 + coalesce(started_month, 1))
 );
 
 create index on public.works (user_id);
+create index on public.entries (user_id);
 
 -- RLS
 alter table public.profiles enable row level security;
 alter table public.works enable row level security;
-alter table public.careers enable row level security;
+alter table public.entries enable row level security;
 
-grant select on public.profiles, public.works, public.careers to anon, authenticated;
-grant select, insert, update, delete on public.profiles, public.works, public.careers to authenticated;
+grant select on public.profiles, public.works, public.entries to anon, authenticated;
+grant select, insert, update, delete on public.profiles, public.works, public.entries to authenticated;
 
 create policy "profiles: public read" on public.profiles for select to anon, authenticated using (true);
 create policy "profiles: own insert" on public.profiles for insert to authenticated with check ((select auth.uid()) = id);
 create policy "profiles: own update" on public.profiles for update to authenticated using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
 
--- works / careers: 誰でも読める、本人だけ書ける
+-- works / entries: 誰でも読める、本人だけ書ける
 do $$
 declare t text;
 begin
-  foreach t in array array['works', 'careers'] loop
+  foreach t in array array['works', 'entries'] loop
     execute format('create policy "%1$s: public read" on public.%1$I for select to anon, authenticated using (true)', t);
     execute format('create policy "%1$s: own insert" on public.%1$I for insert to authenticated with check ((select auth.uid()) = user_id)', t);
     execute format('create policy "%1$s: own update" on public.%1$I for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id)', t);
@@ -144,3 +157,28 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- 2026-10-12 投稿（タイムライン）と開発環境をなくす。マージして本番が新しいコードになってから流す（古いコードはまだ読み書きするため）。
 -- 投稿で上げた画像・動画のファイルは media バケットに残る
 -- drop table public.saves, public.reactions, public.replies, public.posts, public.gear;
+-- 2026-10-12 経歴（careers）を「はたらいたこと・まなんだこと・すきなこと」（entries）に作り直す
+-- ① マージ前に流す（足すだけなので、本番で動いている古いコードは壊れない）。上の entries の create table・index・RLS を流してから、経歴を移す。
+--    学校とプログラムは、まなんだことへ（本番の経歴は1人分の10件だけだったので、名前で振り分けた）。年月は年だけ、おわりが空なら「いまも」
+-- insert into public.entries (id, user_id, section, kind, title, note, started, ended, current, created_at)
+-- select id, user_id,
+--   case when company in ('星槎名古屋中学校', 'N高等学校', 'Leap Up!') then 'learn' else 'work' end,
+--   case when company in ('星槎名古屋中学校', 'N高等学校') then 'school' when company = 'Leap Up!' then 'skill' else role end,
+--   company, summary, extract(year from started)::smallint, extract(year from ended)::smallint, ended is null, created_at
+-- from public.careers;
+-- ①-2 2026-10-12 期間を年と月に（マージ前に流す。entries はまだ本番のコードが使っていないので安全）。careers から月を戻す（id が同じ）
+-- alter table public.entries
+--   add column started_month smallint check (started_month between 1 and 12),
+--   add column ended_month smallint check (ended_month between 1 and 12),
+--   add constraint entries_started_month_needs_year check (started_month is null or started is not null),
+--   add constraint entries_ended_month_needs_year check (ended_month is null or ended is not null),
+--   add constraint entries_period_order check (ended is null or started is null
+--     or ended * 100 + coalesce(ended_month, 12) >= started * 100 + coalesce(started_month, 1)),
+--   drop constraint entries_check;
+-- update public.entries e
+--   set started_month = extract(month from c.started)::smallint,
+--       ended_month = case when e.ended is not null then extract(month from c.ended)::smallint end
+--   from public.careers c
+--   where c.id = e.id and e.started = extract(year from c.started) and (e.ended is null or e.ended = extract(year from c.ended));
+-- ② マージして本番が新しいコードになってから流す（古いコードはまだ careers を読み書きするため）
+-- drop table public.careers;

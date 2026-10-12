@@ -1,23 +1,21 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import CareersEditor from "@/components/CareersEditor";
 import Field from "@/components/Field";
-import FilePicker, { ShotsPicker } from "@/components/FilePicker";
-import Icon from "@/components/Icon";
+import FilePicker from "@/components/FilePicker";
+import Icon, { type IconName } from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
-import { Avatar, Empty, StatusBadge } from "@/components/Portfolio";
+import { Avatar } from "@/components/Portfolio";
+import ShareButton from "@/components/ShareButton";
 import Sheet from "@/components/Sheet";
-import { ProfileSkeleton } from "@/components/Skeleton";
+import { ListSkeleton } from "@/components/Skeleton";
+import { sectionInfo } from "@/lib/entries.mjs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
-import { careerProblem, fromMonth, toMonth } from "@/lib/stats.mjs";
-import {
-  ensureProfile, loadPortfolio, newId, profileChoices, remove, saveCareer as putCareer, saveProfile as putProfile,
-  saveWork as putWork, useAuthedUser, useBusy, useLoad, usernamePattern, workStatuses, type Career, type Profile, type Work,
-} from "@/lib/store";
+import { profileChoices, saveProfile as putProfile, sections, useBusy, usernamePattern, type Profile, type Section } from "@/lib/store";
+import { SaveBar, useMyPortfolio } from "./parts";
 
-// プロフィールを作る画面。一覧は行で並べ、押すと下からシートが出て編集する（HIG: 一覧 → シートで編集）。
-// 一覧の位置がずれず、キャンセル・保存がいつも同じ場所にある
+// プロフィール（編集のトップ）。iOS の設定アプリのように、まとまりごとに行を並べ、押すとその項目だけの画面へ進む。
+// 前は1つのシートに経歴まで詰めていて、長くてどこを直しているか分からなくなっていた
 
 const profileSelects: [keyof typeof profileChoices, string][] = [
   ["gender", "性別"],
@@ -26,135 +24,94 @@ const profileSelects: [keyof typeof profileChoices, string][] = [
   ["mbti", "MBTI"],
 ];
 
-const blankWork = (): Work => ({ id: newId(), image: "", shots: [], title: "", period: "", role: "", status: "開発中", techs: "", summary: "", url: "" });
-const byStartedDesc = (a: Career, b: Career) => b.started.localeCompare(a.started);
+// 行の左の小さいアイコン。色は欄の見分けだけ（面と文字はトークンのペア）
+const sectionIcons: Record<Section, [IconName, string]> = {
+  work: ["briefcase", "bg-tertiary-container text-on-tertiary-container"],
+  learn: ["book", "bg-primary-container text-on-primary-container"],
+  like: ["heart", "bg-secondary-container text-on-secondary-container"],
+};
 
-/** シートの下に固定する「キャンセル・保存」 */
-function SaveBar({ onCancel, onSave, disabled, saving }: { onCancel: () => void; onSave: () => void; disabled?: boolean; saving: boolean }) {
-  return (
-    <div className="flex gap-2">
-      <button className="btn flex-1" onClick={onCancel}>キャンセル</button>
-      <button className="btn-primary flex-1" disabled={disabled || saving} onClick={onSave}>{saving ? "保存中…" : "保存"}</button>
-    </div>
-  );
+function RowIcon({ name, tone }: { name: IconName; tone: string }) {
+  return <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tone}`}><Icon name={name} className="h-4.5 w-4.5" /></span>;
 }
 
-const upsert = <T extends { id: string }>(list: T[], item: T) =>
-  list.some((x) => x.id === item.id) ? list.map((x) => (x.id === item.id ? item : x)) : [item, ...list];
-
-// 一覧の行。行全体が押せる（高さ 64px）
-const rows = "divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface";
-const row = "flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg";
-
 export default function MyPage() {
-  const user = useAuthedUser();
-  const [data, setData] = useLoad(() => user && ensureProfile(user.id).then(() => loadPortfolio(user.id)), [user]);
-  // 編集中のものだけ非null。シートの開閉もこれで決まる
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [work, setWork] = useState<Work | null>(null);
-  // 経歴はプロフィールの編集の中で一緒に直す。編集中は started / ended を入力欄の値（"2024-04"）で持ち、保存するときに DB の date に直す
-  const [careerDrafts, setCareerDrafts] = useState<Career[]>([]);
+  const { user, data, setData } = useMyPortfolio();
+  const [profile, setProfile] = useState<Profile | null>(null); // 編集中だけ非null。シートの開閉もこれで決まる
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
-  const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
   const [saving, run] = useBusy();
 
-  if (!user || !data) return <ProfileSkeleton />;
+  if (!user || !data) return <ListSkeleton />;
 
   const p = data.profile;
-  const isNewWork = !!work && !data.works.some((w) => w.id === work.id);
-
   const editProfile = () => {
     setUsernameError("");
-    setCareerDrafts(data.careers.map((c) => ({ ...c, started: toMonth(c.started), ended: c.ended && toMonth(c.ended) })));
     setProfile(p);
   };
   const usernameInvalid = !!profile && !usernamePattern.test(profile.username);
   const linksInvalid = !!profile?.links.some((l) => l.trim() && !normalizeLink(l));
   const emailInvalid = !!profile?.contact_email.trim() && !contactEmailPattern.test(profile.contact_email.trim());
-  const careersInvalid = careerDrafts.some((c) => careerProblem(c));
   const saveProfile = () =>
     run(async () => {
       // 空の行は捨て、https にそろえた形で保存する（DB の valid_links と同じ条件）
       const saved = { ...profile!, links: profile!.links.map(normalizeLink).filter((l): l is string => !!l), contact_email: profile!.contact_email.trim() };
-      // ユーザー名が他の人と重なったら、経歴には触らずにそこで止める
       const err = await putProfile(user.id, saved);
       if (err) return setUsernameError(err);
-      // 経歴: 残っているものは書き直し（足したもの・直したもの）、編集の中で消したものは DB からも消す。どちらも並べて送る
-      const careers = careerDrafts.map((c) => ({ ...c, company: c.company.trim(), role: c.role.trim(), started: fromMonth(c.started), ended: c.ended && fromMonth(c.ended) }));
-      const removed = data.careers.filter((c) => !careers.some((d) => d.id === c.id));
-      await Promise.all([...careers.map(putCareer), ...removed.map((c) => remove("careers", c.id))]);
-      setData({ ...data, profile: saved, careers: careers.toSorted(byStartedDesc) });
+      setData({ ...data, profile: saved });
       setProfile(null);
     });
-  const saveWork = () =>
-    run(async () => {
-      await putWork(work!);
-      setData({ ...data, works: upsert(data.works, work!) });
-      setWork(null);
-    });
-  // 削除は編集シートの一番下から。消す前に必ず確かめる（取り消せないので）
-  const confirmRemove = () =>
-    run(async () => {
-      const { id } = deleting!;
-      await remove("works", id);
-      setData({ ...data, works: data.works.filter((w) => w.id !== id) });
-      setDeleting(null);
-      setWork(null);
-    });
-
-  const worksSection = (
-    <section className="space-y-4">
-      <h2 className="text-2xl font-bold tracking-tight">作品</h2>
-      <button className="btn-primary w-full sm:w-auto" onClick={() => setWork(blankWork())}><Icon name="plus" />作品を追加</button>
-      {data.works.length === 0 ? <Empty text="最初の作品を追加してみよう" /> : (
-        <ul className={rows}>
-          {data.works.map((w) => (
-            <li key={w.id}>
-              <button className={row} onClick={() => setWork(w)}>
-                <span className="aspect-video w-20 shrink-0 overflow-hidden rounded-md border border-line bg-primary-container">
-                  {w.image && <img src={w.image} alt="" className="h-full w-full object-cover object-top" />}
-                </span>
-                <span className="min-w-0 flex-1 space-y-1">
-                  <span className="block truncate font-bold">{w.title}</span>
-                  <StatusBadge status={w.status} />
-                </span>
-                <span className="sr-only">を編集</span>
-                <Icon name="chevron" className="h-5 w-5 text-fg-3" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
+  const count = (s: Section) => data.entries.filter((e) => e.section === s).length;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      {/* タブバーやメニューは置かないので、設定への入口はここだけ（iOS のアプリのように右上） */}
-      <div className="-mb-4 flex justify-end">
-        <Link href="/settings" aria-label="設定" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-          <Icon name="settings" className="h-5.5 w-5.5" />
-        </Link>
-      </div>
-      {/* プロフィールは要約だけ。全部の項目は公開ページで見る */}
-      <section className="card space-y-4 p-4 sm:p-6">
-        <div className="flex items-center gap-4">
+    <div data-grouped className="mx-auto max-w-xl space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">プロフィール</h1>
+
+      <div className="group-box">
+        <button className="group-row py-3" onClick={editProfile}>
           <Avatar src={p.icon} className="h-14 w-14" />
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold tracking-tight">{p.name || "名前未設定"}</h1>
-            <p className="truncate text-sm text-fg-3">@{p.username}</p>
-          </div>
-          <button className="btn" onClick={editProfile}><Icon name="pen" className="h-4 w-4" />編集</button>
-        </div>
-        {p.tagline && <p className="text-fg-2">{p.tagline}</p>}
-        {/* ?preview で開くと、見る人と同じ見た目（ヘッダー・タブバーなし、左上に戻るボタン）になる */}
-        <Link href={`/@${p.username}?preview`} className="btn-tonal w-full">公開ページを見る<Icon name="chevron" className="h-4 w-4" /></Link>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-lg font-bold">{p.name || "名前未設定"}</span>
+            <span className="block truncate text-sm text-fg-3">名前・ひとこと・連絡先・SNS</span>
+          </span>
+          <span className="sr-only">を編集</span>
+          <Icon name="chevron" className="h-5 w-5 text-fg-3" />
+        </button>
+      </div>
+      {/* 共有はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。見る方は薄い藍で並べる。
+          ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href={`/@${p.username}?preview`} className="btn-tonal">公開ページを見る</Link>
+        <ShareButton variant="label" username={p.username} name={p.name} />
+      </div>
+
+      <section className="space-y-2">
+        <h2 className="group-label">やってきたこと</h2>
+        <nav aria-label="やってきたこと" className="group-box">
+          {sections.map((s) => (
+            <Link key={s} href={`/me/${s}`} className="group-row">
+              <RowIcon name={sectionIcons[s][0]} tone={sectionIcons[s][1]} />
+              <span className="flex-1">{sectionInfo[s].label}</span>
+              <span className="text-fg-3">{count(s) || "まだない"}</span>
+              <Icon name="chevron" className="h-5 w-5 text-fg-3" />
+            </Link>
+          ))}
+        </nav>
       </section>
 
-      {worksSection}
+      <section className="space-y-2">
+        <h2 className="group-label">つくったもの</h2>
+        <nav aria-label="つくったもの" className="group-box">
+          <Link href="/me/works" className="group-row">
+            <RowIcon name="image" tone="bg-surface-2 text-fg-2" />
+            <span className="flex-1">作品</span>
+            <span className="text-fg-3">{data.works.length || "まだない"}</span>
+            <Icon name="chevron" className="h-5 w-5 text-fg-3" />
+          </Link>
+        </nav>
+      </section>
 
       <Sheet open={!!profile} onClose={() => setProfile(null)} dismissible={false} title="プロフィールを編集"
-        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid || careersInvalid} saving={saving} />}>
+        footer={<SaveBar onCancel={() => setProfile(null)} onSave={saveProfile} disabled={usernameInvalid || linksInvalid || emailInvalid} saving={saving} />}>
         {profile && (
           <>
             <div className="space-y-1.5">
@@ -215,7 +172,6 @@ export default function MyPage() {
             <Field label="自己紹介" hint={`${profile.bio.length}/200`}>
               <textarea className="input" rows={4} maxLength={200} value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} />
             </Field>
-            <CareersEditor careers={careerDrafts} onChange={setCareerDrafts} />
             <Field label="連絡用メールアドレス">
               <input type="email" inputMode="email" autoComplete="email" className="input" placeholder="you@example.com" value={profile.contact_email}
                 aria-invalid={emailInvalid} onChange={(e) => setProfile({ ...profile, contact_email: e.target.value })} />
@@ -228,65 +184,6 @@ export default function MyPage() {
             <LinksEditor links={profile.links} onChange={(links) => setProfile({ ...profile, links })} />
           </>
         )}
-      </Sheet>
-
-      <Sheet open={!!work} onClose={() => setWork(null)} dismissible={false} title={isNewWork ? "作品を追加" : "作品を編集"}
-        footer={<SaveBar onCancel={() => setWork(null)} onSave={saveWork} disabled={!work?.title.trim()} saving={saving} />}>
-        {work && (
-          <>
-            <div className="space-y-1.5">
-              <span className="label">トップ画像</span>
-              <FilePicker value={work.image} onChange={(image) => setWork((w) => w && { ...w, image })} />
-              <span className="block text-sm text-fg-3">スマホのアプリは、スクリーンショットを縦長のまま選ぶと、スマホの形で表示されます</span>
-            </div>
-            <div className="space-y-1.5">
-              <span className="label">ほかの画像（9枚まで）</span>
-              <ShotsPicker value={work.shots} max={9} onChange={(f) => setWork((w) => w && { ...w, shots: f(w.shots) })} />
-              <span className="block text-sm text-fg-3">「詳細を見る」で、トップ画像に続けて横に並びます</span>
-            </div>
-            <Field label="タイトル *">
-              <input className="input" value={work.title} onChange={(e) => setWork({ ...work, title: e.target.value })} />
-            </Field>
-            <Field label="ステータス">
-              <select className="input" value={work.status} onChange={(e) => setWork({ ...work, status: e.target.value as Work["status"] })}>
-                {workStatuses.map((st) => <option key={st}>{st}</option>)}
-              </select>
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="期間">
-                <input className="input" placeholder="2026/04 – 2026/09" value={work.period} onChange={(e) => setWork({ ...work, period: e.target.value })} />
-              </Field>
-              <Field label="役割">
-                <input className="input" placeholder="フロントエンド" value={work.role} onChange={(e) => setWork({ ...work, role: e.target.value })} />
-              </Field>
-            </div>
-            <Field label="使用技術" hint="カンマ区切り">
-              <input className="input font-mono" placeholder="Next.js, TypeScript, Supabase" value={work.techs} onChange={(e) => setWork({ ...work, techs: e.target.value })} />
-            </Field>
-            <Field label="概要" hint={`${work.summary.length}/200`}>
-              <textarea className="input" rows={3} maxLength={200} value={work.summary} onChange={(e) => setWork({ ...work, summary: e.target.value })} />
-            </Field>
-            <Field label="成果物URL">
-              <input type="url" className="input font-mono" placeholder="https://" value={work.url} onChange={(e) => setWork({ ...work, url: e.target.value })} />
-            </Field>
-            {!isNewWork && (
-              <button className="btn w-full text-error" onClick={() => setDeleting({ id: work.id, name: work.title })}>
-                <Icon name="trash" />この作品を削除
-              </button>
-            )}
-          </>
-        )}
-      </Sheet>
-
-      {/* 編集シートの上に重ねて開く（あとから開いた dialog が上に来る） */}
-      <Sheet open={!!deleting} onClose={() => setDeleting(null)} title={`「${deleting?.name || "名前なし"}」を削除しますか？`}>
-        <p className="text-fg-2">削除すると元に戻せません。</p>
-        {/* キャンセルを DOM の先に置く。シートを開いたとき最初にフォーカスが当たるので、Enter の押し間違いで消えない。
-            見た目はスマホで削除が上・キャンセルが指の届く下（HIG のアクションシート）、PC でキャンセルが左 */}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row">
-          <button className="btn sm:flex-1" onClick={() => setDeleting(null)}>キャンセル</button>
-          <button className="btn-danger sm:flex-1" disabled={saving} onClick={confirmRemove}><Icon name="trash" />{saving ? "削除中…" : "削除する"}</button>
-        </div>
       </Sheet>
     </div>
   );

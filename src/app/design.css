@@ -68,7 +68,7 @@
  * - ホバーに頼らない。ホバーでしか出ない操作や情報を作らない（スマホにはホバーが無い）
  * - 押せる要素同士は 8px 以上離す。親指で押し間違えない間隔にする
  * - ナビゲーションは 375px に収める。ログイン中の行き先はプロフィール（/me）だけなので、タブバーやメニューは置かない。
- *   設定はプロフィールの右上の歯車から開き、設定からは左上の「プロフィール」で戻る。ロゴもプロフィールへ戻る（proxy.ts）
+ *   設定はヘッダーの右の歯車から開き、設定からは左上の「プロフィール」で戻る。ロゴもプロフィールへ戻る（proxy.ts）
  * - 「公開ページを見る」から開いたプレビューはヘッダーも隠し、左上の戻るボタンで前の画面へ戻す（判定は src/lib/nav.mjs）
  * - 画面端に固定するヘッダー・バーは env(safe-area-inset-*) でノッチやホームバーを避ける
  * - 確認は 375px と 1280px の2幅で行う。スクリーンショットも2枚撮る
@@ -186,6 +186,12 @@ html[data-theme="dark"] {
 :root:has([data-preview]) body > header {
   display: none;
 }
+/* プロフィールを作る画面（/me 以下）は、iOS の設定アプリのように灰色の地に白い「まとまり」を置く。
+   一番外側に data-grouped を付けると、ページ全体の地が surface-2 になる（data-light-only と同じ仕組み） */
+:root:has([data-grouped]) body,
+:root:has([data-grouped]) body > header {
+  background: var(--color-surface-2);
+}
 /* 見出しは行の長さをそろえ、最後の行に1〜2文字だけ残らないようにする */
 h1, h2, h3 {
   text-wrap: balance;
@@ -228,6 +234,28 @@ h1, h2, h3 {
 }
 /* 枠は outline 色（白地で 3.4:1）。line だと 1.3:1 で、どこが入力欄か分からない。
    16px 未満だと iOS がフォーカス時に拡大するので text-base。フォーカスは「押せるもの」の藍で示す */
+/* iOS の設定アプリのような「まとまり」。灰色の地（surface-2）に一段明るい面を置き、行を並べる。
+   面は surface でなく surface-raised。surface だとダークで地より暗くなり、凹んで見える */
+@utility group-box {
+  @apply divide-y divide-line overflow-hidden rounded-2xl bg-surface-raised;
+}
+/* まとまりの見出し（「やってきたこと」など）。面の外、左上に小さく */
+@utility group-label {
+  @apply px-4 text-sm text-fg-3;
+}
+/* まとまりの中の1行。押せる行（リンク・ボタン）にも、「ラベル 入力」の行にも使う。高さ 52px */
+@utility group-row {
+  @apply flex min-h-13 w-full items-center gap-3 px-4 text-left transition hover:bg-surface-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg;
+}
+/* まとまりの中の入力欄。枠を付けず、行そのものを入力欄にする（左にラベル、iOS の設定と同じ）。
+   規約の「入力欄の枠は outline 色」を曲げている: 白い面と左のラベルで、どこに書くかは伝わるため。
+   枠が無い分、書いている間は行の内側に藍の線を出す（親の行に has-focus を見る） */
+@utility row-input {
+  @apply min-h-11 w-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-fg-3;
+}
+@utility row-field {
+  @apply has-focus:ring-2 has-focus:ring-tertiary has-focus:ring-inset;
+}
 @utility input {
   @apply min-h-11 w-full rounded-xl border border-outline bg-surface px-3.5 py-2.5 text-base transition outline-none placeholder:text-fg-3 focus:border-tertiary focus:ring-4 focus:ring-tertiary-container;
   /* ブラウザ標準の ▾ は右端に張り付くので、自前の ▼ を右から 16px に描く。currentColor なのでダークでも追従する */

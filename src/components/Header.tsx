@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import { useUser } from "@/lib/store";
 
 export function Logo({ className = "h-7 w-7" }: { className?: string }) {
@@ -19,15 +20,23 @@ export default function Header() {
   const user = useUser();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-surface">
+    // 目立たせない（2026-10-12 ユーザーの指示）: 区切りの線と「Canaria」の文字は出さず、地と同じ色に溶かす。
+    // 地の色は design.css の body に合わせる（/me 以下は data-grouped で surface-2）
+    <header className="sticky top-0 z-20 bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-1.5">
-        {/* ロゴはトップへ。ログイン中ならプロフィール（proxy.ts が /me に送る）、未ログインなら LP が出る */}
-        <Link href="/" className={`${item} -ml-2 gap-2 text-lg font-bold tracking-tight`}>
-          <Logo /> Canaria
-          <span className="rounded-md bg-primary-container px-1.5 py-0.5 text-xs font-medium text-on-primary-container">β版</span>
+        {/* ロゴはトップへ。ログイン中ならプロフィール（proxy.ts が /me に送る）、未ログインなら LP が出る。
+            文字を出さないので、読み上げ用の名前を付ける */}
+        <Link href="/" aria-label="Canaria トップへ" className={`${item} -ml-2 gap-2`}>
+          <Logo className="h-6 w-6" />
+          <span className="text-xs text-fg-3">β版</span>
         </Link>
 
-        {/* ログイン中は行き先がプロフィールだけなので、メニューを出さない。設定はプロフィールの右上の歯車から */}
+        {/* ログイン中は行き先がプロフィールだけなので、メニューは出さない。設定だけは、どの画面からでも行けるよう右に歯車を置く */}
+        {user && (
+          <Link href="/settings" aria-label="設定" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+            <Icon name="settings" className="h-5.5 w-5.5" />
+          </Link>
+        )}
         {user === null && (
           <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
             <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
