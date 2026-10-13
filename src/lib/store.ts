@@ -212,6 +212,13 @@ export async function loadPublicPortfolio(key: "id" | "username", value: string)
   return portfolio && { id: p!.id, ...portfolio };
 }
 
+/** 見たプロフィールの一覧の1行ぶん。ids の順は保たない（並べ直しは呼ぶ側で） */
+export const loadProfileCards = async (ids: string[]) =>
+  ids.length
+    ? (must(await db().from("profiles").select("id, username, name, icon, tagline").in("id", ids).limit(ids.length)) as
+        (Pick<Profile, "username" | "name" | "icon" | "tagline"> & { id: string })[])
+    : [];
+
 /** 公開ページの表示回数（本人以外が見た回数）。RLS で本人しか読めない。まだ1回も見られていなければ 0 */
 export const loadViewCount = async (uid: string) =>
   ((must(await db().from("profile_views").select("count").eq("profile_id", uid).maybeSingle()) as { count: number } | null)?.count ?? 0);

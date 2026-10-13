@@ -10,6 +10,7 @@ import ShareButton from "@/components/ShareButton";
 import Sheet from "@/components/Sheet";
 import { ListSkeleton } from "@/components/Skeleton";
 import { sectionInfo } from "@/lib/entries.mjs";
+import { readHistory } from "@/lib/history.mjs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
 import { loadViewCount, profileChoices, saveProfile as putProfile, sections, useBusy, useLoad, usernamePattern, type Profile, type Section } from "@/lib/store";
 import { SaveBar, useMyPortfolio } from "./parts";
@@ -42,6 +43,8 @@ export default function MyPage() {
   const [saving, run] = useBusy();
   // 表示回数はプロフィールとは別に読む（届くのを待たずに画面を出す）
   const [views] = useLoad(() => user && loadViewCount(user.id), [user?.id]);
+  // 履歴は localStorage にあるので、サーバーの HTML とずれないよう描画のあとで読む
+  const [seen] = useLoad(() => user && Promise.resolve(readHistory(user.id).length), [user?.id]);
 
   if (!user || !data) return <ListSkeleton />;
 
@@ -79,12 +82,19 @@ export default function MyPage() {
           <Icon name="chevron" className="h-5 w-5 text-fg-3" />
         </button>
       </div>
-      {/* 本人以外が公開ページを開いた回数（同じブラウザからは1日1回）。本人にしか見えない。押せる行と見分けるため hover は付けない */}
+      {/* 本人以外が公開ページを開いた回数（同じブラウザからは1日1回）と、自分が見たプロフィールの履歴。
+          どちらも「見る・見られる」の話なので1つの面にまとめる（離すと間が空きすぎた。ユーザーの指摘）。
+          回数の行は押せないので group-row の hover を付けない */}
       <div className="group-box">
         <p className="flex min-h-13 items-center gap-3 px-4">
           <span className="flex-1">公開ページの表示回数</span>
           <span className="text-fg-3">{views === undefined ? "…" : `${views.toLocaleString()}回`}</span>
         </p>
+        <Link href="/me/history" className="group-row">
+          <span className="flex-1">見たプロフィール</span>
+          <span className="text-fg-3">{seen === undefined ? "" : seen || "まだない"}</span>
+          <Icon name="chevron" className="h-5 w-5 text-fg-3" />
+        </Link>
       </div>
       {/* 共有はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。見る方は薄い藍で並べる。
           ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
