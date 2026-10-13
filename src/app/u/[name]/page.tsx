@@ -58,7 +58,7 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
       ))}
 
       <div className="space-y-6">
-        <ProfileHero p={p} works={works} />
+        <ProfileHero p={p} />
         <NowNext p={p} />
       </div>
 
