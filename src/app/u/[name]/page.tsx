@@ -6,8 +6,9 @@ import Icon from "@/components/Icon";
 import { Empty, EntrySections, NowNext, ProfileHero, WorkList } from "@/components/Portfolio";
 import ShareButton from "@/components/ShareButton";
 import { PublicSkeleton } from "@/components/Skeleton";
+import { pushHistory } from "@/lib/history.mjs";
 import { isPreview } from "@/lib/nav.mjs";
-import { loadPublicPortfolio, useLoad, useUser } from "@/lib/store";
+import { loadPublicPortfolio, recordView, useLoad, useUser } from "@/lib/store";
 
 // /@username から next.config の rewrites で来る。旧 URL の /u/ユーザーID は /@username に置き換える
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -25,6 +26,15 @@ export default function PublicPage({ searchParams }: PageProps<"/u/[name]">) {
   useEffect(() => {
     if (legacy && data) router.replace(`/@${data.profile.username}`);
   }, [legacy, data, router]);
+  // 本人以外が開いたら表示回数を1回数え、ログイン中なら見たプロフィールの履歴にも足す。
+  // ログイン確認（user が undefined）の間は待つ（本人の分を送らないように。DB でも弾く）
+  const viewed = data?.id;
+  const me = user === undefined ? undefined : (user?.id ?? null);
+  useEffect(() => {
+    if (!viewed || me === undefined || me === viewed) return;
+    recordView(viewed);
+    if (me) pushHistory(me, viewed);
+  }, [viewed, me]);
 
   // 「公開ページを見る」から来たプレビュー。見る人と同じ見た目にするため、ヘッダー（design.css の data-preview）と
   // 「編集する」を出さず、左上に戻る・右上に共有だけを置く（共有しやすくするため。ユーザーの指示）。スクロールしても使えるよう sticky で残す。

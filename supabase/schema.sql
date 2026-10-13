@@ -98,6 +98,25 @@ begin
   end loop;
 end $$;
 
+-- 公開ページの表示回数。読めるのは本人だけ（回数は公開しない）。書き込みのポリシーは作らず、record_view でだけ増やす
+create table public.profile_views (
+  profile_id uuid primary key references public.profiles on delete cascade,
+  count bigint not null default 0
+);
+alter table public.profile_views enable row level security;
+grant select on public.profile_views to authenticated;
+create policy "profile_views: own read" on public.profile_views for select to authenticated using ((select auth.uid()) = profile_id);
+
+-- 1回数える。本人が見たときは数えない（画面で弾くだけだとプレビューや直接の呼び出しで数えられるため、ここで弾く）。
+-- ponytail: 誰でも何度でも呼べるので水増しはできる。問題になったら IP ごとに絞る処理をサーバー側に足す
+create function public.record_view(target uuid) returns void language sql security definer set search_path = '' as $$
+  insert into public.profile_views (profile_id, count)
+  select target, 1 from public.profiles where id = target and id is distinct from (select auth.uid())
+  on conflict (profile_id) do update set count = public.profile_views.count + 1;
+$$;
+revoke execute on function public.record_view(uuid) from public;
+grant execute on function public.record_view(uuid) to anon, authenticated;
+
 -- Storage: 公開バケット。各ユーザーは自分の uid フォルダにだけアップロードできる
 -- ponytail: 差し替え前の古いファイルは消さない。容量が気になったら select+delete ポリシーと掃除処理を足す
 insert into storage.buckets (id, name, public, file_size_limit)
@@ -182,3 +201,5 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 --   where c.id = e.id and e.started = extract(year from c.started) and (e.ended is null or e.ended = extract(year from c.ended));
 -- ② マージして本番が新しいコードになってから流す（古いコードはまだ careers を読み書きするため）
 -- drop table public.careers;
+-- 2026-10-13 公開ページの表示回数（マージ前に流す。足すだけなので、本番で動いている古いコードは壊れない）。
+-- 上の profile_views の create table・RLS と record_view をそのまま流す
