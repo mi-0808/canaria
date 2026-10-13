@@ -212,6 +212,10 @@ export async function loadPublicPortfolio(key: "id" | "username", value: string)
   return portfolio && { id: p!.id, ...portfolio };
 }
 
+/** 公開ページの表示回数（本人以外が見た回数）。RLS で本人しか読めない。まだ1回も見られていなければ 0 */
+export const loadViewCount = async (uid: string) =>
+  ((must(await db().from("profile_views").select("count").eq("profile_id", uid).maybeSingle()) as { count: number } | null)?.count ?? 0);
+
 // --- write ---
 
 /** /me を初めて開いたときにプロフィール行を用意する（作品などの外部キー先） */
@@ -227,6 +231,17 @@ export async function saveProfile(uid: string, p: Profile) {
 export const saveWork = async (w: Work) => must(await db().from("works").upsert(w));
 /** 保存した行（created_at など DB が決めた値も入る）を返す */
 export const saveEntry = async (e: Entry) => must(await db().from("entries").upsert(e).select().single()) as Entry;
+/** 公開ページを1回見たと数える。同じブラウザからは1日1回だけ（再読み込みで増えないように）。本人かどうかは DB の record_view が見る。
+ *  数え損ねても画面には関係ないので、失敗は捨てる */
+export function recordView(uid: string) {
+  const key = `viewed:${uid}`;
+  const today = new Date().toLocaleDateString("sv"); // 2026-10-13 の形（その人の日付で区切る）
+  try {
+    if (localStorage.getItem(key) === today) return;
+    localStorage.setItem(key, today);
+  } catch {} // プライベートブラウズなどで localStorage が使えなくても数える
+  db().rpc("record_view", { target: uid }).then(({ error }) => error && console.error(error));
+}
 export const remove = async (table: "works" | "entries", id: string) => must(await db().from(table).delete().eq("id", id));
 
 /** media バケットの自分のフォルダに上げて公開URLを返す */

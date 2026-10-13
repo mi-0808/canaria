@@ -11,7 +11,7 @@ import Sheet from "@/components/Sheet";
 import { ListSkeleton } from "@/components/Skeleton";
 import { sectionInfo } from "@/lib/entries.mjs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
-import { profileChoices, saveProfile as putProfile, sections, useBusy, usernamePattern, type Profile, type Section } from "@/lib/store";
+import { loadViewCount, profileChoices, saveProfile as putProfile, sections, useBusy, useLoad, usernamePattern, type Profile, type Section } from "@/lib/store";
 import { SaveBar, useMyPortfolio } from "./parts";
 
 // プロフィール（編集のトップ）。iOS の設定アプリのように、まとまりごとに行を並べ、押すとその項目だけの画面へ進む。
@@ -40,6 +40,8 @@ export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null); // 編集中だけ非null。シートの開閉もこれで決まる
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
   const [saving, run] = useBusy();
+  // 表示回数はプロフィールとは別に読む（届くのを待たずに画面を出す）
+  const [views] = useLoad(() => user && loadViewCount(user.id), [user?.id]);
 
   if (!user || !data) return <ListSkeleton />;
 
@@ -76,6 +78,13 @@ export default function MyPage() {
           <span className="sr-only">を編集</span>
           <Icon name="chevron" className="h-5 w-5 text-fg-3" />
         </button>
+      </div>
+      {/* 本人以外が公開ページを開いた回数（同じブラウザからは1日1回）。本人にしか見えない。押せる行と見分けるため hover は付けない */}
+      <div className="group-box">
+        <p className="flex min-h-13 items-center gap-3 px-4">
+          <span className="flex-1">公開ページの表示回数</span>
+          <span className="text-fg-3">{views === undefined ? "…" : `${views.toLocaleString()}回`}</span>
+        </p>
       </div>
       {/* 共有はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。見る方は薄い藍で並べる。
           ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
