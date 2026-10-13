@@ -4,7 +4,7 @@ import { brandIcon } from "@/components/BrandIcon";
 import Icon from "@/components/Icon";
 import Sheet from "@/components/Sheet";
 import { contactEmailPattern, linkName, normalizeLink } from "@/lib/links.mjs";
-import { entryMeta, sectionInfo } from "@/lib/entries.mjs";
+import { entryMeta, entryPeriod, sectionInfo } from "@/lib/entries.mjs";
 import { splitTechs, statItems } from "@/lib/stats.mjs";
 import { type Entry, type Profile, type Work } from "@/lib/store";
 
@@ -20,7 +20,7 @@ export function Avatar({ src, className = "h-10 w-10" }: { src: string; classNam
 }
 
 /** ページの頭（App Store のアイコン・アプリ名・カテゴリ・入手ボタンにあたる） */
-export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
+export function ProfileHero({ p }: { p: Profile }) {
   // SNS・リンクは DB で https だけに絞っているが、href に入れる前にもう一度確かめる
   const links = p.links.filter((u) => u.startsWith("https://"));
   // DB でも形を絞っているが、mailto: に入れる直前にも確かめる
@@ -42,7 +42,7 @@ export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
             </div>
             {p.tagline && <p className="text-lg text-fg-2">{p.tagline}</p>}
           </div>
-          <StatsRow p={p} works={works} />
+          <StatsRow p={p} />
           {/* 仕事の相談の入口。公開ページを見た人がいちばん取りたい行動なので、メールは主役の黄色のボタン。
               SNS はそのすぐ横（スマホではメールが横幅いっぱいなので下の行）に並べ、「こちらからでも連絡できる」と見せる */}
           {(email || links.length > 0) && (
@@ -61,33 +61,21 @@ export function ProfileHero({ p, works }: { p: Profile; works: Work[] }) {
   );
 }
 
-// 作品の数字。人の情報（拠点・MBTI・年齢）とは別のまとまりにする
-const workStats = new Set(["作品", "よく使う技術"]);
-
 /** 数字の行。帯や区切り線で囲まず「ラベル 値」を詰めて並べ、入りきらなければ折り返す。
  *  横幅を等分した升目に値を1つずつ浮かべると、余白ばかりで作り物っぽく見えたため（ユーザーの指摘）。
- *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった。
- *  作品の数字と人の情報は別の dl にし、入らなければまとまりごと次の行へ送る。全部を1列に詰めて折り返すと、
- *  スマホで「作品」だけが1行目に残り「拠点」が技術の行に付くなど、区切りが幅しだいでばらばらだった（ユーザーの指摘） */
-function StatsRow({ p, works }: { p: Profile; works: Work[] }) {
-  const items = statItems(p, works);
-  const groups = [items.filter((it) => workStats.has(it.label)), items.filter((it) => !workStats.has(it.label))];
+ *  置き場所は頭の名前の列（ひとことの下・ボタンの上）。離して右に寄せると、名前・ボタンとの間で視線が行き来して読みにくかった */
+function StatsRow({ p }: { p: Profile }) {
+  const items = statItems(p);
+  if (!items.length) return null;
   return (
-    <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-      {groups.map((g, i) => g.length > 0 && (
-        <dl key={i} className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-          {g.map((it) => (
-            <div key={it.label} className="flex items-baseline gap-1.5">
-              <dt className="text-sm text-fg-3">{it.label}</dt>
-              <dd className="font-bold wrap-anywhere">
-                {it.value}
-                {it.sub && <span className="text-sm font-normal text-fg-3">（{it.sub}）</span>}
-              </dd>
-            </div>
-          ))}
-        </dl>
+    <dl className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {items.map((it) => (
+        <div key={it.label} className="flex items-baseline gap-1.5">
+          <dt className="text-sm text-fg-3">{it.label}</dt>
+          <dd className="font-bold wrap-anywhere">{it.value}</dd>
+        </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -114,13 +102,26 @@ export function NowNext({ p }: { p: Profile }) {
 
 const FIRST_WORKS = 3; // はたらいたことは最初は新しい3件だけ。長い人のページがここで埋まらないように
 
-/** 1行。名前を太字で、下に補足（種類 · 期間、ひとことなど） */
-function EntryLine({ title, meta }: { title: string; meta: string }) {
+/** はたらいたこと・まなんだことの年表（始めた年の新しい順）。左に縦線と点を引き、名前・補足・やったことを並べる。
+ *  区切り線だけの一覧にしたら、つながりが見えず素っ気なかった（ユーザーの指摘）ので、前の経歴の年表の形に戻した */
+function Timeline({ entries }: { entries: Entry[] }) {
   return (
-    <li className="py-3">
-      <p className="font-bold">{title}</p>
-      {meta && <p className="text-sm text-fg-3">{meta}</p>}
-    </li>
+    <ol className="space-y-6 border-l-2 border-line pl-6">
+      {entries.map((e) => {
+        // 身につけたことは entryMeta だとひとことが補足に入るので、ここでは「どこで · 期間」にして、ひとことは本文に出す
+        const meta = e.section === "work" ? entryMeta(e) : [e.place, entryPeriod(e)].filter(Boolean).join(" · ");
+        return (
+          <li key={e.id} className="relative space-y-1">
+            {/* 縦線（2px）の真ん中に 12px の点: -(左の余白 24px + 線 2px) + 線の半分 1px - 点の半分 6px = -31px。
+                いまも続いているものだけカナリア。色だけで伝えないよう、期間にも「いま」と出る */}
+            <span aria-hidden className={`absolute top-1.5 -left-[31px] h-3 w-3 rounded-full ring-4 ring-surface ${e.current ? "bg-primary" : "bg-outline"}`} />
+            <h3 className="text-lg font-bold">{e.title}</h3>
+            {meta && <p className="text-sm text-fg-3">{meta}</p>}
+            {e.note && <p className="pt-1 leading-relaxed whitespace-pre-wrap text-fg-2">{e.note}</p>}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -135,11 +136,7 @@ export function EntrySections({ entries, heading }: { entries: Entry[]; heading:
       {work.length > 0 && (
         <section className="space-y-2">
           <h2 className={heading}>{sectionInfo.work.label}</h2>
-          <ul className="divide-y divide-line">
-            {(allWork ? work : work.slice(0, FIRST_WORKS)).map((e) => (
-              <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />
-            ))}
-          </ul>
+          <Timeline entries={allWork ? work : work.slice(0, FIRST_WORKS)} />
           {!allWork && work.length > FIRST_WORKS && (
             <button className="-ml-1 inline-flex min-h-11 items-center px-1 text-tertiary" onClick={() => setAllWork(true)}>
               ほか{work.length - FIRST_WORKS}件を見る
@@ -150,9 +147,7 @@ export function EntrySections({ entries, heading }: { entries: Entry[]; heading:
       {learn.length > 0 && (
         <section className="space-y-2">
           <h2 className={heading}>{sectionInfo.learn.label}</h2>
-          <ul className="divide-y divide-line">
-            {learn.map((e) => <EntryLine key={e.id} title={e.title} meta={entryMeta(e)} />)}
-          </ul>
+          <Timeline entries={learn} />
         </section>
       )}
       {like.length > 0 && (
