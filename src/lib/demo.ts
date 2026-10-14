@@ -19,6 +19,8 @@ export const demoProfile: Profile = {
   bio: "",
   links: [],
   contact_email: "",
+  role: "大学生・専門学生",
+  fields: ["接客", "クリエイター"],
 };
 
 /** 見本の1件。書かなかった項目は空にする（LP の③でも使う） */

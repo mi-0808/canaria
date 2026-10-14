@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FindCounts from "@/components/FindCounts";
 import Icon, { type IconName } from "@/components/Icon";
 import { Collage, type ArtName } from "@/components/LpArt";
 import Phrases from "@/components/Phrases";
@@ -28,7 +29,7 @@ const written = [
 // よくある不安 → 答え
 const worries = [
   ["書くことがない", "バイト・部活・すきなことで十分です。履歴書じゃありません。"],
-  ["知らない人に見られる？", "名前で探す機能はありません。見られるのは、あなたがリンクを渡した人だけです。"],
+  ["知らない人に見られる？", "「さがす」に載るのは、立場や分野を選んだときだけです。名前で探す機能はありません。"],
   ["お金はかかる？", "無料です。"],
 ];
 
@@ -157,6 +158,8 @@ export default function Home() {
           <div className="space-y-3">
             <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="インスタを交換するだけで、|あなたのことが伝わる。" /></h3>
             <p className="leading-relaxed text-fg-2">新しいバイト先やサークルで。プロフィール欄のリンクを開けば、やってきたこと・すきなことが1ページで見えます。</p>
+            <p className="leading-relaxed text-fg-2">立場や分野を選んでおけば、インスタを交換していない人にも「さがす」から見つけてもらえます。</p>
+            <FindCounts />
           </div>
         </div>
       </section>

@@ -67,7 +67,8 @@
  * - スマホだからと文字を小さくしない。大きい見出しはスマホの値から md: で大きくする
  * - ホバーに頼らない。ホバーでしか出ない操作や情報を作らない（スマホにはホバーが無い）
  * - 押せる要素同士は 8px 以上離す。親指で押し間違えない間隔にする
- * - ナビゲーションは 375px に収める。ログイン中の行き先はプロフィール（/me）だけなので、タブバーやメニューは置かない。
+ * - ナビゲーションは 375px に収める。ログイン中の行き先はプロフィール（/me）と「さがす」（/find）だけなので、タブバーやメニューは置かない。
+ *   「さがす」はヘッダーの右に控えめな文字のリンクで置く（ログインの有無に関係なく出す）。
  *   設定はヘッダーの右の歯車から開き、設定からは左上の「プロフィール」で戻る。ロゴもプロフィールへ戻る（proxy.ts）
  * - 「公開ページを見る」から開いたプレビューはヘッダーも隠し、左上の戻るボタンで前の画面へ戻す（判定は src/lib/nav.mjs）
  * - 画面端に固定するヘッダー・バーは env(safe-area-inset-*) でノッチやホームバーを避ける
@@ -221,6 +222,13 @@ h1, h2, h3 {
 /* 取り消せない操作（削除）の確定ボタン。確認シートの中だけで使う。一覧に並べる「削除」は btn-sm text-error */
 @utility btn-danger {
   @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-error px-5 py-2.5 text-sm font-semibold text-on-error transition hover:bg-[color-mix(in_srgb,var(--color-error),var(--color-on-error)_8%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg disabled:pointer-events-none disabled:opacity-40;
+}
+/* 選ぶチップ（「さがす」の絞り込み・プロフィールの分野）。押してあるかは aria-pressed に持たせ、見た目はそこから決める。
+   選んだものは藍の塗り（押せるもの＝藍）。色だけで伝えないよう、使う側で文字の前にチェックのアイコンを付ける。
+   灰色の地（surface-2）にも置くので、白い面は surface-raised（surface だとダークで地より暗く、凹んで見える）。
+   上限まで選んで押せないものは disabled で薄くする（btn と同じ） */
+@utility chip {
+  @apply inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-line bg-surface-raised px-4 text-sm text-fg transition hover:border-outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg aria-pressed:border-tertiary aria-pressed:bg-tertiary aria-pressed:font-bold aria-pressed:text-on-tertiary disabled:pointer-events-none disabled:opacity-40;
 }
 /* HIG の segmented control。選ばれた項目は、タブなら aria-selected、ラジオなら中の input の checked で見た目が変わる。
    状態を ARIA / input に持たせ、見た目はそこから決める（見た目用の三項演算子を書かない） */
