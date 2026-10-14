@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Icon from "@/components/Icon";
 import { useUser } from "@/lib/store";
 
@@ -18,6 +19,7 @@ const item = "inline-flex min-h-11 items-center px-2 transition";
 
 export default function Header() {
   const user = useUser();
+  const path = usePathname();
 
   return (
     // 目立たせない（2026-10-12 ユーザーの指示）: 区切りの線と「Canaria」の文字は出さず、地と同じ色に溶かす。
@@ -31,18 +33,24 @@ export default function Header() {
           <span className="text-xs text-fg-3">β版</span>
         </Link>
 
-        {/* ログイン中は行き先がプロフィールだけなので、メニューは出さない。設定だけは、どの画面からでも行けるよう右に歯車を置く */}
-        {user && (
-          <Link href="/settings" aria-label="設定" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
-            <Icon name="settings" className="h-5.5 w-5.5" />
-          </Link>
-        )}
-        {user === null && (
-          <nav className="-mr-2 flex gap-2 text-sm whitespace-nowrap sm:gap-4">
-            <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
-            <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規登録</Link>
-          </nav>
-        )}
+        {/* ログイン中の行き先はプロフィールと「さがす」だけなので、メニューは出さない。
+            「さがす」はログインの有無に関係なく、文字のリンクで控えめに出す（ヘッダーは目立たせない）。いる画面では藍の太字。
+            設定だけは、どの画面からでも行けるよう右端に歯車を置く */}
+        <nav className="-mr-2 flex items-center gap-2 text-sm whitespace-nowrap sm:gap-4">
+          <Link href="/find" aria-current={path === "/find" ? "page" : undefined}
+            className={`${item} text-fg-2 hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-tertiary`}>さがす</Link>
+          {user && (
+            <Link href="/settings" aria-label="設定" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 transition hover:bg-surface-1 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg">
+              <Icon name="settings" className="h-5.5 w-5.5" />
+            </Link>
+          )}
+          {user === null && (
+            <>
+              <Link href="/login" className={`${item} text-fg-2 hover:text-fg`}>ログイン</Link>
+              <Link href="/signup" className={`${item} font-semibold text-fg underline-offset-4 hover:underline`}>新規登録</Link>
+            </>
+          )}
+        </nav>
       </div>
     </header>
   );

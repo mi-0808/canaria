@@ -43,7 +43,6 @@ const pairs = [
   ["primary", "secondary", TEXT], // グレーの面の上のカナリア文字（LP の吹き出し）
   ["fg-2", "primary-container", TEXT], // 公開ページ下の登録の呼びかけ
   ["marker-text", "surface", TEXT], // 見出しのマーカーの文字（ダークは帯なしで黄色の文字）
-  ["edge", "tertiary-container", EDGE], // パズルのピースの縁（藍の台の上）
   ["outline", "surface", EDGE], // 入力欄の枠
   ["outline", "surface-1", EDGE],
   ["tertiary", "surface", EDGE], // 入力欄のフォーカス枠
