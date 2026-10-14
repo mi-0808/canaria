@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   description: "やってきたことを、見せたくなる形で並べるプロフィール帳",
   // ヘッダーの Logo を PNG に書き出したもの。Logo の形を変えたら書き出し直す
   icons: { icon: "/canaria_icons.png", apple: "/canaria_icons.png" },
+  // リンクを貼ったときのカード。画像は src/app/opengraph-image.tsx（公開ページは u/[name] の中で人ごとに上書き）。
+  // 画像の URL の頭は、Vercel では Next が本番・プレビューの URL を自動で入れる（metadataBase は書かない）
+  openGraph: { title: "Canaria", description: "やってきたことを、見せたくなる形で並べるプロフィール帳", siteName: "Canaria", type: "website", locale: "ja_JP" },
+  twitter: { card: "summary_large_image" },
 };
 
 // 設定画面で選んだテーマ（ライト／ダーク）を、最初の描画より前に html に付ける。React を待つと一瞬だけ逆の色が見える。
