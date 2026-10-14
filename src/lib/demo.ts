@@ -1,7 +1,7 @@
 import { byNewest } from "./entries.mjs";
 import type { Entry, Profile } from "./store";
 
-// LP と /demo で見せる見本の人。架空の人物で、DB には入れない。
+// LP（ヒーローと③）で見せる見本の人。架空の人物で、DB には入れない。
 // 本番に見本のアカウントを作ると「さがす」の人数に混ざり、実在の人と見分けがつかなくなるため、固定のデータで描く
 
 export const demoProfile: Profile = {
