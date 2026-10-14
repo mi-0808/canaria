@@ -179,7 +179,7 @@ export default function Home() {
 
       {/* ⑤ 締め */}
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
-        <h2 className="text-3xl font-bold tracking-tight"><Phrases text="あなたの声を、|届けにいこう。" /></h2>
+        <h2 className="text-3xl font-bold tracking-tight"><Phrases text="インスタを交換する前に、|作っておこう。" /></h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
         <Link href="/signup" className="btn-primary mt-6 px-6 py-3 text-base">無料ではじめる<Icon name="arrow" className="h-4 w-4" /></Link>
       </section>
