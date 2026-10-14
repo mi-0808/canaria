@@ -30,7 +30,7 @@ create table public.profiles (
   contact_email text not null default '' check (contact_email = '' or (char_length(contact_email) <= 254 and contact_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')),
   -- 「さがす」（/find）に載せる立場と分野。どちらかを選ぶと載る（選ぶこと＝載せていいの同意）。
   -- 選択肢は画面（src/lib/store.ts の profileChoices.role と fieldChoices）と同じにする
-  role text not null default '' check (role in ('', '高校生', '大学生・専門学生', '社会人', 'フリーランス', 'その他')),
+  role text not null default '' check (role in ('', '高校生', '大学生・専門学生', '社会人', '経営者', '起業家', 'フリーランス', 'その他')),
   fields text[] not null default '{}' check (cardinality(fields) <= 3 and fields <@ array['エンジニア', 'デザイナー', 'クリエイター', '音楽', 'スポーツ', '接客', 'ビジネス', 'その他']::text[]),
   created_at timestamptz not null default now()
 );
@@ -213,3 +213,6 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 --   add column role text not null default '' check (role in ('', '高校生','大学生・専門学生','社会人','フリーランス','その他')),
 --   add column fields text[] not null default '{}' check (cardinality(fields) <= 3 and fields <@ array['エンジニア','デザイナー','クリエイター','音楽','スポーツ','接客','ビジネス','その他']::text[]);
 -- create index on public.profiles using gin (fields);
+-- 2026-10-14 立場に「経営者」「起業家」を足す（ユーザーの指示。マージ前に流す。選択肢を増やすだけなので、古いコードは壊れない）
+-- alter table public.profiles drop constraint profiles_role_check,
+--   add constraint profiles_role_check check (role in ('', '高校生','大学生・専門学生','社会人','経営者','起業家','フリーランス','その他'));

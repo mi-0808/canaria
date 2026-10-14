@@ -56,7 +56,7 @@ export const profileChoices = {
     "INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP",
   ],
   // 立場と下の分野は DB の check と同じ並び・同じ文字。変えるときは supabase/schema.sql も変える
-  role: ["高校生", "大学生・専門学生", "社会人", "フリーランス", "その他"],
+  role: ["高校生", "大学生・専門学生", "社会人", "経営者", "起業家", "フリーランス", "その他"],
 } as const;
 export const fieldChoices = ["エンジニア", "デザイナー", "クリエイター", "音楽", "スポーツ", "接客", "ビジネス", "その他"] as const;
 
