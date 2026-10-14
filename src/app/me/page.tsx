@@ -119,11 +119,12 @@ export default function MyPage() {
             <CopyLinkButton username={p.username} label="コピー" className="inline-flex min-h-11 shrink-0 items-center gap-1 px-3 text-sm font-bold text-tertiary" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <ShareButton variant="label" username={p.username} name={p.name} />
-            <Link href={`/@${p.username}?preview`} className="btn-tonal">公開ページを見る</Link>
+            {/* 375px で2つ並べると「公開ページを見る」が折れるので、左右の余白を詰めて1行に収める */}
+            <ShareButton variant="label" username={p.username} name={p.name} className="px-3 whitespace-nowrap" />
+            <Link href={`/@${p.username}?preview`} className="btn-tonal px-3 whitespace-nowrap">公開ページを見る</Link>
           </div>
           <button className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary" onClick={() => setGuide(true)}>
-            インスタ・Facebook・MyHood への貼り方<Icon name="chevron" className="h-4 w-4" />
+            貼り方を見る<Icon name="chevron" className="h-4 w-4" />
           </button>
         </div>
       </section>

@@ -172,7 +172,8 @@ function Done({ username, name, icon }: { username: string; name: string; icon: 
         <Phrases text="できました！|プロフィール欄に貼ろう" />
       </h1>
       <div className="flex items-center gap-3 rounded-2xl bg-primary-container p-4 text-on-primary-container">
-        <Avatar src={icon} className="h-12 w-12" />
+        {/* アイコンが無いときの丸は面と同じ色なので、白い縁で見えるようにする */}
+        <Avatar src={icon} className="h-12 w-12 ring-2 ring-surface" />
         <span className="min-w-0">
           <span className="block truncate font-bold">{name}</span>
           <span className="block truncate text-sm">{location.host}/@{username}</span>
