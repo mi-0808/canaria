@@ -56,3 +56,28 @@ export default function ShareButton({ username, name, variant, className = "" }:
     </>
   );
 }
+
+/**
+ * リンクをコピーするだけのボタン（共有メニューを開かない）。SNS のプロフィール欄に貼る人は、コピーが一番早い。
+ * 共有メニューと並べて、どちらも選べるようにする（2026-10-14 ユーザーの指示）
+ */
+export function CopyLinkButton({ username, label = "リンクをコピー", className = "btn-tonal" }: { username: string; label?: string; className?: string }) {
+  const [result, setResult] = useState<Result>("");
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${location.origin}/@${username}`);
+      setResult("copied");
+    } catch {
+      setResult("failed");
+    }
+    setTimeout(() => setResult(""), 2000);
+  };
+  return (
+    <>
+      <button type="button" onClick={copy} className={className}>
+        {result === "copied" ? <><Icon name="check" className="h-4 w-4" />コピーしました</> : result === "failed" ? "コピーできません" : label}
+      </button>
+      <span role="status" className="sr-only">{done[result]}</span>
+    </>
+  );
+}

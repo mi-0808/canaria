@@ -133,9 +133,9 @@ function authError(e: AuthError) {
   return authErrors[e.code ?? ""] ?? `うまくいきませんでした。もう一度お試しください（${e.code ?? e.message}）`;
 }
 
-/** 確認メールを送った場合は confirm: true（リンクを開くと /me に戻ってログイン済みになる） */
+/** 確認メールを送った場合は confirm: true（リンクを開くと、登録直後の4問 /me/start にログイン済みで戻る） */
 export async function signUp(email: string, password: string): Promise<{ error?: string; confirm?: boolean }> {
-  const { data, error } = await db().auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/me` } });
+  const { data, error } = await db().auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}/me/start` } });
   if (error) return { error: authError(error) };
   // 確認メールが有効だと、登録済みアドレスでもエラーにならず identities が空で返る
   if (data.user?.identities?.length === 0) return { error: authErrors.user_already_exists };

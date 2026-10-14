@@ -40,10 +40,11 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // ログイン済みならトップ（ホーム）へ。cookie が変わったので、画面ごと読み直して proxy に判定させる
+  // ログイン済みならトップ（ホーム）へ。cookie が変わったので、画面ごと読み直して proxy に判定させる。
+  // 新規登録でそのままログインできた（確認メールが要らない）ときは、登録直後の4問へ
   useEffect(() => {
-    if (user) location.replace("/");
-  }, [user]);
+    if (user) location.replace(mode === "signup" ? "/me/start" : "/");
+  }, [user, mode]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

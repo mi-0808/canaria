@@ -6,7 +6,8 @@ import FilePicker from "@/components/FilePicker";
 import Icon, { type IconName } from "@/components/Icon";
 import LinksEditor from "@/components/LinksEditor";
 import { Avatar } from "@/components/Portfolio";
-import ShareButton from "@/components/ShareButton";
+import PasteGuide from "@/components/PasteGuide";
+import ShareButton, { CopyLinkButton } from "@/components/ShareButton";
 import Sheet from "@/components/Sheet";
 import { ListSkeleton } from "@/components/Skeleton";
 import { sectionInfo } from "@/lib/entries.mjs";
@@ -43,6 +44,7 @@ export default function MyPage() {
   const [profile, setProfile] = useState<Profile | null>(null); // 編集中だけ非null。シートの開閉もこれで決まる
   const [usernameError, setUsernameError] = useState(""); // 他の人と重なったときなど、保存で弾かれた理由
   const [saving, run] = useBusy();
+  const [guide, setGuide] = useState(false); // 「貼り方」のシート
   // 表示回数はプロフィールとは別に読む（届くのを待たずに画面を出す）
   const [views] = useLoad(() => user && loadViewCount(user.id), [user?.id]);
   // 履歴は localStorage にあるので、サーバーの HTML とずれないよう描画のあとで読む
@@ -87,6 +89,14 @@ export default function MyPage() {
     <div data-grouped className="mx-auto max-w-xl space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">プロフィール</h1>
 
+      {/* 登録直後の4問を途中でやめた人（名前が空）だけに出す。/me から勝手に転送はしない（スキップした人が行き来しないように） */}
+      {!p.name && (
+        <Link href="/me/start" className="flex items-center gap-3 rounded-2xl bg-primary-container p-4 text-on-primary-container">
+          <span className="flex-1"><span className="block font-bold">1分でプロフィールを作る</span><span className="block text-sm">4つの質問に答えるだけ</span></span>
+          <Icon name="chevron" className="h-5 w-5" />
+        </Link>
+      )}
+
       <div className="group-box">
         <button className="group-row py-3" onClick={editProfile}>
           <Avatar src={p.icon} className="h-14 w-14" />
@@ -98,6 +108,28 @@ export default function MyPage() {
           <Icon name="chevron" className="h-5 w-5 text-fg-3" />
         </button>
       </div>
+      {/* SNS のプロフィール欄に貼ってもらうための面（見せる場面は「プロフィール欄のリンク」。2026-10-14 決定）。
+          共有（OS の共有メニュー）はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。
+          コピーも選べるよう、リンクの文字の横に置く。?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
+      <section className="space-y-2">
+        <h2 className="group-label">プロフィール欄に貼る</h2>
+        <div className="space-y-3 rounded-2xl bg-surface-raised p-4">
+          <div className="flex items-center gap-2 rounded-xl bg-surface-2 pl-3">
+            <span className="min-w-0 flex-1 truncate text-sm">{location.host}/@{p.username}</span>
+            <CopyLinkButton username={p.username} label="コピー" className="inline-flex min-h-11 shrink-0 items-center gap-1 px-3 text-sm font-bold text-tertiary" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <ShareButton variant="label" username={p.username} name={p.name} />
+            <Link href={`/@${p.username}?preview`} className="btn-tonal">公開ページを見る</Link>
+          </div>
+          <button className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary" onClick={() => setGuide(true)}>
+            インスタ・Facebook・MyHood への貼り方<Icon name="chevron" className="h-4 w-4" />
+          </button>
+        </div>
+      </section>
+      <Sheet open={guide} onClose={() => setGuide(false)} title="プロフィール欄への貼り方">
+        <PasteGuide />
+      </Sheet>
       {/* 本人以外が公開ページを開いた回数（同じブラウザからは1日1回）と、自分が見たプロフィールの履歴。
           どちらも「見る・見られる」の話なので1つの面にまとめる（離すと間が空きすぎた。ユーザーの指摘）。
           回数の行は押せないので group-row の hover を付けない */}
@@ -111,12 +143,6 @@ export default function MyPage() {
           <span className="text-fg-3">{seen === undefined ? "" : seen || "まだない"}</span>
           <Icon name="chevron" className="h-5 w-5 text-fg-3" />
         </Link>
-      </div>
-      {/* 共有はこの画面で一番してほしい行動なので濃いカナリア（この画面ではこれだけ）。見る方は薄い藍で並べる。
-          ?preview で開くと、見る人と同じ見た目（ヘッダーなし、左上に戻るボタン）になる */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link href={`/@${p.username}?preview`} className="btn-tonal">公開ページを見る</Link>
-        <ShareButton variant="label" username={p.username} name={p.name} />
       </div>
 
       <section className="space-y-2">

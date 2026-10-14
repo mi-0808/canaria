@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "next typegen && tsc --noEmit && eslint && sh scripts/check-tokens.sh && node scripts/check-contrast.mjs && node scripts/check-links.mjs && node scripts/check-stats.mjs && node scripts/check-entries.mjs && node scripts/check-nav.mjs && node scripts/check-history.mjs && node scripts/check-find.mjs"
+    "check": "next typegen && tsc --noEmit && eslint && sh scripts/check-tokens.sh && node scripts/check-contrast.mjs && node scripts/check-links.mjs && node scripts/check-stats.mjs && node scripts/check-entries.mjs && node scripts/check-nav.mjs && node scripts/check-history.mjs && node scripts/check-find.mjs && node scripts/check-onboarding.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
