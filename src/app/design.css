@@ -98,8 +98,6 @@
      marker-text のライトは fg と同じ値。fg を変えたらここも変える */
   --color-marker: light-dark(#ffc72c, transparent);
   --color-marker-text: light-dark(#1d1b17, #ffd54a);
-  /* LP のパズルのピースの縁と段差。ライトは文字色で積み木らしく。ダークで文字色（明るい色）にすると段差が光って見えるので中間のグレー */
-  --color-edge: light-dark(#1d1b17, #7a756d);
   /* ブランド: グレー（M3 secondary）= 締め。濃い面 */
   --color-secondary: light-dark(#2a2e35, #3a3f47);
   --color-on-secondary: light-dark(#f2f3f5, #dcdee2);
