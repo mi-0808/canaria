@@ -19,7 +19,7 @@ export default function FindPage({ searchParams }: PageProps<"/find">) {
   const sel = parseSelection(use(searchParams), profileChoices.role, fieldChoices);
   const router = useRouter();
   // 人数と一覧は別々に読み、届いた順に埋める（チップは選択肢の定数で先に出せる）
-  const [rows] = useLoad(loadFindCounts, []);
+  const [rows] = useLoad(() => loadFindCounts(), []);
   const [list] = useLoad(() => loadFindList(sel), [sel.role, sel.field]);
 
   return (

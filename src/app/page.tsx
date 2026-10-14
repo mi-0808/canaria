@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FindCounts from "@/components/FindCounts";
 import Icon, { type IconName } from "@/components/Icon";
 import Phrases from "@/components/Phrases";
 import { Avatar } from "@/components/Portfolio";
@@ -23,7 +24,7 @@ const smallThings = ["カフェのバイト 2年", "文化祭の実行委員", "
 // よくある不安 → 答え
 const worries = [
   ["書くことがない", "バイト・部活・すきなことで十分です。履歴書じゃありません。"],
-  ["知らない人に見られる？", "名前で探す機能はありません。見られるのは、あなたがリンクを渡した人だけです。"],
+  ["知らない人に見られる？", "「さがす」に載るのは、立場や分野を選んだときだけです。名前で探す機能はありません。"],
   ["お金はかかる？", "無料です。"],
 ];
 
@@ -135,7 +136,15 @@ export default function Home() {
                 <p className="text-sm leading-relaxed text-fg-2">インスタや X のプロフィール欄に貼るだけ。初めて会った人にも、その場で伝わる。</p>
               </div>
             </li>
+            <li className="flex gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tertiary-container text-on-tertiary-container"><Icon name="search" /></span>
+              <div>
+                <p className="font-bold">さがしている人に</p>
+                <p className="text-sm leading-relaxed text-fg-2">「大学生」「デザイナー」で探す人に、見つけてもらえる。</p>
+              </div>
+            </li>
           </ul>
+          <FindCounts />
         </div>
       </section>
 

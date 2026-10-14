@@ -234,7 +234,11 @@ const listed = (columns: string) =>
 
 /** 立場・分野ごとの人数を数えるための行。
  *  ponytail: 載る人の role と fields を1000人まで取って画面で数える。人数が増えたら DB の集計関数（role と unnest(fields) で group by）を rpc にする */
-export const loadFindCounts = async () => must(await listed("role, fields").limit(1000)) as unknown as Pick<Profile, "role" | "fields">[];
+export async function loadFindCounts(quiet = false) {
+  const res = await listed("role, fields").limit(1000);
+  // LP の人数は飾りなので、失敗しても警告を出さず数字を出さないだけにする（初めて来た人にエラーを見せない）
+  return (quiet ? (res.data ?? []) : must(res)) as unknown as Pick<Profile, "role" | "fields">[];
+}
 
 /** 「さがす」の一覧。立場と分野は同時に1つずつ（AND）。空ならその条件では絞らない。
  *  ponytail: 新しい順に50人まで。超える人数になったら続きを読む仕組みを足す */

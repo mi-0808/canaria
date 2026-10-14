@@ -19,6 +19,8 @@ export const demoProfile: Profile = {
   bio: "",
   links: [],
   contact_email: "",
+  role: "大学生・専門学生",
+  fields: ["接客", "クリエイター"],
 };
 
 const entry = (e: Partial<Entry> & Pick<Entry, "id" | "section" | "title">): Entry => ({
