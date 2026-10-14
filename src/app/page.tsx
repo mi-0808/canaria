@@ -3,9 +3,9 @@ import FindCounts from "@/components/FindCounts";
 import Icon, { type IconName } from "@/components/Icon";
 import { Collage, type ArtName } from "@/components/LpArt";
 import Phrases from "@/components/Phrases";
-import { Avatar } from "@/components/Portfolio";
+import { Avatar, Timeline } from "@/components/Portfolio";
 import { sectionInfo } from "@/lib/entries.mjs";
-import { demoEntries, demoProfile } from "@/lib/demo";
+import { demoEntries, demoProfile, entry } from "@/lib/demo";
 import type { Section } from "@/lib/store";
 
 // LP。相手は「SNS のプロフィール欄にリンクを1本貼る人」（2026-10-14 決定）。エンジニア向けの作品の訴求はやめ、
@@ -19,14 +19,12 @@ const sectionLook: Record<Section, { icon: IconName; tone: string; lead: string;
 };
 const sectionOrder: Section[] = ["work", "learn", "like"];
 
-// ③の1「『特にない』は、ない」。自己紹介で言葉に詰まる場面から、書き出すと自己紹介になる、を見せる
-const written: [string, string][] = [
-  ["カフェのバイト 2年", "いまは新人に教える係"],
-  ["吹奏楽部 3年間", "定期演奏会でソロ"],
-  ["火おこし", "キャンプで覚えた"],
+// ③の1。「特にないです」と言っていた人が書き出したもの。公開ページの年表と同じ部品で見せる
+const written = [
+  entry({ id: "s1", section: "work", kind: "バイト", title: "カフェのバイト", started: 2024, started_month: 4, current: true, note: "いまは新人に教える係" }),
+  entry({ id: "s2", section: "learn", kind: "skill", title: "吹奏楽部", place: "高校", started: 2021, ended: 2024, note: "定期演奏会でソロ" }),
+  entry({ id: "s3", section: "learn", kind: "skill", title: "火おこし", place: "キャンプで", started: 2023 }),
 ];
-// ③の2「インスタ交換だけで伝わる」。交換した相手が見る順
-const swapSteps = ["相手があなたのプロフィールを開く", "プロフィール欄の Canaria のリンクをタップ", "やってきたこと・すきなことが1ページで伝わる"];
 
 // よくある不安 → 答え
 const worries = [
@@ -113,7 +111,7 @@ export default function Home() {
       </section>
 
       {/* ③ 小さな声でも、届けられる。カナリア（小さな鳥）の名前と、実績が小さくても見せられる、をつなげる */}
-      <section className="mx-auto max-w-2xl space-y-12">
+      <section className="mx-auto max-w-4xl space-y-16">
         <div className="space-y-2 text-center">
           <p className="text-sm text-fg-3">カナリアは、小さな鳥。</p>
           <h2 className={sectionHeading}>
@@ -124,35 +122,45 @@ export default function Home() {
         </div>
 
         {/* 1 と 2 は②と同じことを言わない。②は「書けることがある」、ここは「なぜ小さな声でも届くのか」 */}
-        <div className="space-y-4">
-          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">1　「特にない」は、ない</p>
-          <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="自己紹介で|「特にないです」って|言ったこと、|ありませんか？" /></h3>
-          {/* 自分の一言は右・濃いグレー、相手の一言（下の2）は左・薄いグレー。LP で吹き出しを使うのはこの段だけ */}
-          <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-secondary px-4 py-2.5 text-sm text-on-secondary">えっと…バイトしてます。特にないです</p>
-          <p className="pt-2 text-sm text-fg-3">でも、書き出してみると</p>
-          <ul className="divide-y divide-line rounded-2xl border border-line px-4">
-            {written.map(([t, m]) => (
-              <li key={t} className="flex flex-wrap items-baseline gap-x-3 py-2.5"><span className="font-bold">{t}</span><span className="text-sm text-fg-3">{m}</span></li>
-            ))}
-          </ul>
-          <p className="leading-relaxed text-fg-2">「すごいこと」じゃなくていい。続けてきたことを書き出すだけで、ちゃんとあなたの自己紹介になります。</p>
+        {/* ほかの画面と同じ部品で見せる（番号のラベル・吹き出し・番号つきの手順は「AI っぽい」とユーザーの指摘で外した）。
+            絵は灰色の面に入れ、下に見出しと1文。PC では左右に並べ、2つ目は左右を入れ替える */}
+        <div className="grid items-center gap-6 md:grid-cols-2 md:gap-12">
+          <div aria-hidden className="rounded-3xl bg-surface-2 p-6">
+            <Timeline entries={written} />
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="「特にないです」の中にも、|書けることはある。" /></h3>
+            <p className="leading-relaxed text-fg-2">バイトの2年、部活の3年間、キャンプで覚えた火おこし。書き出すと、ちゃんと自己紹介になります。</p>
+          </div>
         </div>
 
-        <div className="space-y-4 border-t border-line pt-12">
-          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">2　インスタ交換だけで伝わる</p>
-          <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="新しいバイト先や|サークルで、|インスタを交換したら。" /></h3>
-          <ol className="space-y-3">
-            {swapSteps.map((t, i) => (
-              <li key={t} className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-sm font-bold text-on-tertiary-container">{i + 1}</span>
-                <span className="pt-0.5">{t}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="w-fit max-w-[85%] rounded-2xl rounded-bl-md bg-secondary-container px-4 py-2.5 text-sm text-on-secondary-container">え、フィルムカメラやってるの？今度見せて！</p>
-          <p className="leading-relaxed text-fg-2">話すきっかけが、会う前からできている。自分で説明しなくても、小さな声がちゃんと届きます。</p>
-          <p className="leading-relaxed text-fg-2">立場や分野を選んでおけば、インスタを交換していない人にも「さがす」から見つけてもらえます。</p>
-          <FindCounts />
+        <div className="grid items-center gap-6 md:grid-cols-2 md:gap-12">
+          {/* インスタを交換した相手が見るもの: プロフィール画面 → リンクを開いた先の Canaria */}
+          <div aria-hidden className="rounded-3xl bg-surface-2 p-6 md:order-2">
+            <div className="space-y-2 rounded-2xl bg-surface p-4">
+              <div className="flex items-center gap-3">
+                <Avatar src="" className="h-10 w-10" />
+                <div>
+                  <p className="font-bold">kana_film</p>
+                  <p className="text-sm text-fg-2">大学2年 / 写真 / カフェ</p>
+                </div>
+              </div>
+              <p className="inline-flex items-center gap-1.5 rounded-md bg-tertiary-container px-2 py-0.5 text-sm font-bold text-on-tertiary-container">
+                <Icon name="link" className="h-4 w-4" />Canaria のプロフィール
+              </p>
+            </div>
+            <div className="flex justify-center py-2 text-fg-3"><Icon name="arrow" className="h-5 w-5 rotate-90" /></div>
+            <div className="rounded-2xl bg-surface px-4 py-2">
+              <p className="pt-2 font-bold">{demoProfile.name}</p>
+              <ul className="divide-y divide-line">{sectionOrder.map((s) => <SectionRow key={s} s={s} />)}</ul>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="インスタを交換するだけで、|あなたのことが伝わる。" /></h3>
+            <p className="leading-relaxed text-fg-2">新しいバイト先やサークルで。プロフィール欄のリンクを開けば、やってきたこと・すきなことが1ページで見えます。</p>
+            <p className="leading-relaxed text-fg-2">立場や分野を選んでおけば、インスタを交換していない人にも「さがす」から見つけてもらえます。</p>
+            <FindCounts />
+          </div>
         </div>
       </section>
 
