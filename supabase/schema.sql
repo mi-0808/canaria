@@ -28,6 +28,10 @@ create table public.profiles (
   links text[] not null default '{}' check (public.valid_links(links)), -- SNS・ブログなどの URL
   -- 仕事の相談を受けるメールアドレス（公開ページに出る）。mailto: に件名などを足せる文字は通さない（画面側は links.mjs の contactEmailPattern）
   contact_email text not null default '' check (contact_email = '' or (char_length(contact_email) <= 254 and contact_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')),
+  -- 「さがす」（/find）に載せる立場と分野。どちらかを選ぶと載る（選ぶこと＝載せていいの同意）。
+  -- 選択肢は画面（src/lib/store.ts の profileChoices.role と fieldChoices）と同じにする
+  role text not null default '' check (role in ('', '高校生', '大学生・専門学生', '社会人', 'フリーランス', 'その他')),
+  fields text[] not null default '{}' check (cardinality(fields) <= 3 and fields <@ array['エンジニア', 'デザイナー', 'クリエイター', '音楽', 'スポーツ', '接客', 'ビジネス', 'その他']::text[]),
   created_at timestamptz not null default now()
 );
 
@@ -71,6 +75,7 @@ create table public.entries (
     or ended * 100 + coalesce(ended_month, 12) >= started * 100 + coalesce(started_month, 1))
 );
 
+create index on public.profiles using gin (fields); -- 「さがす」の分野での絞り込み（fields @> {分野}）
 create index on public.works (user_id);
 create index on public.entries (user_id);
 
@@ -203,3 +208,8 @@ create policy "media: own upload" on storage.objects for insert to authenticated
 -- drop table public.careers;
 -- 2026-10-13 公開ページの表示回数（マージ前に流す。足すだけなので、本番で動いている古いコードは壊れない）。
 -- 上の profile_views の create table・RLS と record_view をそのまま流す
+-- 2026-10-14 「さがす」の立場・分野（マージ前に流す。足すだけなので、本番で動いている古いコードは壊れない）
+-- alter table public.profiles
+--   add column role text not null default '' check (role in ('', '高校生','大学生・専門学生','社会人','フリーランス','その他')),
+--   add column fields text[] not null default '{}' check (cardinality(fields) <= 3 and fields <@ array['エンジニア','デザイナー','クリエイター','音楽','スポーツ','接客','ビジネス','その他']::text[]);
+-- create index on public.profiles using gin (fields);

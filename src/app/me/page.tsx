@@ -10,14 +10,16 @@ import ShareButton from "@/components/ShareButton";
 import Sheet from "@/components/Sheet";
 import { ListSkeleton } from "@/components/Skeleton";
 import { sectionInfo } from "@/lib/entries.mjs";
+import { MAX_FIELDS, toggleField } from "@/lib/find.mjs";
 import { readHistory } from "@/lib/history.mjs";
 import { contactEmailPattern, normalizeLink } from "@/lib/links.mjs";
-import { loadViewCount, profileChoices, saveProfile as putProfile, sections, useBusy, useLoad, usernamePattern, type Profile, type Section } from "@/lib/store";
+import { fieldChoices, loadViewCount, profileChoices, saveProfile as putProfile, sections, useBusy, useLoad, usernamePattern, type Profile, type Section } from "@/lib/store";
 import { SaveBar, useMyPortfolio } from "./parts";
 
 // プロフィール（編集のトップ）。iOS の設定アプリのように、まとまりごとに行を並べ、押すとその項目だけの画面へ進む。
 // 前は1つのシートに経歴まで詰めていて、長くてどこを直しているか分からなくなっていた
 
+// role（立場）は下の「さがすに載せる」のまとまりで同じ形の select にする
 const profileSelects: [keyof typeof profileChoices, string][] = [
   ["gender", "性別"],
   ["age", "年齢"],
@@ -66,6 +68,20 @@ export default function MyPage() {
       setProfile(null);
     });
   const count = (s: Section) => data.entries.filter((e) => e.section === s).length;
+  // 選択肢から選ぶ欄（性別・年齢・居住地・MBTI・立場）。編集中（profile が非null）にだけ呼ぶ
+  const choiceField = (pr: Profile, [k, label]: (typeof profileSelects)[number]) => {
+    const choices: readonly string[] = profileChoices[k];
+    return (
+      <Field key={k} label={label}>
+        <select className="input" value={pr[k]} onChange={(e) => setProfile({ ...pr, [k]: e.target.value })}>
+          <option value="">未選択</option>
+          {/* 自由入力だった頃の値は消さずに残す */}
+          {pr[k] && !choices.includes(pr[k]) && <option>{pr[k]}</option>}
+          {choices.map((c) => <option key={c}>{c}</option>)}
+        </select>
+      </Field>
+    );
+  };
 
   return (
     <div data-grouped className="mx-auto max-w-xl space-y-6">
@@ -164,21 +180,33 @@ export default function MyPage() {
             <Field label="ひとこと">
               <input className="input" value={profile.tagline} onChange={(e) => setProfile({ ...profile, tagline: e.target.value })} />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {profileSelects.map(([k, label]) => {
-                const choices: readonly string[] = profileChoices[k];
-                return (
-                  <Field key={k} label={label}>
-                    <select className="input" value={profile[k]} onChange={(e) => setProfile({ ...profile, [k]: e.target.value })}>
-                      <option value="">未選択</option>
-                      {/* 自由入力だった頃の値は消さずに残す */}
-                      {profile[k] && !choices.includes(profile[k]) && <option>{profile[k]}</option>}
-                      {choices.map((c) => <option key={c}>{c}</option>)}
-                    </select>
-                  </Field>
-                );
-              })}
-            </div>
+            <div className="grid gap-4 sm:grid-cols-2">{profileSelects.map((s) => choiceField(profile, s))}</div>
+            {/* 「さがす」（/find）に載せる属性。選ぶこと＝載せていいの同意なので、何に載るのかをまとまりの見出しと下の注記で示す */}
+            <section className="space-y-2">
+              <h3 className="font-bold">さがすに載せる</h3>
+              <div className="card space-y-4 p-4">
+                {choiceField(profile, ["role", "立場"])}
+                {/* チップが並ぶので label で包まない（ラベルを押すと最初のチップが押されてしまう） */}
+                <div role="group" aria-label="分野" className="space-y-1.5">
+                  <p className="flex justify-between">
+                    <span className="label">分野</span>
+                    <span className="text-sm text-fg-3">{profile.fields.length} / {MAX_FIELDS}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {fieldChoices.map((c) => {
+                      const on = profile.fields.includes(c);
+                      return (
+                        <button key={c} type="button" className="chip" aria-pressed={on} disabled={!on && profile.fields.length >= MAX_FIELDS}
+                          onClick={() => setProfile({ ...profile, fields: toggleField(profile.fields, c, fieldChoices) })}>
+                          {on && <Icon name="check" className="h-4 w-4" />}{c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-fg-3">立場か分野を選ぶと「さがす」に載ります。どちらも空にすると載りません。</p>
+            </section>
             {/* MyHood の一言のような短い近況。公開ページで2枚のカードになる */}
             <Field label="いまやっていること" hint={`${profile.doing_now.length}/100`}>
               <textarea className="input" rows={2} maxLength={100} placeholder="家計簿アプリを運用しながら、決済まわりを勉強中"

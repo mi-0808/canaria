@@ -20,6 +20,9 @@ export type Profile = {
   bio: string;
   links: string[]; // SNS・ブログなどの https の URL（src/lib/links.mjs の normalizeLink を通したもの）
   contact_email: string; // 仕事の相談を受けるメールアドレス。公開ページに出る。ログイン用とは別。空なら出さない
+  // 「さがす」（/find）に載せる属性。どちらかを選ぶと載る（選ぶこと＝載せていいの同意）
+  role: string; // 立場。profileChoices.role のどれかか空
+  fields: string[]; // 分野。fieldChoices から3つまで（src/lib/find.mjs の MAX_FIELDS）
 };
 
 export type Work = {
@@ -52,7 +55,10 @@ export const profileChoices = {
   mbti: [
     "INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP",
   ],
+  // 立場と下の分野は DB の check と同じ並び・同じ文字。変えるときは supabase/schema.sql も変える
+  role: ["高校生", "大学生・専門学生", "社会人", "フリーランス", "その他"],
 } as const;
+export const fieldChoices = ["エンジニア", "デザイナー", "クリエイター", "音楽", "スポーツ", "接客", "ビジネス", "その他"] as const;
 
 // やってきたこと。3つの欄を1つの表に持つ（項目がほぼ同じで、読み込みも1回で済むため）
 export const sections = ["work", "learn", "like"] as const;
@@ -218,6 +224,26 @@ export const loadProfileCards = async (ids: string[]) =>
     ? (must(await db().from("profiles").select("id, username, name, icon, tagline").in("id", ids).limit(ids.length)) as
         (Pick<Profile, "username" | "name" | "icon" | "tagline"> & { id: string })[])
     : [];
+
+/** 「さがす」の一覧の1行ぶん。拠点・年齢は取らない（18歳未満も載るため） */
+export type FindCard = Pick<Profile, "username" | "name" | "icon" | "tagline" | "role" | "fields"> & { id: string };
+
+// 「さがす」に載る人: 名前があり、立場か分野を選んだ人。新しい順
+const listed = (columns: string) =>
+  db().from("profiles").select(columns).neq("name", "").or('role.neq."",fields.neq.{}').order("created_at", { ascending: false });
+
+/** 立場・分野ごとの人数を数えるための行。
+ *  ponytail: 載る人の role と fields を1000人まで取って画面で数える。人数が増えたら DB の集計関数（role と unnest(fields) で group by）を rpc にする */
+export const loadFindCounts = async () => must(await listed("role, fields").limit(1000)) as unknown as Pick<Profile, "role" | "fields">[];
+
+/** 「さがす」の一覧。立場と分野は同時に1つずつ（AND）。空ならその条件では絞らない。
+ *  ponytail: 新しい順に50人まで。超える人数になったら続きを読む仕組みを足す */
+export async function loadFindList({ role, field }: { role: string; field: string }) {
+  let q = listed("id, username, name, icon, tagline, role, fields");
+  if (role) q = q.eq("role", role);
+  if (field) q = q.contains("fields", [field]);
+  return must(await q.limit(50)) as unknown as FindCard[];
+}
 
 /** 公開ページの表示回数（本人以外が見た回数）。RLS で本人しか読めない。まだ1回も見られていなければ 0 */
 export const loadViewCount = async (uid: string) =>
