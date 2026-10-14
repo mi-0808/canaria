@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Icon, { type IconName } from "@/components/Icon";
+import { Collage, type ArtName } from "@/components/LpArt";
 import Phrases from "@/components/Phrases";
 import { Avatar } from "@/components/Portfolio";
 import { sectionInfo } from "@/lib/entries.mjs";
@@ -10,10 +11,10 @@ import type { Section } from "@/lib/store";
 // はたらいたこと・まなんだこと・すきなこと の3つと、「小さな声（実績）でも届けられる」を前に出す
 
 // 3つの欄の見分け。/me の行のアイコンと同じ形・同じ色にして、LP で見たものが編集画面でもそのまま見つかるようにする
-const sectionLook: Record<Section, { icon: IconName; tone: string; lead: string; examples: string }> = {
-  work: { icon: "briefcase", tone: "bg-tertiary-container text-on-tertiary-container", lead: "バイトも、立ち上げも、ボランティアも。", examples: "カフェのバイト 2年 · 文化祭の実行委員" },
-  learn: { icon: "book", tone: "bg-primary-container text-on-primary-container", lead: "学校だけじゃなく、身につけたことも。", examples: "吹奏楽部 · 火おこし · 独学のプログラミング" },
-  like: { icon: "heart", tone: "bg-secondary-container text-on-secondary-container", lead: "写真つきで、好きなものを並べる。", examples: "フィルムカメラ · 古着 · バンドのドラム" },
+const sectionLook: Record<Section, { icon: IconName; tone: string; lead: string; examples: string; art: ArtName[] }> = {
+  work: { icon: "briefcase", tone: "bg-tertiary-container text-on-tertiary-container", lead: "バイトも、立ち上げも、ボランティアも。", examples: "カフェのバイト 2年 · 文化祭の実行委員", art: ["cafe", "flag"] },
+  learn: { icon: "book", tone: "bg-primary-container text-on-primary-container", lead: "学校だけじゃなく、身につけたことも。", examples: "吹奏楽部 · 火おこし · 独学のプログラミング", art: ["horn", "fire", "laptop"] },
+  like: { icon: "heart", tone: "bg-secondary-container text-on-secondary-container", lead: "写真つきで、好きなものを並べる。", examples: "フィルムカメラ · 古着 · バンドのドラム", art: ["camera", "shirt", "drum"] },
 };
 const sectionOrder: Section[] = ["work", "learn", "like"];
 
@@ -93,6 +94,8 @@ export default function Home() {
             const look = sectionLook[s];
             return (
               <li key={s} className={`space-y-3 rounded-3xl p-6 ${look.tone}`}>
+                {/* 例（下の小さい文字）の数だけ、写真風の挿絵を並べる */}
+                <div className="pb-2"><Collage section={s} items={look.art} /></div>
                 <h3 className="flex items-center gap-2.5 text-xl font-bold"><Icon name={look.icon} className="h-6 w-6" />{sectionInfo[s].label}</h3>
                 <p className="leading-relaxed">{look.lead}</p>
                 <p className="text-sm">{look.examples}</p>
