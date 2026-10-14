@@ -1,6 +1,7 @@
 import Link from "next/link";
 import FindCounts from "@/components/FindCounts";
 import Icon, { type IconName } from "@/components/Icon";
+import { Collage, type ArtName } from "@/components/LpArt";
 import Phrases from "@/components/Phrases";
 import { Avatar } from "@/components/Portfolio";
 import { sectionInfo } from "@/lib/entries.mjs";
@@ -11,15 +12,23 @@ import type { Section } from "@/lib/store";
 // はたらいたこと・まなんだこと・すきなこと の3つと、「小さな声（実績）でも届けられる」を前に出す
 
 // 3つの欄の見分け。/me の行のアイコンと同じ形・同じ色にして、LP で見たものが編集画面でもそのまま見つかるようにする
-const sectionLook: Record<Section, { icon: IconName; tone: string; lead: string; examples: string }> = {
-  work: { icon: "briefcase", tone: "bg-tertiary-container text-on-tertiary-container", lead: "バイトも、立ち上げも、ボランティアも。", examples: "カフェのバイト 2年 · 文化祭の実行委員" },
-  learn: { icon: "book", tone: "bg-primary-container text-on-primary-container", lead: "学校だけじゃなく、身につけたことも。", examples: "吹奏楽部 · 火おこし · 独学のプログラミング" },
-  like: { icon: "heart", tone: "bg-secondary-container text-on-secondary-container", lead: "写真つきで、好きなものを並べる。", examples: "フィルムカメラ · 古着 · バンドのドラム" },
+const sectionLook: Record<Section, { icon: IconName; tone: string; lead: string; examples: string; art: ArtName[] }> = {
+  work: { icon: "briefcase", tone: "bg-tertiary-container text-on-tertiary-container", lead: "バイトも、立ち上げも、ボランティアも。", examples: "カフェのバイト 2年 · 文化祭の実行委員", art: ["cafe", "flag"] },
+  learn: { icon: "book", tone: "bg-primary-container text-on-primary-container", lead: "学校だけじゃなく、身につけたことも。", examples: "吹奏楽部 · 火おこし · 独学のプログラミング", art: ["horn", "fire", "laptop"] },
+  like: { icon: "heart", tone: "bg-secondary-container text-on-secondary-container", lead: "写真つきで、好きなものを並べる。", examples: "フィルムカメラ · 古着 · バンドのドラム", art: ["camera", "shirt", "drum"] },
 };
 const sectionOrder: Section[] = ["work", "learn", "like"];
 
-// 「小さくてもいい」の例。履歴書に書きにくい小ささのものを選ぶ
-const smallThings = ["カフェのバイト 2年", "文化祭の実行委員", "火おこし", "フィルムカメラ"];
+// ③の1「並べると、伝わる」。ばらばらの言葉が、期間とやったことつきで並ぶと人柄になる、を見せる
+const scattered = ["カフェのバイト", "吹奏楽部", "火おこし", "古着"];
+const lined: [string, string][] = [
+  ["カフェのバイト", "2年 · 新人に教える係"],
+  ["吹奏楽部", "3年間 · 定期演奏会でソロ"],
+  ["火おこし", "キャンプで覚えた"],
+  ["古着", "下北沢で探すのが好き"],
+];
+// ③の2「その先まで届く」。プロフィール欄の1行の先に見えるもの（見本の人に合わせる）
+const beyond: [Section, string][] = [["work", "カフェのバイト · いま"], ["learn", "吹奏楽部 · 3年間"], ["like", "フィルムカメラ · 古着"]];
 
 // よくある不安 → 答え
 const worries = [
@@ -94,6 +103,8 @@ export default function Home() {
             const look = sectionLook[s];
             return (
               <li key={s} className={`space-y-3 rounded-3xl p-6 ${look.tone}`}>
+                {/* 例（下の小さい文字）の数だけ、写真風の挿絵を並べる */}
+                <div className="pb-2"><Collage section={s} items={look.art} /></div>
                 <h3 className="flex items-center gap-2.5 text-xl font-bold"><Icon name={look.icon} className="h-6 w-6" />{sectionInfo[s].label}</h3>
                 <p className="leading-relaxed">{look.lead}</p>
                 <p className="text-sm">{look.examples}</p>
@@ -114,36 +125,41 @@ export default function Home() {
           </h2>
         </div>
 
+        {/* 1 と 2 は②と同じことを言わない。②は「書けることがある」、ここは「なぜ小さな声でも届くのか」 */}
         <div className="space-y-4">
-          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">1　小さくてもいい</p>
-          <h3 className="text-2xl font-bold tracking-tight">すごい実績じゃなくていい。</h3>
-          <p className="leading-relaxed text-fg-2">
-            バイトの2年も、部活の3年間も、好きで続けていることも。履歴書には書けない小さなことが、あなたを一番よく伝えます。
-          </p>
+          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">1　並べると、伝わる</p>
+          <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="ひとつずつは小さくても、|並べると「あなた」になる。" /></h3>
+          <p className="text-sm text-fg-3">ばらばらだと</p>
           <ul className="flex flex-wrap gap-2">
-            {smallThings.map((t) => <li key={t} className="rounded-lg bg-surface-2 px-3 py-1 text-sm text-fg-2">{t}</li>)}
+            {scattered.map((t) => <li key={t} className="rounded-lg bg-surface-2 px-3 py-1 text-sm text-fg-2">{t}</li>)}
           </ul>
+          <p className="flex items-center justify-center gap-1 text-sm text-fg-3"><Icon name="arrow" className="h-4 w-4 rotate-90" />Canaria で並べると</p>
+          <ul className="divide-y divide-line rounded-2xl border border-line px-4">
+            {lined.map(([t, m]) => (
+              <li key={t} className="flex flex-wrap items-baseline gap-x-3 py-2.5"><span className="font-bold">{t}</span><span className="text-sm text-fg-3">{m}</span></li>
+            ))}
+          </ul>
+          <p className="leading-relaxed text-fg-2">続けてきた時間と、そこでやったこと。小さなことほど、並べたときに「どんな人か」が見えてきます。</p>
         </div>
 
         <div className="space-y-4 border-t border-line pt-12">
-          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">2　届けられる</p>
-          <h3 className="text-2xl font-bold tracking-tight">見てほしい人に、ちゃんと届く。</h3>
-          <ul className="space-y-5">
-            <li className="flex gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tertiary-container text-on-tertiary-container"><Icon name="link" /></span>
-              <div>
-                <p className="font-bold">リンクを渡した人に</p>
-                <p className="text-sm leading-relaxed text-fg-2">インスタや X のプロフィール欄に貼るだけ。初めて会った人にも、その場で伝わる。</p>
-              </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tertiary-container text-on-tertiary-container"><Icon name="search" /></span>
-              <div>
-                <p className="font-bold">さがしている人に</p>
-                <p className="text-sm leading-relaxed text-fg-2">「大学生」「デザイナー」で探す人に、見つけてもらえる。</p>
-              </div>
-            </li>
-          </ul>
+          <p className="inline-block rounded-full bg-primary-container px-3 py-0.5 text-sm font-bold text-on-primary-container">2　その先まで届く</p>
+          <h3 className="text-2xl leading-snug font-bold tracking-tight"><Phrases text="プロフィール欄の1行の、|その先まで。" /></h3>
+          <div className="rounded-2xl border border-line p-4">
+            <p className="text-sm text-fg-3">インスタのプロフィール欄</p>
+            <p>大学2年 / 写真 / カフェ</p>
+            <p className="flex items-center gap-1.5 text-sm text-tertiary"><Icon name="link" className="h-4 w-4" />Canaria のプロフィール</p>
+          </div>
+          <p className="flex items-center justify-center gap-1 text-sm text-fg-3"><Icon name="arrow" className="h-4 w-4 rotate-90" />タップした人に見えるのは</p>
+          <div className="rounded-2xl bg-primary-container px-4 pt-3 pb-1 text-on-primary-container">
+            <p className="text-sm">{demoProfile.name} のプロフィール</p>
+            <ul className="divide-y divide-line">
+              {beyond.map(([sec, m]) => (
+                <li key={sec} className="flex flex-wrap items-baseline gap-x-3 py-2.5"><span className="font-bold">{sectionInfo[sec].label}</span><span className="text-sm">{m}</span></li>
+              ))}
+            </ul>
+          </div>
+          <p className="leading-relaxed text-fg-2">プロフィール欄に入りきらなかったことを、リンク1本で。立場や分野を選んでおけば、「さがす」からも見つけてもらえます。</p>
           <FindCounts />
         </div>
       </section>
