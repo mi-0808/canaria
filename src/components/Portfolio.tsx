@@ -104,7 +104,7 @@ const FIRST_WORKS = 3; // はたらいたことは最初は新しい3件だけ�
 
 /** はたらいたこと・まなんだことの年表（始めた年の新しい順）。左に縦線と点を引き、名前・補足・やったことを並べる。
  *  区切り線だけの一覧にしたら、つながりが見えず素っ気なかった（ユーザーの指摘）ので、前の経歴の年表の形に戻した */
-function Timeline({ entries }: { entries: Entry[] }) {
+export function Timeline({ entries }: { entries: Entry[] }) {
   return (
     <ol className="space-y-6 border-l-2 border-line pl-6">
       {entries.map((e) => {

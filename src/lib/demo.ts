@@ -21,7 +21,8 @@ export const demoProfile: Profile = {
   contact_email: "",
 };
 
-const entry = (e: Partial<Entry> & Pick<Entry, "id" | "section" | "title">): Entry => ({
+/** 見本の1件。書かなかった項目は空にする（LP の③でも使う） */
+export const entry = (e: Partial<Entry> & Pick<Entry, "id" | "section" | "title">): Entry => ({
   kind: "", place: "", note: "", started: null, started_month: null, ended: null, ended_month: null, current: false, image: "", ...e,
 });
 
