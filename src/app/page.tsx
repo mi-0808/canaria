@@ -161,33 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ④ 見本。架空の人（src/lib/demo.ts）。実在の人のページを LP に載せると、その人が消したり直したりしたときに LP が崩れる */}
-      <section className="mx-auto max-w-2xl space-y-6">
-        <h2 className={sectionHeading}>たとえば、こんなページ</h2>
-        <div className="overflow-hidden rounded-3xl border border-line bg-surface">
-          <div className="h-16 bg-primary-container" />
-          <div className="px-5 pb-5">
-            <Avatar src="" className="-mt-8 h-16 w-16 ring-4 ring-surface" />
-            <p className="mt-2 text-lg font-bold">{demoProfile.name} <span className="text-sm font-normal text-fg-3">@{demoProfile.username}</span></p>
-            <p className="text-fg-2">{demoProfile.tagline}</p>
-            <ul className="mt-3 divide-y divide-line border-t border-line">{sectionOrder.map((s) => <SectionRow key={s} s={s} />)}</ul>
-          </div>
-        </div>
-        <Link href="/demo" className="-ml-1 inline-flex min-h-11 items-center gap-1 px-1 text-tertiary">見本のページを見る<Icon name="chevron" className="h-4 w-4" /></Link>
-      </section>
-
-      {/* ⑤ はじめかた。登録直後の3問（次の PR）ができたら「3つ答えるだけ」に書き換える */}
-      <section className="mx-auto max-w-2xl space-y-6">
-        <h2 className={sectionHeading}><Phrases text="名前だけで、|はじめられる" /></h2>
-        <ol className="list-decimal space-y-2 pl-6 text-lg">
-          <li>メールで登録する</li>
-          <li>名前と、書けるところから1つ</li>
-          <li>リンクをプロフィール欄に貼る</li>
-        </ol>
-        <p className="text-sm text-fg-3">あとから少しずつ足せます。</p>
-      </section>
-
-      {/* ⑥ よくある不安。カードで囲まず、線で区切った一覧にする */}
+      {/* ④ よくある不安。カードで囲まず、線で区切った一覧にする */}
       <section className="mx-auto max-w-2xl space-y-6">
         <h2 className={sectionHeading}>よくある不安</h2>
         <dl className="divide-y divide-line border-y border-line">
@@ -200,7 +174,7 @@ export default function Home() {
         </dl>
       </section>
 
-      {/* ⑦ 締め */}
+      {/* ⑤ 締め */}
       <section className="rounded-3xl bg-secondary px-8 py-14 text-center text-on-secondary">
         <h2 className="text-3xl font-bold tracking-tight"><Phrases text="あなたの声を、|届けにいこう。" /></h2>
         {/* 濃い黄色のボタンは「同時に見える範囲で1つ」。ヒーローの CTA とは同じ画面に入らない */}
