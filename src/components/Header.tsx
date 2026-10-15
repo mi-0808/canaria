@@ -34,7 +34,7 @@ export default function Header() {
         </Link>
 
         {/* ログイン中の行き先はプロフィールと「さがす」だけなので、メニューは出さない。
-            「さがす」はログインの有無に関係なく、文字のリンクで控えめに出す（ヘッダーは目立たせない）。いる画面では藍の太字。
+            「さがす」は未ログインにも、文字のリンクで控えめに出す（ヘッダーは目立たせない）。未ログインで開くと登録・ログインの案内が出る。いる画面では藍の太字。
             設定だけは、どの画面からでも行けるよう右端に歯車を置く */}
         <nav className="-mr-2 flex items-center gap-2 text-sm whitespace-nowrap sm:gap-4">
           <Link href="/find" aria-current={path === "/find" ? "page" : undefined}

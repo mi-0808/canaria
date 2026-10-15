@@ -1,6 +1,6 @@
 // src/lib/find.mjs の自己チェック。「さがす」の絞り込み・数え方と、分野の選び方が変わったら npm run check で止める
 import assert from "node:assert/strict";
-import { MAX_FIELDS, countFor, parseSelection, toggleField, toggleHref } from "../src/lib/find.mjs";
+import { MAX_FIELDS, countFor, findHref, parseSelection, toggleField, toggleHref } from "../src/lib/find.mjs";
 
 const roles = ["高校生", "社会人"];
 const fields = ["エンジニア", "デザイナー", "音楽", "接客"];
@@ -20,6 +20,10 @@ assert.equal(toggleHref({ role: "", field: "" }, "role", "社会人"), `/find?ro
 assert.equal(toggleHref({ role: "社会人", field: "" }, "role", "社会人"), "/find");
 assert.equal(toggleHref({ role: "社会人", field: "音楽" }, "field", "音楽"), `/find?role=${encodeURIComponent("社会人")}`);
 assert.equal(toggleHref({ role: "社会人", field: "音楽" }, "field", "接客"), `/find?role=${encodeURIComponent("社会人")}&field=${encodeURIComponent("接客")}`);
+
+// 今の絞り込みの URL（ログイン後に戻す先）
+assert.equal(findHref({ role: "", field: "" }), "/find");
+assert.equal(findHref({ role: "", field: "音楽" }), `/find?field=${encodeURIComponent("音楽")}`);
 
 // 人数: 空の条件は絞らない／立場と分野は AND
 const rows = [

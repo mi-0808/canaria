@@ -35,8 +35,15 @@ export function parseSelection(params, roles, fields) {
  * @param {string} value
  */
 export function toggleHref(sel, key, value) {
-  const next = { ...sel, [key]: sel[key] === value ? "" : value };
-  const q = new URLSearchParams(Object.entries(next).filter(([, v]) => v)).toString();
+  return findHref({ ...sel, [key]: sel[key] === value ? "" : value });
+}
+
+/**
+ * その絞り込みの「さがす」の URL。空の条件は付けない
+ * @param {{ role: string, field: string }} sel
+ */
+export function findHref(sel) {
+  const q = new URLSearchParams(Object.entries(sel).filter(([, v]) => v)).toString();
   return q ? `/find?${q}` : "/find";
 }
 

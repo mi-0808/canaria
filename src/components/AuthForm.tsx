@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Header";
+import { afterLogin } from "@/lib/nav.mjs";
 import { sendPasswordReset, signIn, signUp, useUser } from "@/lib/store";
 
 const copy = {
@@ -41,9 +42,10 @@ export default function AuthForm({ mode }: { mode: keyof typeof copy }) {
   const [busy, setBusy] = useState(false);
 
   // ログイン済みならトップ（ホーム）へ。cookie が変わったので、画面ごと読み直して proxy に判定させる。
+  // 「さがす」の案内から来た人は元の絞り込みへ戻す（nav.mjs の afterLogin）。
   // 新規登録でそのままログインできた（確認メールが要らない）ときは、登録直後の4問へ
   useEffect(() => {
-    if (user) location.replace(mode === "signup" ? "/me/start" : "/");
+    if (user) location.replace(mode === "signup" ? "/me/start" : afterLogin(new URLSearchParams(location.search).get("next")));
   }, [user, mode]);
 
   const submit = async (e: React.FormEvent) => {

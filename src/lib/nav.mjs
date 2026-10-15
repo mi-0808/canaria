@@ -14,3 +14,12 @@ export function isPreview(preview, user, page) {
   if (user === undefined || page === undefined) return true;
   return !!user && !!page && user.id === page.id;
 }
+
+/**
+ * ログインのあとに行く先。「さがす」の案内から来た人（?next=/find…）は元の絞り込みへ戻し、それ以外はトップ（proxy.ts が /me へ送る）。
+ * よそのサイトへ飛ばす URL を仕込まれないよう、/find で始まるものだけ受け付ける
+ * @param {string | null} next
+ */
+export function afterLogin(next) {
+  return next?.startsWith("/find") ? next : "/";
+}
