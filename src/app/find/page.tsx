@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { use } from "react";
 import Icon from "@/components/Icon";
 import { Avatar, Empty } from "@/components/Portfolio";
-import { countFor, parseSelection, toggleHref } from "@/lib/find.mjs";
-import { fieldChoices, loadFindCounts, loadFindList, profileChoices, useLoad } from "@/lib/store";
+import { countFor, findHref, parseSelection, toggleHref } from "@/lib/find.mjs";
+import { fieldChoices, loadFindCounts, loadFindList, profileChoices, useLoad, useUser } from "@/lib/store";
 
-// さがす。立場・分野を選んだ人を属性で絞って並べる。ログイン不要。
+// さがす。立場・分野を選んだ人を属性で絞って並べる。登録した人だけが使える（2026-10-15 の決定）。
+// 未ログインなら一覧を読まず、登録・ログインの案内を出す（ヘッダーや LP の人数から来た人に、何をすれば使えるかを示す）。
+// ponytail: 画面で止めているだけ。profiles は公開ページのため誰でも読めるので、API を直に叩けば絞り込める。
+// 立場・分野は各人の公開ページにも出ている情報なので、一覧の便利さを会員に限る扱いにしている
 // 選択は URL（?role= / ?field=）に持たせる。共有でき、ブラウザの戻るで1つ前の絞り込みに戻れる。
 // 名前で探す入力欄は置かない（2026-10-14 の決定）
 const groups = [
@@ -17,18 +20,37 @@ const groups = [
 
 export default function FindPage({ searchParams }: PageProps<"/find">) {
   const sel = parseSelection(use(searchParams), profileChoices.role, fieldChoices);
+  const user = useUser();
+
+  return (
+    <div data-grouped className="mx-auto max-w-xl space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">さがす</h1>
+        <p className="text-sm text-fg-3">{user === null ? "登録すると、立場や分野で人をさがせます。" : "立場や分野を選んだ人が載っています。"}</p>
+      </div>
+      {user === undefined ? (
+        <div role="status" aria-label="読み込み中" className="h-40 animate-pulse rounded-2xl bg-surface-raised" />
+      ) : user === null ? (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link href="/signup" className="btn-primary">新規登録（無料）</Link>
+          {/* ログインしたら、いま開いている絞り込みへ戻す */}
+          <Link href={`/login?next=${encodeURIComponent(findHref(sel))}`} className="btn">ログイン</Link>
+        </div>
+      ) : (
+        <Results sel={sel} />
+      )}
+    </div>
+  );
+}
+
+function Results({ sel }: { sel: { role: string; field: string } }) {
   const router = useRouter();
   // 人数と一覧は別々に読み、届いた順に埋める（チップは選択肢の定数で先に出せる）
   const [rows] = useLoad(() => loadFindCounts(), []);
   const [list] = useLoad(() => loadFindList(sel), [sel.role, sel.field]);
 
   return (
-    <div data-grouped className="mx-auto max-w-xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">さがす</h1>
-        <p className="text-sm text-fg-3">立場や分野を選んだ人が載っています。</p>
-      </div>
-
+    <>
       {groups.map(([key, label, choices]) => (
         <section key={key} className="space-y-2">
           <h2 className="text-sm font-bold text-fg-2">{label}</h2>
@@ -73,6 +95,6 @@ export default function FindPage({ searchParams }: PageProps<"/find">) {
           </ul>
         )}
       </section>
-    </div>
+    </>
   );
 }

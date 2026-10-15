@@ -1,6 +1,6 @@
 // src/lib/nav.mjs の自己チェック。プレビューの出し分けが変わったら npm run check で止める
 import assert from "node:assert/strict";
-import { isPreview } from "../src/lib/nav.mjs";
+import { afterLogin, isPreview } from "../src/lib/nav.mjs";
 
 const me = { id: "a" };
 const other = { id: "b" };
@@ -16,3 +16,9 @@ assert.equal(isPreview(true, me, undefined), true);
 // 見つからないページは、未ログインでもプレビューにしない（null 同士を持ち主とみなさない）
 assert.equal(isPreview(true, null, null), false);
 assert.equal(isPreview(true, me, null), false);
+
+// ログイン後の行き先: さがすの絞り込みへは戻す／ほかのサイトや指定なしはトップ
+assert.equal(afterLogin("/find?role=%E7%A4%BE%E4%BC%9A%E4%BA%BA"), "/find?role=%E7%A4%BE%E4%BC%9A%E4%BA%BA");
+assert.equal(afterLogin("https://evil.example/find"), "/");
+assert.equal(afterLogin("//evil.example/find"), "/");
+assert.equal(afterLogin(null), "/");
